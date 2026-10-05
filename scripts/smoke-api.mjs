@@ -224,14 +224,6 @@ async function main() {
 
   /* ---------------- 加微（货源→厂家看板） ---------------- */
   section('5. 加微追踪 → 厂家看板');
-  let contactsBefore = null;
-  await test('GET /api/manufacturer/contact/dashboard（登录前基线）', async () => {
-    // 用厂家身份查基线
-    const mLogin = await call('POST', '/api/auth/login', { demoUserId: manufacturer.id }, { auth: false });
-    const r = await call('GET', '/api/manufacturer/contact/dashboard', undefined, { auth: false });
-    void mLogin;
-    return r;
-  }, { optional: true });
 
   if (firstProduct) {
     await test('POST /api/contact/log（店主点击加微信）', async () => {
@@ -244,7 +236,6 @@ async function main() {
       ok(r.data.wechatId, '未返回微信号');
       return `微信号 ${r.data.wechatId} / 联动入口 ${(r.data.suggestions ?? []).length} 个`;
     });
-    contactsBefore = true;
   }
 
   await test('POST /api/manufacturer/contact/send（配额限制）', async () => {

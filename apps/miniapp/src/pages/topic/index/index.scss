@@ -1,0 +1,75 @@
+@import '../../../styles/variables.scss';
+
+.topic-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+
+.topic-row__rank {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-sm;
+  background: #f2f4f8;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.topic-row__rank.is-top {
+  background: $accent;
+}
+
+.topic-row__rank-text {
+  font-size: $fs-sm;
+  font-weight: 600;
+  color: $text-2;
+}
+
+.topic-row__rank.is-top .topic-row__rank-text {
+  color: #fff;
+}
+
+.topic-row__cover {
+  width: 96px;
+  height: 96px;
+  border-radius: $radius-sm;
+  background: $line;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.topic-row__name {
+  font-size: $fs-md;
+}
+
+.topic-row__meta {
+  margin-top: 6px;
+}
+
+.topic-row__dot {
+  padding: 0 8px;
+}
+
+.topic-row__track {
+  margin-top: 8px;
+  height: 10px;
+  border-radius: 5px;
+  background: #f2f4f8;
+  overflow: hidden;
+}
+
+.topic-row__bar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, $brand 0%, $accent 100%);
+}
+
+.topic-row__heat {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+}

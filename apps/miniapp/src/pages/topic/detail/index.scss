@@ -1,0 +1,21 @@
+@import '../../../styles/variables.scss';
+
+.topic-detail__name {
+  font-size: $fs-xl;
+}
+
+.topic-detail__stats {
+  margin-top: 6px;
+}
+
+.topic-detail__dot {
+  padding: 0 8px;
+}
+
+.topic-detail__actions {
+  margin-top: $gap-xs;
+}
+
+.topic-detail__publish {
+  margin-left: $gap-xs;
+}

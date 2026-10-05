@@ -1,0 +1,30 @@
+@import '../shared.scss';
+
+.cg-restore {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: $gap-xs;
+}
+.cg-restore__input {
+  flex: 1;
+  min-width: 0;
+  height: 72px;
+  background: #f0f2f7;
+  border-radius: $radius-sm;
+  padding: 0 $gap-sm;
+  font-size: $fs-sm;
+  color: $text-1;
+  margin-right: $gap-xs;
+}
+.cg-restore__btn {
+  height: 72px;
+  padding: 0 $gap;
+  border-radius: $radius-sm;
+  background: $brand;
+  color: #fff;
+  font-size: $fs-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

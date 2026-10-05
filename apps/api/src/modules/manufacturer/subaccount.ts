@@ -107,7 +107,8 @@ function createSubUser(store: Store, owner: User, dto: CreateSubAccountDto): num
     phone: dto.phone,
     nickname: dto.nickname,
     avatarUrl: `https://picsum.photos/seed/wfb-sub-${id}/200/200`,
-    bio: `${owner.companyName ?? owner.nickname} 子账号（${SUB_ROLE_LABEL[dto.role]}）`,
+    /* 子账号是团队协作席位，不写个人简介：这样解绑后也不会混进 /api/auth/demo-accounts 的演示身份列表 */
+    bio: '',
     role: 'manufacturer',
     certStatus: owner.certStatus === 'approved' ? 'approved' : 'none',
     companyName: owner.companyName,
@@ -120,12 +121,6 @@ function createSubUser(store: Store, owner: User, dto: CreateSubAccountDto): num
   });
   return id;
 }
-
-const SUB_ROLE_LABEL: Record<CreateSubAccountDto['role'], string> = {
-  sales: '销售',
-  operation: '运营',
-  admin: '主管',
-};
 
 /**
  * SubAccount 契约含 phone：这是厂家自己团队的席位数据（厂家即数据所有者），

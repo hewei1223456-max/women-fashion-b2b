@@ -1,0 +1,75 @@
+@import '../../../styles/variables.scss';
+
+.mt-xs {
+  margin-top: 8px;
+}
+
+.ed-avatar-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-xs 0;
+}
+.ed-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: $line;
+}
+.ed-avatar-tip {
+  font-size: $fs-xs;
+  color: $text-4;
+  margin-top: 6px;
+}
+.ed-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.ed-chip {
+  padding: 10px 24px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  color: $text-2;
+  font-size: $fs-sm;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.ed-chip.is-active {
+  background: $brand;
+  color: #fff;
+}
+.ed-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid $line;
+}
+.ed-row__key {
+  font-size: $fs-md;
+  color: $text-2;
+}
+.ed-row__val {
+  font-size: $fs-md;
+  color: $text-1;
+  max-width: 420px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ed-row__val.is-ph {
+  color: $text-4;
+}
+.ed-toggle {
+  padding: 8px 24px;
+  border-radius: $radius-pill;
+  font-size: $fs-sm;
+  background: #f0f2f7;
+  color: $text-2;
+}
+.ed-toggle.is-on {
+  background: $brand;
+  color: #fff;
+}

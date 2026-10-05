@@ -1,0 +1,55 @@
+@import '../../../styles/variables.scss';
+
+.gbb__title {
+  font-size: $fs-lg;
+  line-height: 1.4;
+}
+
+.gbb__status {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+}
+
+.gbb__tags {
+  margin-top: $gap-xs;
+}
+
+.gbb__progress {
+  margin-top: $gap-xs;
+}
+
+.gbb__track {
+  height: 16px;
+  border-radius: 8px;
+  background: #f2f4f8;
+  overflow: hidden;
+}
+
+.gbb__bar {
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, $accent 0%, #ff8f5e 100%);
+}
+
+.gbb__progress-text {
+  margin-top: 6px;
+}
+
+.gbb__desc {
+  line-height: 1.7;
+}
+
+.gbb__deadline {
+  display: block;
+  margin-top: $gap-xs;
+}
+
+.gbb__placeholder {
+  height: 140px;
+}
+
+.gbb__share {
+  width: 200px;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}

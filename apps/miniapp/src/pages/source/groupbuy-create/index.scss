@@ -1,0 +1,18 @@
+@import '../../../styles/variables.scss';
+
+.gbc__linked {
+  background: $brand-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+  margin-bottom: $gap-sm;
+}
+
+.gbc__picker {
+  margin-bottom: 0;
+}
+
+.gbc__tip {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.5;
+}

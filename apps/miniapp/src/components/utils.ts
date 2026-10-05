@@ -45,6 +45,17 @@ export function isQuotaError(e: unknown): boolean {
   return !!e && typeof e === 'object' && (e as { code?: number }).code === 429;
 }
 
+/** 截止倒计时文案：拼单 / 订货会通用 */
+export function deadlineText(iso?: string): string {
+  if (!iso) return '时间待定';
+  const diff = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(diff)) return '时间待定';
+  if (diff <= 0) return '已截止';
+  const hours = Math.floor(diff / 3_600_000);
+  if (hours < 24) return `剩 ${Math.max(1, hours)} 小时`;
+  return `剩 ${Math.floor(hours / 24)} 天`;
+}
+
 /** 认证标识文案：只有已认证 / 认证中才展示徽标 */
 export function certBadge(status?: CertStatus): string {
   if (status === 'approved') return '已认证';

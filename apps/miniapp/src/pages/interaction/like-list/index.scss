@@ -1,0 +1,11 @@
+@import '../../../styles/variables.scss';
+
+.like-list__body {
+  padding: 0 $gap $gap-xs;
+}
+
+.like-list__tip {
+  display: block;
+  text-align: center;
+  margin-top: $gap-xs;
+}

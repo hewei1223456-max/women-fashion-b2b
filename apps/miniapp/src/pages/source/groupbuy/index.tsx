@@ -11,7 +11,7 @@ import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
 import Tag from '@/components/Tag';
 import { toastError, toastSuccess } from '@/components/Toast';
-import { errMsg } from '@/components/utils';
+import { errMsg, deadlineText } from '@/components/utils';
 import './index.scss';
 
 const TABS = [
@@ -25,16 +25,6 @@ const STATUS_LABELS: Record<string, string> = {
   completed: '已完成',
   cancelled: '已取消',
 };
-
-/** 截止倒计时文案 */
-export function deadlineText(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
-  if (Number.isNaN(diff)) return '时间待定';
-  if (diff <= 0) return '已截止';
-  const hours = Math.floor(diff / 3_600_000);
-  if (hours < 24) return `剩 ${Math.max(1, hours)} 小时`;
-  return `剩 ${Math.floor(hours / 24)} 天`;
-}
 
 export default function GroupBuySquare() {
   const queryClient = useQueryClient();
@@ -174,8 +164,3 @@ export default function GroupBuySquare() {
     </View>
   );
 }
-
-/** 我的拼单（独立 queryKey，便于参团后刷新） */
-function useQueryMine(enabled: boolean) {
-  const { useQuery } = require('@tanstack/react-query') as typeof import('@tanstack/react-query');
-  return useQuery({ query

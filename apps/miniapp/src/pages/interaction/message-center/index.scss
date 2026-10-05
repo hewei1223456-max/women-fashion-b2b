@@ -1,0 +1,87 @@
+@import '../../../styles/variables.scss';
+
+.msg__head {
+  padding: $gap-xs 0;
+}
+
+.msg-row {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+}
+
+.msg-row__avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: $line;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.msg-row__name {
+  font-size: $fs-md;
+  max-width: 380px;
+}
+
+.msg-row__last {
+  margin-top: 6px;
+}
+
+.msg-row__badge {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 18px;
+  background: $danger;
+  margin-left: $gap-xs;
+}
+
+.msg-row__badge-text {
+  color: #fff;
+  font-size: 20px;
+}
+
+.notice-row {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  align-items: flex-start;
+}
+
+.notice-row__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: $line;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.notice-row__avatar--sys {
+  background: $brand-light;
+}
+
+.notice-row__title {
+  font-size: $fs-sm;
+}
+
+.notice-row__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: $danger;
+  margin-left: 8px;
+}
+
+.notice-row__body {
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.notice-row__time {
+  display: block;
+  margin-top: 6px;
+}

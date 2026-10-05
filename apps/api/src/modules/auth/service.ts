@@ -71,13 +71,14 @@ const ROLE_ORDER = ['shop_owner', 'manufacturer', 'landmark', 'lecturer', 'admin
 
 /**
  * 演示账号列表（公开接口）。
+ * 只返回「种子演示身份」：资料完善（有简介/主体名）且不是某厂家的子账号。
+ * 手机号 / 验证码登录临时新建的用户（bio 为空）不会混进演示列表，保证列表稳定在 14 个种子身份。
  * 返回 User 形状但用 stripPrivate 剔除手机号 / openid / 营业执照 —— 谁都不能拿到别人的隐私字段。
- * 已作为子账号存在的用户不在此列（他们不是可一键登录的演示身份）。
  */
 export function demoAccounts(store: Store): User[] {
   const subUserIds = new Set(Array.from(store.subAccounts.values()).map((r) => r.subUserId));
   return Array.from(store.users.values())
-    .filter((u) => !subUserIds.has(u.id))
+    .filter((u) => !subUserIds.has(u.id) && Boolean(u.bio && u.bio.trim()))
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || a.id - b.id)
     .map((u) => stripPrivate(u, false));
 }

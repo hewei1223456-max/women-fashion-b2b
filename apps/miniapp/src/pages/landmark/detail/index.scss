@@ -1,0 +1,50 @@
+@import '../../../styles/variables.scss';
+
+.lmd__cover {
+  width: 100%;
+  height: 360px;
+  border-radius: $radius;
+  background: $line;
+  margin-bottom: $gap-sm;
+}
+
+.lmd__name {
+  font-size: $fs-xl;
+}
+
+.lmd__tags {
+  margin-top: $gap-xs;
+}
+
+.lmd__desc {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.7;
+}
+
+.lmd__stats {
+  margin-top: $gap-sm;
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-xs 0;
+}
+
+.lmd__stat {
+  flex: 1;
+}
+
+.lmd__stat-value {
+  font-size: $fs-lg;
+}
+
+.lmd__actions {
+  margin-top: $gap-sm;
+}
+
+.lmd__action {
+  flex: 1;
+}
+
+.lmd__action + .lmd__action {
+  margin-left: $gap-xs;
+}

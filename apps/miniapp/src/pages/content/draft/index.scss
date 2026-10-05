@@ -1,0 +1,13 @@
+@import '../shared.scss';
+
+.dr-warn {
+  background: $accent-light;
+  border-radius: $radius-sm;
+  padding: $gap-sm;
+  margin-bottom: $gap-sm;
+}
+.dr-warn__text {
+  font-size: $fs-sm;
+  color: $accent;
+  line-height: 1.6;
+}

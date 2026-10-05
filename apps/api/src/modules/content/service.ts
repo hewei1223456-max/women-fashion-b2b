@@ -511,7 +511,7 @@ function toPercent(values: number[]): number[] {
   return out;
 }
 
-export function contentAnalytics(store: Store, user: User, id: number): ContentAnalytics {
+export function contentAnalytics(store: Store, user: User, id: number): ContentAnalytics & { coldStart: boolean } {
   const row = store.articles.get(Number(id));
   if (!row || row.deleted) throw Errors.notFound('内容不存在或已删除');
   if (row.authorId !== user.id && user.role !== 'admin') throw Errors.forbidden('只能查看自己内容的数据看板');
@@ -519,19 +519,28 @@ export function contentAnalytics(store: Store, user: User, id: number): ContentA
   const viewBehaviors = all(store.behaviors).filter((b) => b.action === 'view' && b.targetType === 'article' && b.targetId === row.id);
   const total = Math.max(row.viewCount, viewBehaviors.length);
 
-  // 流量来源：真实埋点（带 keyword 归为搜索）+ 基础权重补足剩余曝光
-  const rand = seededRandom(row.id * 97 + 13);
-  const raw = new Map<string, number>(TRAFFIC_BASE.map((t) => [t.source, t.weight]));
-  for (const b of viewBehaviors) {
-    const source = b.keyword ? '搜索' : '推荐';
-    raw.set(source, (raw.get(source) ?? 0) + 0.6);
-  }
-  const shareRows = all(store.shares).filter((s) => s.targetType === 'article' && s.targetId === row.id).length;
-  raw.set('分享', (raw.get('分享') ?? 1) + shareRows * 0.5);
+  // 流量来源：真实埋点（带 keyword 归为搜索）+ 基础权重补足剩余曝光。
+  // 冷启动（0 浏览）不下发假流量：给出基础渠道权重作为「预估分布」并标记 coldStart，
+  // 趋势仍然如实为 0，前端可据此展示「暂无数据」。
   const keys = TRAFFIC_BASE.map((t) => t.source);
-  const jittered = keys.map((k) => (raw.get(k) ?? 0) * (0.85 + rand() * 0.3));
-  const percent = toPercent(jittered);
-  const trafficSource = keys.map((source, i) => ({ source, percent: percent[i] }));
+  const rand = seededRandom(row.id * 97 + 13);
+  let coldStart = false;
+  let trafficSource: { source: string; percent: number }[];
+  if (total <= 0) {
+    coldStart = true;
+    trafficSource = TRAFFIC_BASE.map((t) => ({ source: t.source, percent: Math.round(t.weight * 100) }));
+  } else {
+    const raw = new Map<string, number>(TRAFFIC_BASE.map((t) => [t.source, t.weight]));
+    for (const b of viewBehaviors) {
+      const source = b.keyword ? '搜索' : '推荐';
+      raw.set(source, (raw.get(source) ?? 0) + 0.6);
+    }
+    const shareRows = all(store.shares).filter((s) => s.targetType === 'article' && s.targetId === row.id).length;
+    raw.set('分享', (raw.get('分享') ?? 1) + shareRows * 0.5);
+    const jittered = keys.map((k) => (raw.get(k) ?? 0) * (0.85 + rand() * 0.3));
+    const percent = toPercent(jittered);
+    trafficSource = keys.map((source, i) => ({ source, percent: percent[i] }));
+  }
 
   // 近 7 天趋势：按天聚合真实浏览埋点，剩余曝光按「越近越多」的确定性权重补齐
   const labels = lastDays(7);
@@ -571,6 +580,8 @@ export function contentAnalytics(store: Store, user: User, id: number): ContentA
     followerGain,
     trafficSource,
     trend,
+    // 契约外的补充标记（前端可忽略）：该内容尚无浏览，来源占比为冷启动预估
+    coldStart,
   };
 }
 

@@ -1,0 +1,75 @@
+@import '../../../styles/variables.scss';
+
+.groupbuy-card {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+
+.groupbuy-card__cover {
+  width: 160px;
+  height: 200px;
+  border-radius: $radius-sm;
+  background: $line;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.groupbuy-card__cover--empty {
+  background: $brand-light;
+}
+
+.groupbuy-card__main {
+  justify-content: space-between;
+  min-height: 200px;
+}
+
+.groupbuy-card__title {
+  font-size: $fs-md;
+  max-width: 340px;
+}
+
+.groupbuy-card__status {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+}
+
+.groupbuy-card__desc {
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.groupbuy-card__tags {
+  margin-top: 6px;
+}
+
+.groupbuy-card__progress {
+  margin-top: $gap-xs;
+}
+
+.groupbuy-card__track {
+  height: 14px;
+  border-radius: 7px;
+  background: #f2f4f8;
+  overflow: hidden;
+}
+
+.groupbuy-card__bar {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, $accent 0%, #ff8f5e 100%);
+}
+
+.groupbuy-card__progress-text {
+  margin-top: 6px;
+}
+
+.groupbuy-card__foot {
+  margin-top: $gap-xs;
+}
+
+.groupbuy__placeholder {
+  height: 160px;
+}

@@ -1,4 +1,4 @@
-import type { ArticleSummary, Product, SearchResult, UserBrief } from '@wfb/shared-types';
+import type { ArticleSummary, SearchResult, UserBrief } from '@wfb/shared-types';
 import { bandOf, calcCesScore, midpointOfRange, searchScore } from '@wfb/shared-utils';
 import type { ArticleRow, ProductRow, Store } from '../../core/db';
 import { toUserBrief } from '../../core/security';

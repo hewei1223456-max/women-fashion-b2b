@@ -47,7 +47,11 @@ export default function SourceSearch() {
         page: Number(pageParam),
         pageSize: 10,
       }),
-    getNextPageParam: (last) => (last.page * last.pageSize < last.total ? last.page + 1 : undefined),
+    getNextPageParam: (last, allPages) => {
+      // SearchResult 无分页字段：用 total 与已加载条数推导
+      const loaded = allPages.reduce((n, p) => n + (p.products?.length ?? 0) + (p.articles?.length ?? 0) + (p.manufacturers?.length ?? 0), 0);
+      return last.total > 0 && loaded < last.total ? allPages.length + 1 : undefined;
+    },
   });
 
   const pages = result.data?.pages ?? [];

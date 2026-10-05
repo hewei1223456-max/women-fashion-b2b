@@ -1,0 +1,11 @@
+@import '../../../styles/variables.scss';
+
+.fans__summary {
+  padding: $gap-xs 0;
+}
+
+.fans__list {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-xs $gap;
+}

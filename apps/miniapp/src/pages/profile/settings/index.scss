@@ -1,0 +1,129 @@
+@import '../../../styles/variables.scss';
+
+.mt-xs {
+  margin-top: 8px;
+}
+
+.st-user {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.st-user__avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: $gap-sm;
+}
+.st-user__name {
+  font-size: $fs-lg;
+  font-weight: 600;
+  color: $text-1;
+}
+.st-user__meta {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-top: 6px;
+}
+.st-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.st-chip {
+  padding: 8px 22px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  color: $text-2;
+  font-size: $fs-sm;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.st-chip.is-active {
+  background: $brand;
+  color: #fff;
+}
+.st-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid $line;
+}
+.st-row:last-child {
+  border-bottom: none;
+}
+.st-row__key {
+  font-size: $fs-md;
+  color: $text-1;
+}
+.st-row__desc {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-top: 4px;
+}
+.st-row__val {
+  font-size: $fs-md;
+  color: $text-3;
+}
+.st-toggle {
+  padding: 8px 24px;
+  border-radius: $radius-pill;
+  font-size: $fs-sm;
+  background: #f0f2f7;
+  color: $text-2;
+}
+.st-toggle.is-on {
+  background: $brand;
+  color: #fff;
+}
+.st-black {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: $gap-xs;
+}
+.st-black__input {
+  flex: 1;
+  min-width: 0;
+  height: 72px;
+  background: #f0f2f7;
+  border-radius: $radius-sm;
+  padding: 0 $gap-sm;
+  font-size: $fs-sm;
+  color: $text-1;
+  margin-right: $gap-xs;
+}
+.st-black__btn {
+  height: 72px;
+  padding: 0 $gap;
+  border-radius: $radius-sm;
+  background: $brand;
+  color: #fff;
+  font-size: $fs-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.st-black__tag {
+  font-size: $fs-xs;
+  color: $text-2;
+  background: #f2f4f8;
+  border-radius: $radius-pill;
+  padding: 6px 18px;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.st-logout {
+  margin-top: $gap-sm;
+  height: 88px;
+  border-radius: $radius-pill;
+  background: $bg-card;
+  border: 2px solid #f8c9c5;
+  color: $danger;
+  font-size: $fs-lg;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

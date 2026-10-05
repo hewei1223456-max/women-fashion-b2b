@@ -72,7 +72,7 @@ export function registerContactModule(router: Router, store: Store) {
           .filter((n) => Number.isFinite(n));
       }
       return {
-        stylePreferences: row.stylePreferences,
+        stylePreferences: row.stylePreferences as never,
         priceBandPreferences: row.priceBandPreferences,
         dailyLimit: row.dailyLimit,
         blacklistManufacturerIds: row.blacklistManufacturerIds,

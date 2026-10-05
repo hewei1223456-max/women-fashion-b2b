@@ -1,0 +1,81 @@
+@import '../../../styles/variables.scss';
+
+.fair__head {
+  padding: $gap-xs 0;
+}
+
+.fair-card {
+  background: $bg-card;
+  border-radius: $radius;
+  overflow: hidden;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+
+.fair-card__cover {
+  width: 100%;
+  height: 280px;
+  background: $line;
+}
+
+.fair-card__body {
+  padding: $gap-sm;
+}
+
+.fair-card__title {
+  display: block;
+  font-size: $fs-md;
+}
+
+.fair-card__tags {
+  margin-top: 6px;
+}
+
+.fair-card__meta {
+  display: block;
+  margin-top: 4px;
+}
+
+.fair-card__theme {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.fair-card__foot {
+  margin-top: $gap-xs;
+}
+
+.fair__form {
+  margin-top: $gap-sm;
+  text-align: left;
+}
+
+.fair__dates {
+  align-items: center;
+}
+
+.fair__date-sep {
+  padding: 0 $gap-xs;
+}
+
+.fair__detail {
+  margin-top: $gap-sm;
+  text-align: left;
+}
+
+.fair__detail-title {
+  display: block;
+  font-size: $fs-lg;
+  margin-bottom: 6px;
+}
+
+.fair__detail-line {
+  display: block;
+  margin-top: 4px;
+}
+
+.fair__detail-btn {
+  margin-top: $gap-sm;
+  padding: 0 $gap;
+}

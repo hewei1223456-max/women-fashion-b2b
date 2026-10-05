@@ -47,7 +47,7 @@ interface StyleFlavor {
 const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   韩系: {
     adj: ['松弛感', '显高显瘦', '低饱和高级', '韩剧女主感'],
-    scene: '通勤和咖啡馆都能穿',
+    scene: '通勤 / 咖啡馆',
     tags: ['韩系穿搭', '通勤穿搭', '显瘦穿搭'],
     person: '韩系通勤党',
     items: ['西装外套', '针织开衫', '阔腿裤'],
@@ -55,7 +55,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   法式: {
     adj: ['法式慵懒', '收腰显腰细', '方领锁骨显瘦', '浪漫不腻'],
-    scene: '约会和度假出片',
+    scene: '约会 / 度假出片',
     tags: ['法式穿搭', '碎花连衣裙', '度假穿搭'],
     person: '法式甜美党',
     items: ['碎花连衣裙', '方领上衣', '蕾丝衫'],
@@ -63,7 +63,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   新中式: {
     adj: ['国风改良', '盘扣提花', '东方质感', '显气质'],
-    scene: '聚会和日常通勤',
+    scene: '聚会 / 日常通勤',
     tags: ['新中式穿搭', '国风女装', '提花上衣'],
     person: '新中式爱好者',
     items: ['提花马甲', '立领衬衫', '盘扣上衣'],
@@ -71,7 +71,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   轻奢: {
     adj: ['醋酸垂坠', '高级感在线', '缎面光泽', '小众不撞款'],
-    scene: '商务和约会',
+    scene: '商务 / 约会',
     tags: ['轻奢女装', '醋酸衬衫', '高级感穿搭'],
     person: '轻奢质控党',
     items: ['醋酸衬衫', '缎面吊带裙', '真丝方巾'],
@@ -79,7 +79,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   欧美: {
     adj: ['欧美辣妹', '廓形利落', '大女主气场', '显腿长'],
-    scene: '街拍和派对',
+    scene: '街拍 / 派对',
     tags: ['欧美风穿搭', '阔腿裤', '显腿长'],
     person: '欧美风买家',
     items: ['阔腿牛仔裤', '机车皮衣', '短款卫衣'],
@@ -87,7 +87,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   休闲: {
     adj: ['基础款耐穿', '百搭不挑人', '亲肤棉感', '日常出镜率高'],
-    scene: '日常和接娃逛超市',
+    scene: '日常 / 接娃逛超市',
     tags: ['休闲穿搭', '基础款', '平价好货'],
     person: '日常休闲党',
     items: ['纯棉T恤', '卫裤', '运动套装'],
@@ -95,7 +95,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   复古: {
     adj: ['港风复古', '撞色格纹', '氛围感拉满', '胶片质感'],
-    scene: '出片和探店',
+    scene: '出片 / 探店',
     tags: ['复古穿搭', '港风', '格纹半裙'],
     person: '复古氛围党',
     items: ['格纹半裙', '印花衬衫', '复古西装'],
@@ -103,7 +103,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   甜美: {
     adj: ['泡泡袖', '甜而不腻', '少女感', '雪纺轻盈'],
-    scene: '约会和拍照',
+    scene: '约会 / 拍照',
     tags: ['甜美穿搭', '泡泡袖', '雪纺衫'],
     person: '甜美少女党',
     items: ['泡泡袖雪纺衫', '碎花裹身裙', '针织开衫'],
@@ -111,7 +111,7 @@ const STYLE_FLAVOR: Record<string, StyleFlavor> = {
   },
   通勤: {
     adj: ['垂感抗皱', '一套搞定', '职场体面', '免烫省心'],
-    scene: '上班和出差',
+    scene: '上班 / 出差',
     tags: ['通勤穿搭', '职场穿搭', '西装裤'],
     person: '上班族',
     items: ['垂感阔腿裤', '西装裤', '通勤衬衫'],
@@ -135,10 +135,31 @@ const PLATFORM_LABEL: Record<string, string> = {
 const POINT_EMOJI = ['👗', '🧵', '📏', '💰', '✨', '🌿'];
 
 function splitSentences(text: string): string[] {
-  return String(text)
+  const base = String(text)
     .split(/[。！？!?\n；;]+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 1);
+  const out: string[] = [];
+  for (const s of base) {
+    if (s.length <= 26) {
+      out.push(s);
+      continue;
+    }
+    // 长句按逗号再切，保留原意、避免一条 bullet 塞满整段
+    let buf = '';
+    for (const part of s.split(/[，,]+/)) {
+      const p = part.trim();
+      if (!p) continue;
+      if (buf && `${buf}，${p}`.length > 22) {
+        out.push(buf);
+        buf = p;
+      } else {
+        buf = buf ? `${buf}，${p}` : p;
+      }
+    }
+    if (buf) out.push(buf);
+  }
+  return out;
 }
 
 function detectStyle(text: string, fallback = '韩系'): string {
@@ -350,7 +371,7 @@ const TOPIC_TEMPLATES: {
   title: (c: TopicCtx) => string;
   hook: (c: TopicCtx) => string;
   reason: (c: TopicCtx) => string;
-  tags: (c: TopicCtx) => string;
+  tags: (c: TopicCtx) => string[];
 }[] = [
   {
     name: '亲测测评',
@@ -371,7 +392,7 @@ const TOPIC_TEMPLATES: {
     title: (c) => `${c.market} ${c.item} 真实拿货价：${c.priceRange}，中间商加了几成？`,
     hook: () => `同样一件，档口报价差 3 倍——差价到底差在哪，我今天把进货单拍给你看。`,
     reason: (c) =>
-      `价格揭秘类内容收藏率是平台均值 ${c.avgCes > 0 ? '1.6 倍' : '1.6 倍'}；该风格款均加微转化率 ${c.contactRate}%，说明店主决策链条短，价格信息直接刺激加微。`,
+      `价格揭秘类内容收藏率是平台均值的 1.6 倍；该风格款均加微转化率 ${c.contactRate}%，说明店主决策链条短，价格信息直接刺激加微。`,
     tags: (c) => [`${c.market}拿货`, '女装批发价', `${c.style}货源`],
   },
   {
@@ -380,7 +401,7 @@ const TOPIC_TEMPLATES: {
     bestTime: '07:30-09:00',
     difficulty: '中',
     title: (c) => `开一家 ${c.style} 女装店，第一批货我是这么组的（3:4:3 结构表可抄）`,
-    hook: () => `第一批货别再凭感觉拿了，我用 3:4:3 把 ${c.priceRange} 的预算拆成了三份。`,
+    hook: (c) => `第一批货别再凭感觉拿了，我用 3:4:3 把 ${c.priceRange} 的预算拆成了三份。`,
     reason: (c) => `组货类内容在资讯板块完读最高；${c.style} 店主画像集中在 25-35 岁新店阶段，最缺可直接套用的结构表。`,
     tags: () => ['女装开店', '组货结构', '拿货清单'],
   },
@@ -400,7 +421,7 @@ const TOPIC_TEMPLATES: {
     bestTime: '21:00-23:00',
     difficulty: '低',
     title: (c) => `一件${c.item}穿出 ${c.flavor.adj.length + 3} 套：${c.style} ${c.month} 月穿搭公式`,
-    hook: () => `同一件${c.item}，换内搭和鞋就能从通勤切到约会，我拍了 ${c.flavor.adj.length + 3} 套。`,
+    hook: (c) => `同一件${c.item}，换内搭和鞋就能从通勤切到约会，我拍了 ${c.flavor.adj.length + 3} 套。`,
     reason: (c) => `一衣多穿类内容互动中收藏占比高；${c.style} 风格匹配度权重在推荐引擎中排第一，易获精准流量。`,
     tags: (c) => [c.style, '一衣多穿', '穿搭公式'],
   },
@@ -420,7 +441,7 @@ const TOPIC_TEMPLATES: {
     bestTime: '19:00-20:30',
     difficulty: '中',
     title: (c) => `${c.style} 拿货别踩这 5 个坑（第 3 个我亏了 ${(c.avgViews % 8) + 2} 千）`,
-    hook: () => `我第一次拿${c.style}的货，一次踩了三个坑，今天把损失的数字摊开讲。`,
+    hook: (c) => `我第一次拿${c.style}的货，一次踩了三个坑，今天把损失的数字摊开讲。`,
     reason: (c) => `踩坑复盘类内容评论率是均值 2 倍以上；当前 ${c.style} 款数 ${c.productCount} 个，选品密度高、试错成本大，痛点真实。`,
     tags: (c) => ['避坑指南', `${c.style}拿货`, '女装批发'],
   },

@@ -1,0 +1,45 @@
+@import '../../../styles/variables.scss';
+
+.comments__summary {
+  padding: $gap-xs 0;
+}
+
+.comments__list {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: 0 $gap;
+}
+
+.comments__placeholder {
+  height: 180px;
+}
+
+.comments__bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $bg-card;
+  border-top: 1px solid $line;
+  padding: $gap-xs $gap-sm;
+  padding-bottom: calc(#{$gap-xs} + env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.comments__reply-hint {
+  padding-bottom: 6px;
+}
+
+.comments__input {
+  height: 76px;
+  background: #f2f4f8;
+  border-radius: $radius-pill;
+  padding: 0 $gap-sm;
+  font-size: $fs-sm;
+}
+
+.comments__send {
+  width: 140px;
+  margin-left: $gap-xs;
+  flex-shrink: 0;
+}

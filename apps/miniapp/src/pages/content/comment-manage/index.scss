@@ -1,0 +1,125 @@
+@import '../../../styles/variables.scss';
+@import '../shared.scss';
+
+.cm-page {
+  padding-bottom: 200px;
+}
+
+.cm-item {
+  display: flex;
+  flex-direction: row;
+  padding: $gap-sm 0;
+  border-bottom: 1px solid $line;
+}
+.cm-item__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: $gap-xs;
+  flex-shrink: 0;
+}
+.cm-item__body {
+  flex: 1;
+  min-width: 0;
+}
+.cm-item__name {
+  font-size: $fs-sm;
+  color: $text-2;
+  font-weight: 600;
+}
+.cm-item__content {
+  font-size: $fs-md;
+  color: $text-1;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.cm-item__meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.cm-item__time {
+  font-size: $fs-xs;
+  color: $text-4;
+}
+.cm-item__ops {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.cm-op {
+  font-size: $fs-xs;
+  padding: 6px 18px;
+  border-radius: $radius-pill;
+  border: 1px solid $line;
+  color: $text-2;
+  margin-left: $gap-xs;
+}
+.cm-op--danger {
+  color: $danger;
+  border-color: #f8c9c5;
+}
+.cm-reply {
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-xs;
+  margin-top: $gap-xs;
+}
+.cm-reply__text {
+  font-size: $fs-sm;
+  color: $text-2;
+  line-height: 1.6;
+}
+.cm-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+.cm-input {
+  flex: 1;
+  min-width: 0;
+  height: 72px;
+  background: #f0f2f7;
+  border-radius: $radius-pill;
+  padding: 0 $gap-sm;
+  font-size: $fs-sm;
+  color: $text-1;
+}
+.cm-send {
+  margin-left: $gap-xs;
+  height: 72px;
+  padding: 0 $gap;
+  border-radius: $radius-pill;
+  background: $brand;
+  color: #fff;
+  font-size: $fs-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cm-pick {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+.cm-pick__title {
+  font-size: $fs-sm;
+  color: $text-1;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cm-pick__go {
+  font-size: $fs-xs;
+  color: $brand;
+  margin-left: $gap-xs;
+}

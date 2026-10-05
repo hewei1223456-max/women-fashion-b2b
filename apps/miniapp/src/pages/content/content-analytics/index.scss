@@ -1,0 +1,122 @@
+@import '../../../styles/variables.scss';
+
+.ca-metrics {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.ca-metric {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $gap-xs 0;
+}
+.ca-metric__num {
+  font-size: $fs-lg;
+  font-weight: 600;
+  color: $text-1;
+}
+.ca-metric__label {
+  font-size: 20px;
+  color: $text-3;
+  margin-top: 4px;
+}
+.ca-metric--hi .ca-metric__num {
+  color: $accent;
+}
+
+.ca-bars {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  height: 260px;
+  margin-top: $gap-sm;
+}
+.ca-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  margin-right: 6px;
+}
+.ca-bar__fill {
+  width: 100%;
+  max-width: 40px;
+  min-height: 4px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, $brand 0%, #7d92f0 100%);
+}
+.ca-bar__fill--today {
+  background: linear-gradient(180deg, $accent 0%, #ffb08c 100%);
+}
+.ca-bar__value {
+  font-size: 18px;
+  color: $text-3;
+  margin-bottom: 4px;
+}
+.ca-bar__label {
+  font-size: 18px;
+  color: $text-4;
+  margin-top: 6px;
+}
+
+.ca-src {
+  margin-top: $gap-xs;
+}
+.ca-src__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: $gap-xs;
+}
+.ca-src__name {
+  width: 150px;
+  font-size: $fs-sm;
+  color: $text-2;
+}
+.ca-src__track {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  border-radius: 10px;
+  background: #f0f2f7;
+  overflow: hidden;
+}
+.ca-src__fill {
+  height: 20px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, $brand 0%, #7d92f0 100%);
+}
+.ca-src__pct {
+  width: 110px;
+  text-align: right;
+  font-size: $fs-sm;
+  color: $text-1;
+  font-weight: 600;
+}
+
+.ca-pick {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+.ca-pick__title {
+  font-size: $fs-sm;
+  color: $text-1;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ca-pick__go {
+  font-size: $fs-xs;
+  color: $brand;
+  margin-left: $gap-xs;
+}
