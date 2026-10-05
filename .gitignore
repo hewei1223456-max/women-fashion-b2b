@@ -41,3 +41,7 @@ apps/mobile/android/.gradle/
 
 # 本地工具（内网穿透用的 cloudflared 等，按需自行下载，不入库）
 tools/
+
+# 隧道运行状态（含本机临时公网地址与 PID）
+.tunnel.json
+.tunnel.log

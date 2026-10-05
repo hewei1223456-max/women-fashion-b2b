@@ -63,24 +63,61 @@ pnpm --filter @wfb/miniapp run build:weapp --watch
 
 ## 路径 B：内网穿透（让外部临时访问）
 
-适合「今天就要给客户/合伙人看」的场景。
+适合「今天就要给客户/合伙人看」的场景。项目自带封装脚本，避免手动记命令。
+
+### B1. 快速隧道（零配置，域名随机）
 
 ```bash
-# 1. 安装 cloudflared（Windows: winget install --id Cloudflare.cloudflared）
-# 2. 起后端与前端
-pnpm dev:api       # 3100
-pnpm --filter @wfb/miniapp run build:h5      # 产出静态目录 dist/h5
-npx --yes http-server apps/miniapp/dist/h5 -p 10086 -P http://localhost:3100 --proxy /api
+# 1) 起后端与演示服务器（两个终端）
+pnpm dev:api            # 3100
+pnpm serve:demo         # 8099（H5 + 后台 + /api 反代）
 
-# 3. 开隧道（每个端口一条，或用一条指向 Nginx）
-cloudflared tunnel --url http://localhost:10086
-# 输出的 https://xxxx.trycloudflare.com 就是公网地址，手机可以直接打开
+# 2) 一次性下载 cloudflared 到 tools/（不入库）
+#    Windows:
+#    Invoke-WebRequest -Uri https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile tools/cloudflared.exe
+#    macOS:  brew install cloudflared && mkdir -p tools && ln -s $(which cloudflared) tools/cloudflared
+#    Linux:  curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o tools/cloudflared && chmod +x tools/cloudflared
+
+# 3) 开隧道（会自动打印公网地址并落盘状态）
+pnpm tunnel:quick
+#   → https://xxxx-yyyy-zzzz.trycloudflare.com
+#     用户端   https://.../
+#     运营后台 https://.../admin/
+#     API      https://.../api/health
 ```
 
-**要点**：
-- 小程序端**不能**用临时穿透域名（`TARO_APP_API` 必须是已备案且加入白名单的 https 域名）。
-  穿透地址只适合让人用浏览器看 H5/PC Web 与后台。
-- 前端构建时若要指向公网后端：`TARO_APP_API=https://your-tunnel.example.com pnpm build:h5`。
+管理隧道：
+```bash
+pnpm tunnel:status      # 查看当前公网地址与进程状态
+pnpm tunnel:stop        # 演示结束立即关闭
+```
+
+### B2. 命名隧道（固定域名，推荐长期演示）
+
+随机域名每次重启都会变、没法写进文档。要固定域名需要一个免费 Cloudflare 账号 +
+把域名托管在 Cloudflare（免费版可用）：
+
+```bash
+pnpm tunnel --login                       # 浏览器授权，选择你的域名
+pnpm tunnel --name wfb-demo --hostname demo.yourdomain.com
+# 之后每次只需：pnpm tunnel --name wfb-demo --hostname demo.yourdomain.com
+```
+
+### B3. 必须注意的三件事
+
+1. **快速隧道地址是公开的**：任何人拿到 URL 都能访问，演示完请立刻 `pnpm tunnel:stop`。
+2. **小程序端不能用穿透域名**：微信/抖音/支付宝要求 `TARO_APP_API` 是**已备案**的 https 域名并加入白名单，
+   `*.trycloudflare.com` 过不了审核。穿透地址只适合让人用**浏览器**看 H5 / PC Web 与运营后台。
+3. **前端要指向公网后端时**，构建期注入即可：
+   ```bash
+   TARO_APP_API=https://your-tunnel.example.com pnpm --filter @wfb/miniapp run build:h5
+   ```
+
+### B4. 手工方式（不用脚本）
+
+```bash
+cloudflared tunnel --url http://localhost:8099
+```
 
 ---
 
