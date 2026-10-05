@@ -1,0 +1,40 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+build/
+.next/
+out/
+.turbo/
+.swc/
+*.tsbuildinfo
+
+# Taro 编译产物（各端）
+apps/miniapp/dist/
+apps/miniapp/.temp/
+apps/miniapp/.rn_temp/
+
+# 运行期数据
+data/
+*.sqlite
+*.sqlite-journal
+
+# 环境变量（保留 .env.example）
+.env
+.env.local
+.env.*.local
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# 原生构建
+apps/mobile/ios/Pods/
+apps/mobile/android/.gradle/

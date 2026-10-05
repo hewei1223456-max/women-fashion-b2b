@@ -1,0 +1,30 @@
+@import '../../styles/variables.scss';
+
+.card--nopad {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card__head {
+  margin-bottom: $gap-sm;
+}
+
+.card--nopad .card__head {
+  padding: $gap $gap 0;
+  margin-bottom: $gap-sm;
+}
+
+.card__title {
+  font-size: $fs-lg;
+  line-height: 1.4;
+}
+
+.card__subtitle {
+  margin-top: 4px;
+}
+
+.card__extra {
+  flex-shrink: 0;
+  margin-left: $gap-sm;
+  padding: 4px 6px;
+}

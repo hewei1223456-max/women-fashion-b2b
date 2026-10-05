@@ -1,0 +1,26 @@
+@import '../../styles/variables.scss';
+
+.section-title {
+  padding: $gap-sm 0 $gap-xs;
+}
+
+.section-title__bar {
+  width: 8px;
+  height: 30px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, $brand 0%, $accent 100%);
+  margin-right: $gap-xs;
+}
+
+.section-title__text {
+  font-size: $fs-lg;
+}
+
+.section-title__sub {
+  margin-left: $gap-xs;
+}
+
+.section-title__extra {
+  flex-shrink: 0;
+  margin-left: $gap-sm;
+}

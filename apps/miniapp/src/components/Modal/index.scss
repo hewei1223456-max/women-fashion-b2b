@@ -1,0 +1,67 @@
+@import '../../styles/variables.scss';
+
+.modal {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: $bg-mask;
+}
+
+.modal__panel {
+  position: relative;
+  width: 600px;
+  max-width: 84%;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  padding: $gap-lg $gap $gap;
+  box-shadow: $shadow;
+}
+
+.modal__title {
+  display: block;
+  text-align: center;
+  font-size: $fs-lg;
+}
+
+.modal__content {
+  display: block;
+  text-align: center;
+  margin-top: $gap-sm;
+  line-height: 1.7;
+}
+
+.modal__actions {
+  margin-top: $gap-lg;
+}
+
+.modal__btn {
+  flex: 1;
+  height: 80px;
+  border-radius: $radius-pill;
+  font-size: $fs-md;
+}
+
+.modal__btn--cancel {
+  background: #f0f2f7;
+  color: $text-2;
+  margin-right: $gap-xs;
+}
+
+.modal__btn--confirm {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  color: #fff;
+}

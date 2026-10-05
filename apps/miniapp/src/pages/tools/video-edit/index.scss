@@ -1,0 +1,11 @@
+@import '../../../styles/variables.scss';
+
+.video-edit__badge {
+  margin-bottom: $gap-sm;
+}
+
+.video-edit__tip {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.5;
+}

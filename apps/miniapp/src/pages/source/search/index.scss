@@ -1,0 +1,65 @@
+@import '../../../styles/variables.scss';
+
+.search__hot {
+  background: #f2f4f8;
+  border-radius: $radius-pill;
+  padding: 10px 24px;
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+}
+
+.search__hot-text {
+  color: $text-2;
+}
+
+.search__summary {
+  padding: $gap-xs 0;
+}
+
+.search__section {
+  display: block;
+  padding: $gap-sm 0 $gap-xs;
+}
+
+.search__score {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.search__score-title {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.search__score-bars {
+  margin-bottom: 6px;
+}
+
+.search__score-row {
+  margin-bottom: 4px;
+}
+
+.search__score-label {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.search__score-track {
+  height: 12px;
+  border-radius: 6px;
+  background: #f2f4f8;
+  overflow: hidden;
+  margin-right: $gap-xs;
+}
+
+.search__score-bar {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, $brand 0%, $accent 100%);
+}
+
+.search__score-value {
+  width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}

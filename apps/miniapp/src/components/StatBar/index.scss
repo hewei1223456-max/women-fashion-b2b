@@ -1,0 +1,19 @@
+@import '../../styles/variables.scss';
+
+.stat-bar {
+  flex-wrap: wrap;
+}
+
+.stat-bar__item {
+  margin-right: $gap;
+}
+
+.stat-bar__icon {
+  font-size: $fs-xs;
+  margin-right: 4px;
+  opacity: 0.75;
+}
+
+.stat-bar__value {
+  line-height: 1.2;
+}

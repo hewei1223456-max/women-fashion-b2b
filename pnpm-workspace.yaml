@@ -1,0 +1,14 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm 11 默认拦截依赖的构建脚本。以下包必须允许执行，
+# 否则 Taro 的 Rust 编译器（@tarojs/binding）、SWC、esbuild 无法就位。
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  '@tarojs/binding': true
+  '@tarojs/cli': true
+  core-js: true
+  core-js-pure: true
+  esbuild: true

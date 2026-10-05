@@ -1,0 +1,15 @@
+{
+  "miniprogramRoot": "dist/weapp/",
+  "projectname": "women-fashion-b2b",
+  "description": "女装B2B行业平台",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": false,
+    "es6": false,
+    "enhance": false,
+    "compileHotReLoad": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}

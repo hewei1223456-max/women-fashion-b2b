@@ -1,0 +1,58 @@
+@import '../../styles/variables.scss';
+
+.contact-btn__inner {
+  min-width: 132px;
+  padding: 0 $gap-xs;
+}
+
+.contact-btn__modal {
+  margin-top: $gap-sm;
+}
+
+.contact-btn__wechat-row {
+  background: $brand-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+
+.contact-btn__wechat {
+  font-size: $fs-lg;
+  letter-spacing: 1px;
+}
+
+.contact-btn__copy {
+  background: $brand;
+  border-radius: $radius-pill;
+  padding: 6px 20px;
+}
+
+.contact-btn__copy-text {
+  color: #fff;
+  font-size: $fs-xs;
+}
+
+.contact-btn__tip {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.5;
+}
+
+.contact-btn__suggest {
+  margin-top: $gap-sm;
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+
+.contact-btn__suggest-title {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.contact-btn__suggest-item {
+  padding: 10px 0;
+}
+
+.contact-btn__suggest-label {
+  color: $brand;
+}

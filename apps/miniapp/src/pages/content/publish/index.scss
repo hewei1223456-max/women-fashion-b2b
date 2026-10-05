@@ -1,0 +1,235 @@
+@import '../../../styles/variables.scss';
+
+.mt-xs {
+  margin-top: 8px;
+}
+
+.pb-page {
+  padding-bottom: 240px;
+}
+
+.pb-types {
+  display: flex;
+  flex-direction: row;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: 8px;
+  margin-bottom: $gap-sm;
+}
+.pb-type {
+  flex: 1;
+  text-align: center;
+  padding: 14px 0;
+  border-radius: $radius-sm;
+  font-size: $fs-sm;
+  color: $text-2;
+}
+.pb-type.is-active {
+  background: $brand-light;
+  color: $brand;
+  font-weight: 600;
+}
+
+.pb-boards {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: $gap-xs;
+}
+.pb-board {
+  flex: 1;
+  text-align: center;
+  padding: 16px 0;
+  border-radius: $radius-sm;
+  border: 2px solid $line;
+  font-size: $fs-sm;
+  color: $text-2;
+  margin-right: $gap-xs;
+}
+.pb-board:last-child {
+  margin-right: 0;
+}
+.pb-board.is-active {
+  border-color: $brand;
+  color: $brand;
+  background: $brand-light;
+  font-weight: 600;
+}
+
+.pb-label {
+  font-size: $fs-sm;
+  color: $text-2;
+  font-weight: 600;
+  margin-bottom: $gap-xs;
+}
+.pb-title-input {
+  width: 100%;
+  font-size: $fs-lg;
+  font-weight: 600;
+  color: $text-1;
+  height: 88px;
+}
+.pb-counter {
+  font-size: $fs-xs;
+  color: $text-4;
+  text-align: right;
+}
+.pb-counter.is-over {
+  color: $danger;
+}
+
+.pb-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.pb-thumb {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: $radius-sm;
+  background: $line;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.pb-thumb__img {
+  width: 200px;
+  height: 200px;
+  border-radius: $radius-sm;
+}
+.pb-thumb__del {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 24px;
+  line-height: 40px;
+  text-align: center;
+}
+.pb-thumb--add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed $line;
+  background: transparent;
+}
+.pb-thumb__plus {
+  font-size: 48px;
+  color: $text-4;
+  line-height: 1;
+}
+.pb-thumb__tip {
+  font-size: 18px;
+  color: $text-4;
+  margin-top: 6px;
+}
+
+.pb-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.pb-chip {
+  padding: 10px 24px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  color: $text-2;
+  font-size: $fs-sm;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.pb-chip.is-active {
+  background: $brand;
+  color: #fff;
+}
+
+.pb-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid $line;
+}
+.pb-row__key {
+  font-size: $fs-md;
+  color: $text-2;
+}
+.pb-row__val {
+  font-size: $fs-md;
+  color: $text-1;
+  max-width: 420px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pb-row__val.is-ph {
+  color: $text-4;
+}
+
+.pb-hits {
+  background: $accent-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+  margin-top: $gap-xs;
+}
+.pb-hits__text {
+  font-size: $fs-sm;
+  color: $danger;
+}
+
+.pb-parse {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pb-video {
+  width: 100%;
+  height: 400px;
+  border-radius: $radius-sm;
+  background: #000;
+}
+
+.pb-bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+.pb-save {
+  padding: 0 $gap;
+  height: 80px;
+  border-radius: $radius-pill;
+  background: #f0f2f7;
+  color: $text-2;
+  font-size: $fs-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $gap-xs;
+}
+.pb-submit {
+  flex: 1;
+  height: 80px;
+  border-radius: $radius-pill;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  color: #fff;
+  font-size: $fs-lg;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pb-submit.is-disabled {
+  opacity: 0.5;
+}
+.pb-autosave {
+  font-size: $fs-xs;
+  color: $text-4;
+  text-align: center;
+  padding: $gap-xs 0;
+}

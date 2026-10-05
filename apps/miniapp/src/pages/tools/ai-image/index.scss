@@ -1,0 +1,21 @@
+@import '../../../styles/variables.scss';
+
+.ai-image__linked {
+  margin-bottom: $gap-xs;
+}
+
+.ai-image__linked-img {
+  width: 220px;
+  height: 280px;
+  border-radius: $radius-sm;
+  margin-top: 6px;
+  background: $line;
+}
+
+.ai-image__count {
+  margin-top: 6px;
+}
+
+.ai-image__link-entry {
+  margin-top: $gap-sm;
+}

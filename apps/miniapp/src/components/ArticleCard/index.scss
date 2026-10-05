@@ -1,0 +1,140 @@
+@import '../../styles/variables.scss';
+
+.article-card {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+
+.article-card__cover-wrap {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  background: $line;
+  margin-bottom: $gap-xs;
+}
+
+.article-card__cover {
+  width: 100%;
+  height: 360px;
+}
+
+.article-card__badge {
+  position: absolute;
+  left: $gap-xs;
+  top: $gap-xs;
+  background: rgba(23, 25, 35, 0.6);
+  border-radius: $radius-pill;
+  padding: 4px 16px;
+}
+
+.article-card__badge-text {
+  color: #fff;
+  font-size: $fs-xs;
+}
+
+.article-card__main {
+  align-items: flex-start;
+}
+
+.article-card__title {
+  font-size: $fs-lg;
+  line-height: 1.4;
+}
+
+.article-card__summary {
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.article-card__reason {
+  margin-top: 6px;
+  background: $brand-light;
+  border-radius: $radius-sm;
+  padding: 4px 12px;
+}
+
+.article-card__reason-text {
+  color: $brand;
+}
+
+.article-card__tags {
+  margin-top: $gap-xs;
+}
+
+.tag--plain {
+  padding: 4px 14px;
+  border-radius: $radius-pill;
+  font-size: $fs-xs;
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+}
+
+.article-card__foot {
+  margin-top: $gap-xs;
+}
+
+.article-card__avatar {
+  margin-right: 8px;
+}
+
+.article-card__author {
+  max-width: 200px;
+}
+
+.article-card__dot {
+  padding: 0 6px;
+}
+
+.article-card__thumb-wrap {
+  position: relative;
+  width: 220px;
+  height: 170px;
+  margin-left: $gap-sm;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  background: $line;
+  flex-shrink: 0;
+}
+
+.article-card__thumb {
+  width: 220px;
+  height: 170px;
+}
+
+.article-card__thumb-count {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(23, 25, 35, 0.55);
+  border-radius: $radius-pill;
+  padding: 2px 12px;
+}
+
+.article-card__thumb-count-text {
+  color: #fff;
+  font-size: 18px;
+}
+
+.article-card--cover {
+  padding: 0;
+  overflow: hidden;
+}
+
+.article-card--cover .article-card__cover-wrap {
+  border-radius: 0;
+  height: 400px;
+  margin-bottom: 0;
+}
+
+.article-card--cover .article-card__cover {
+  height: 400px;
+}
+
+.article-card--cover .article-card__body {
+  padding: $gap;
+}

@@ -1,0 +1,22 @@
+@import '../../styles/variables.scss';
+
+.price-tag {
+  align-items: baseline;
+}
+
+.price-tag__value {
+  color: $accent;
+  font-size: $fs-lg;
+}
+
+.price-tag--sm .price-tag__value {
+  font-size: $fs-md;
+}
+
+.price-tag--lg .price-tag__value {
+  font-size: $fs-xl;
+}
+
+.price-tag__suffix {
+  margin-left: 6px;
+}

@@ -1,0 +1,30 @@
+{
+  "name": "women-fashion-b2b",
+  "version": "6.0.0",
+  "private": true,
+  "description": "女装B2B行业平台 · 认知基础设施 + 连接引擎 + 效率工具（多端 Demo）",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "build:api": "pnpm --filter @wfb/api build",
+    "build:admin": "pnpm --filter @wfb/admin build",
+    "build:weapp": "pnpm --filter @wfb/miniapp build:weapp",
+    "build:tt": "pnpm --filter @wfb/miniapp build:tt",
+    "build:alipay": "pnpm --filter @wfb/miniapp build:alipay",
+    "build:h5": "pnpm --filter @wfb/miniapp build:h5",
+    "dev:api": "pnpm --filter @wfb/api dev",
+    "dev:admin": "pnpm --filter @wfb/admin dev",
+    "dev:h5": "pnpm --filter @wfb/miniapp dev:h5",
+    "smoke": "node scripts/smoke-api.mjs",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "2.11.7",
+    "typescript": "5.9.3"
+  }
+}

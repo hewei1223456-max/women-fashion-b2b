@@ -1,0 +1,57 @@
+@import '../../../styles/variables.scss';
+
+.cs-item {
+  display: flex;
+  flex-direction: row;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+.cs-item__cover {
+  width: 220px;
+  height: 160px;
+  border-radius: $radius-sm;
+  background: $line;
+  flex-shrink: 0;
+}
+.cs-item__body {
+  flex: 1;
+  min-width: 0;
+  margin-left: $gap-sm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.cs-item__title {
+  font-size: $fs-md;
+  font-weight: 600;
+  color: $text-1;
+  line-height: 1.4;
+}
+.cs-item__meta {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-top: 8px;
+}
+.cs-item__bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.cs-item__price {
+  font-size: $fs-lg;
+  color: $accent;
+  font-weight: 600;
+}
+.cs-item__free {
+  font-size: $fs-sm;
+  color: $success;
+  font-weight: 600;
+}
+.cs-item__count {
+  font-size: $fs-xs;
+  color: $text-4;
+}

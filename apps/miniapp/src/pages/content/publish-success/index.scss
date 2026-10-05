@@ -1,0 +1,91 @@
+@import '../../../styles/variables.scss';
+
+.ps-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $gap-lg 0 $gap;
+}
+.ps-hero__icon {
+  font-size: 96px;
+  line-height: 1;
+}
+.ps-hero__title {
+  font-size: $fs-xl;
+  font-weight: 600;
+  color: $text-1;
+  margin-top: $gap-sm;
+}
+.ps-hero__sub {
+  font-size: $fs-sm;
+  color: $text-3;
+  margin-top: 8px;
+  text-align: center;
+  padding: 0 $gap;
+}
+
+.ps-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid $line;
+}
+.ps-row__key {
+  font-size: $fs-md;
+  color: $text-2;
+}
+.ps-row__val {
+  font-size: $fs-md;
+  color: $text-1;
+  max-width: 420px;
+  text-align: right;
+}
+.ps-row__val.is-ok {
+  color: $success;
+}
+.ps-row__val.is-bad {
+  color: $danger;
+}
+
+.ps-task {
+  font-size: $fs-sm;
+  color: $text-2;
+  padding: 8px 0;
+  border-bottom: 1px dashed $line;
+}
+
+.ps-tip {
+  background: $accent-light;
+  border-radius: $radius-sm;
+  padding: $gap-sm;
+  margin-top: $gap-sm;
+}
+.ps-tip__text {
+  font-size: $fs-sm;
+  color: $accent;
+  line-height: 1.6;
+}
+
+.ps-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: $gap-sm;
+}
+.ps-action {
+  padding: 18px 30px;
+  border-radius: $radius-pill;
+  background: $bg-card;
+  border: 2px solid $line;
+  color: $text-2;
+  font-size: $fs-md;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.ps-action--primary {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}

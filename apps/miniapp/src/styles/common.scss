@@ -1,0 +1,292 @@
+/**
+ * 全局工具样式 —— 所有端通用，只用 flex / 盒模型 / 颜色，
+ * 不使用小程序不支持的选择器与属性。
+ */
+@import './variables.scss';
+
+page,
+.taro_page {
+  background: $bg-page;
+  color: $text-1;
+  font-size: $fs-md;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* ---------- 布局 ---------- */
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.row-between {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.row-center {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+.wrap {
+  flex-wrap: wrap;
+}
+
+/* ---------- 卡片 / 容器 ---------- */
+.card {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+.card-flat {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+  border: 1px solid $line;
+}
+.page {
+  min-height: 100vh;
+  padding: $gap-sm;
+  box-sizing: border-box;
+}
+.page-safe {
+  min-height: 100vh;
+  padding: $gap-sm;
+  padding-bottom: 160px;
+  box-sizing: border-box;
+}
+
+/* ---------- 文字 ---------- */
+.t1 {
+  color: $text-1;
+}
+.t2 {
+  color: $text-2;
+}
+.t3 {
+  color: $text-3;
+}
+.brand {
+  color: $brand;
+}
+.accent {
+  color: $accent;
+}
+.bold {
+  font-weight: 600;
+}
+.f-xs {
+  font-size: $fs-xs;
+}
+.f-sm {
+  font-size: $fs-sm;
+}
+.f-md {
+  font-size: $fs-md;
+}
+.f-lg {
+  font-size: $fs-lg;
+}
+.f-xl {
+  font-size: $fs-xl;
+}
+.f-xxl {
+  font-size: $fs-xxl;
+}
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ellipsis-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88px;
+  border-radius: $radius-pill;
+  font-size: $fs-lg;
+  font-weight: 600;
+  border: none;
+  line-height: 1;
+}
+.btn-primary {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  color: #fff;
+}
+.btn-accent {
+  background: linear-gradient(135deg, $accent 0%, #ff8f5e 100%);
+  color: #fff;
+}
+.btn-ghost {
+  background: $bg-card;
+  color: $brand;
+  border: 2px solid $brand;
+}
+.btn-plain {
+  background: #f0f2f7;
+  color: $text-2;
+}
+.btn-sm {
+  height: 60px;
+  font-size: $fs-sm;
+  padding: 0 $gap-sm;
+}
+.btn-block {
+  width: 100%;
+}
+.btn-disabled {
+  opacity: 0.45;
+}
+
+/* ---------- 标签 ---------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: $radius-pill;
+  font-size: $fs-xs;
+  background: $brand-light;
+  color: $brand;
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+}
+.tag-accent {
+  background: $accent-light;
+  color: $accent;
+}
+.tag-gray {
+  background: #f2f4f8;
+  color: $text-3;
+}
+.tag-success {
+  background: #e7f8ef;
+  color: $success;
+}
+.tag-outline {
+  background: transparent;
+  border: 1px solid $line;
+  color: $text-2;
+}
+
+/* ---------- 头像 ---------- */
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: $line;
+}
+.avatar-sm {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: $line;
+}
+.avatar-lg {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: $line;
+}
+
+/* ---------- 分割 / 占位 ---------- */
+.divider {
+  height: 1px;
+  background: $line;
+  margin: $gap-sm 0;
+}
+.empty {
+  padding: 120px 0;
+  text-align: center;
+  color: $text-3;
+  font-size: $fs-sm;
+}
+.loading {
+  padding: 60px 0;
+  text-align: center;
+  color: $text-3;
+  font-size: $fs-sm;
+}
+
+/* ---------- 表单 ---------- */
+.field {
+  background: $bg-card;
+  border-radius: $radius-sm;
+  padding: $gap-sm;
+  margin-bottom: $gap-sm;
+}
+.field-label {
+  font-size: $fs-sm;
+  color: $text-2;
+  margin-bottom: $gap-xs;
+}
+.input {
+  height: 80px;
+  font-size: $fs-md;
+  color: $text-1;
+  width: 100%;
+}
+.textarea {
+  width: 100%;
+  min-height: 240px;
+  font-size: $fs-md;
+  color: $text-1;
+  line-height: 1.6;
+}
+
+/* ---------- 瀑布流 ---------- */
+.waterfall {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+.waterfall-col {
+  flex: 1;
+  min-width: 0;
+}
+.waterfall-col:first-child {
+  margin-right: $gap-xs;
+}
+
+/* ---------- 安全区 ---------- */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.fixed-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $bg-card;
+  border-top: 1px solid $line;
+  padding: $gap-sm $gap;
+  padding-bottom: calc(#{$gap-sm} + env(safe-area-inset-bottom));
+  z-index: 100;
+}

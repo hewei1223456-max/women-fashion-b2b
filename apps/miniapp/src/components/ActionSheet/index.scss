@@ -1,0 +1,73 @@
+@import '../../styles/variables.scss';
+
+.action-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.action-sheet__mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: $bg-mask;
+}
+
+.action-sheet__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $bg-page;
+  border-top-left-radius: $radius-lg;
+  border-top-right-radius: $radius-lg;
+  padding-top: $gap-xs;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.action-sheet__title {
+  display: block;
+  text-align: center;
+  padding: $gap-sm 0;
+}
+
+.action-sheet__item {
+  background: $bg-card;
+  padding: $gap-sm 0;
+}
+
+.action-sheet__item + .action-sheet__item {
+  border-top: 1px solid $line;
+}
+
+.action-sheet__label {
+  font-size: $fs-md;
+  color: $text-1;
+}
+
+.action-sheet__label.is-danger {
+  color: $danger;
+}
+
+.action-sheet__desc {
+  margin-top: 4px;
+}
+
+.action-sheet__gap {
+  height: $gap-xs;
+  background: transparent;
+}
+
+.action-sheet__cancel {
+  margin-top: $gap-xs;
+}
+
+.action-sheet__cancel .action-sheet__label {
+  color: $text-2;
+}

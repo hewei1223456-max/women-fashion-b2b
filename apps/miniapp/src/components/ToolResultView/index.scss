@@ -1,0 +1,142 @@
+@import '../../styles/variables.scss';
+
+.tool-result {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap;
+  box-shadow: $shadow-sm;
+}
+
+.tool-result__head {
+  margin-bottom: $gap-xs;
+}
+
+.tool-result__notice {
+  background: $accent-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+  margin-bottom: $gap-xs;
+}
+
+.tool-result__notice--info {
+  background: $brand-light;
+}
+
+.tool-result__notice-text {
+  color: $text-2;
+  line-height: 1.5;
+}
+
+.tool-result__text-wrap {
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-sm;
+}
+
+.tool-result__text {
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.tool-result__copy {
+  margin-top: $gap-sm;
+  align-self: flex-start;
+  background: $brand-light;
+  border-radius: $radius-pill;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+}
+
+.tool-result__copy-text {
+  color: $brand;
+  font-size: $fs-xs;
+}
+
+.tool-result__image-wrap {
+  margin-top: $gap-xs;
+}
+
+.tool-result__video {
+  margin-top: $gap-xs;
+}
+
+.tool-result__video-url {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.tool-result__items {
+  margin-top: $gap-xs;
+}
+
+.tool-result__item {
+  display: flex;
+  flex-direction: row;
+  padding: $gap-sm 0;
+  border-bottom: 1px solid $line;
+}
+
+.tool-result__item-index {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $brand-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $gap-xs;
+  flex-shrink: 0;
+}
+
+.tool-result__item-index-text {
+  color: $brand;
+  font-size: $fs-xs;
+  font-weight: 600;
+}
+
+.tool-result__item-row {
+  margin-bottom: 6px;
+}
+
+.tool-result__item-key {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tool-result__item-value {
+  line-height: 1.6;
+}
+
+.tool-result__attachments {
+  margin-top: $gap-xs;
+}
+
+.tool-result__attachment {
+  display: block;
+  margin-top: 6px;
+}
+
+.tool-result__recommend {
+  margin-top: $gap;
+}
+
+.tool-result__recommend-title {
+  display: block;
+  margin-bottom: $gap-xs;
+}
+
+.tool-result__empty {
+  padding: 100px $gap;
+  background: $bg-card;
+  border-radius: $radius;
+}
+
+.tool-result__empty-icon {
+  font-size: 80px;
+  line-height: 1;
+  margin-bottom: $gap-sm;
+  opacity: 0.85;
+}

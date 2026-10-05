@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "noEmit": true,
+    "declaration": false,
+    "isolatedModules": true,
+    "types": ["@tarojs/taro", "@types/react", "@types/webpack-env"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      // monorepo 内 apps/admin 使用 React 19，pnpm 会把 @types/react@19 提升到
+      // node_modules/.pnpm/node_modules/@types/react，导致 @tanstack/react-query 的 d.ts
+      // 解析到 React 19 的类型，与本端 React 18.3.1 的 ReactNode 不兼容。
+      // 这里显式把 react 的类型锁到本端 18.3.12（构建走 babel，不受影响）。
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"]
+    }
+  },
+  "include": ["./src", "./types", "./config"],
+  "exclude": ["node_modules", "dist"]
+}

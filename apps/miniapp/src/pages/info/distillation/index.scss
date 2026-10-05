@@ -1,0 +1,62 @@
+@import '../../../styles/variables.scss';
+
+.ds-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: $gap-xs;
+}
+.ds-chip {
+  padding: 8px 22px;
+  border-radius: $radius-pill;
+  background: $bg-card;
+  color: $text-2;
+  font-size: $fs-sm;
+  margin: 0 $gap-xs $gap-xs 0;
+}
+.ds-chip.is-active {
+  background: $brand;
+  color: #fff;
+}
+
+.ds-item {
+  display: flex;
+  flex-direction: row;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+.ds-item__cover {
+  width: 180px;
+  height: 240px;
+  border-radius: $radius-sm;
+  background: $line;
+  flex-shrink: 0;
+}
+.ds-item__body {
+  flex: 1;
+  min-width: 0;
+  margin-left: $gap-sm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.ds-item__title {
+  font-size: $fs-md;
+  font-weight: 600;
+  color: $text-1;
+  line-height: 1.4;
+}
+.ds-item__summary {
+  font-size: $fs-sm;
+  color: $text-3;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.ds-item__meta {
+  font-size: $fs-xs;
+  color: $text-4;
+  margin-top: $gap-xs;
+}

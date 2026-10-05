@@ -1,0 +1,78 @@
+@import '../../../styles/variables.scss';
+
+.teleprompter__quick {
+  margin-top: 6px;
+}
+
+.teleprompter__preview-btn {
+  margin-top: $gap-sm;
+}
+
+.teleprompter__entry {
+  margin-top: $gap-sm;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius-pill;
+  padding: $gap-xs 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teleprompter__entry-text {
+  color: #fff;
+  font-size: $fs-sm;
+  font-weight: 600;
+}
+
+/* ---------- 全屏提词 ---------- */
+.teleprompter {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #0d0f14;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
+
+.teleprompter__body {
+  flex: 1;
+  height: 0;
+}
+
+.teleprompter__scroll {
+  height: 100%;
+  padding: $gap-lg $gap;
+}
+
+.teleprompter__text {
+  color: #f5f6f8;
+  line-height: 1.8;
+  padding: $gap 0 400px;
+  display: block;
+}
+
+.teleprompter__end {
+  height: 400px;
+}
+
+.teleprompter__controls {
+  background: rgba(255, 255, 255, 0.06);
+  padding: $gap-xs $gap $gap;
+}
+
+.teleprompter__row {
+  padding: 8px 0;
+}
+
+.teleprompter__ctrl {
+  color: #fff;
+  font-size: $fs-sm;
+}
+
+.teleprompter__value {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: $fs-xs;
+}

@@ -1,0 +1,63 @@
+@import '../../styles/variables.scss';
+
+.quota-hint {
+  background: $brand-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+  margin-bottom: $gap-sm;
+}
+
+.quota-hint--free {
+  background: #e7f8ef;
+}
+
+.quota-hint--out {
+  background: $accent-light;
+}
+
+.quota-hint__text {
+  color: $text-2;
+  line-height: 1.5;
+}
+
+.quota-hint__strong {
+  color: $accent;
+  font-weight: 600;
+  font-size: $fs-sm;
+}
+
+.quota-hint__sub {
+  display: block;
+  margin-top: 4px;
+  color: $text-3;
+}
+
+.quota-hint__link {
+  font-size: $fs-xs;
+  color: $brand;
+}
+
+.quota-hint__upgrade {
+  background: linear-gradient(135deg, $accent 0%, #ff8f5e 100%);
+  border-radius: $radius-pill;
+  padding: 8px 20px;
+}
+
+.quota-hint__upgrade-text {
+  color: #fff;
+  font-size: $fs-xs;
+  font-weight: 600;
+}
+
+.quota-hint__track {
+  margin-top: 10px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+}
+
+.quota-hint__bar {
+  height: 8px;
+  border-radius: 4px;
+}

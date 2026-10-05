@@ -1,0 +1,46 @@
+@import '../../styles/variables.scss';
+
+.toast-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-wrap--inline {
+  position: relative;
+  z-index: 1;
+  padding: $gap-sm 0;
+}
+
+.toast-wrap__mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.toast-box {
+  background: rgba(23, 25, 35, 0.86);
+  border-radius: $radius;
+  padding: $gap-sm $gap;
+  max-width: 60%;
+}
+
+.toast-box__icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: $gap-xs;
+}
+
+.toast-box__text {
+  color: #fff;
+  text-align: center;
+  line-height: 1.5;
+}

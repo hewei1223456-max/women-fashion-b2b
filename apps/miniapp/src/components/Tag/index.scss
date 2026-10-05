@@ -1,0 +1,14 @@
+@import '../../styles/variables.scss';
+
+.tag--styled {
+  border: 1px solid transparent;
+}
+
+.tag--md {
+  padding: 8px 20px;
+  font-size: $fs-sm;
+}
+
+.tag__text {
+  line-height: 1.2;
+}

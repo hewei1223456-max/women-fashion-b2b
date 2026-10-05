@@ -1,0 +1,85 @@
+@import '../../styles/variables.scss';
+
+.tools-hub__banner {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-xs;
+}
+
+.tools-hub__banner-title {
+  color: #fff;
+  font-size: $fs-lg;
+}
+
+.tools-hub__banner-desc {
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.tools-hub__banner-btn {
+  flex-shrink: 0;
+  margin-left: $gap-sm;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: $radius-pill;
+  padding: 10px 22px;
+}
+
+.tools-hub__banner-btn-text {
+  color: #fff;
+  font-size: $fs-xs;
+}
+
+.tools-hub__grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.tools-hub__cell {
+  width: 48.5%;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+
+.tools-hub__icon-wrap {
+  width: 88px;
+  height: 88px;
+  border-radius: $radius-sm;
+  background: $brand-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $gap-xs;
+}
+
+.tools-hub__icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.tools-hub__name {
+  display: block;
+  font-size: $fs-md;
+}
+
+.tools-hub__desc {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.4;
+  height: 62px;
+}
+
+.tools-hub__foot {
+  margin-top: $gap-xs;
+  align-items: center;
+}
+
+.tools-hub__arrow {
+  flex-shrink: 0;
+}

@@ -1,0 +1,25 @@
+@import '../../styles/variables.scss';
+
+.list-empty {
+  padding: 80px $gap;
+}
+
+.list-empty__icon {
+  font-size: 76px;
+  line-height: 1;
+  margin-bottom: $gap-sm;
+}
+
+.list-empty__text {
+  text-align: center;
+}
+
+.list-empty__desc {
+  margin-top: 6px;
+  text-align: center;
+}
+
+.list-empty__retry {
+  margin-top: $gap;
+  padding: 0 $gap;
+}

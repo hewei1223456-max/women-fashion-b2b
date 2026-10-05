@@ -1,0 +1,15 @@
+@import '../../../styles/variables.scss';
+
+.tools-watermark__actions {
+  margin-top: $gap-sm;
+}
+
+.tools-watermark__clear {
+  margin-left: $gap-xs;
+}
+
+.tools-watermark__tip {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.5;
+}

@@ -1,0 +1,47 @@
+/**
+ * 设计变量（单位统一用 px，Taro 会按 750 设计稿自动转 rpx）
+ * 只放变量，不放选择器。
+ */
+
+/* 主色：行业「认知」属性的沉稳蓝 + 「连接」属性的暖橙 */
+$brand: #2b4acb;
+$brand-light: #eef2ff;
+$brand-dark: #1e35a0;
+$accent: #ff6b35;
+$accent-light: #fff1ea;
+
+/* 功能色 */
+$success: #12b76a;
+$warning: #f79009;
+$danger: #f04438;
+$info: #2e90fa;
+
+/* 中性色 */
+$text-1: #171923;
+$text-2: #4a5568;
+$text-3: #8b95a5;
+$text-4: #b4bcc9;
+$line: #edf0f4;
+$bg-page: #f5f6f8;
+$bg-card: #ffffff;
+$bg-mask: rgba(0, 0, 0, 0.5);
+
+/* 圆角 / 间距 / 阴影 */
+$radius-sm: 8px;
+$radius: 16px;
+$radius-lg: 24px;
+$radius-pill: 999px;
+$gap-xs: 8px;
+$gap-sm: 16px;
+$gap: 24px;
+$gap-lg: 32px;
+$shadow-sm: 0 2px 8px rgba(23, 25, 35, 0.04);
+$shadow: 0 8px 24px rgba(23, 25, 35, 0.08);
+
+/* 字号 */
+$fs-xs: 20px;
+$fs-sm: 24px;
+$fs-md: 28px;
+$fs-lg: 32px;
+$fs-xl: 36px;
+$fs-xxl: 44px;

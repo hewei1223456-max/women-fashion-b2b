@@ -1,0 +1,63 @@
+@import '../../styles/variables.scss';
+
+.comment-item {
+  padding: $gap-sm 0;
+  border-bottom: 1px solid $line;
+}
+
+.comment-item--reply {
+  border-bottom: none;
+  padding: $gap-xs 0 0;
+}
+
+.comment-item__avatar {
+  margin-right: $gap-xs;
+  flex-shrink: 0;
+}
+
+.comment-item__name {
+  font-size: $fs-sm;
+}
+
+.comment-item__body {
+  margin-top: $gap-xs;
+  padding-left: 2px;
+}
+
+.comment-item--reply .comment-item__body {
+  padding-left: 60px;
+}
+
+.comment-item__content {
+  line-height: 1.6;
+}
+
+.comment-item__actions {
+  margin-top: 6px;
+}
+
+.comment-item__action {
+  margin-right: $gap;
+}
+
+.comment-item__action-icon {
+  font-size: $fs-xs;
+  margin-right: 4px;
+}
+
+.comment-item__action-icon.is-liked {
+  opacity: 1;
+}
+
+.comment-item__replies {
+  margin-top: $gap-xs;
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: 0 $gap-sm $gap-xs;
+}
+
+.comment-item__more {
+  display: block;
+  padding: $gap-xs 0;
+  color: $brand;
+}

@@ -1,0 +1,155 @@
+# ============================================================================
+# 女装B2B行业平台 · 完整基础设施（MySQL 8 + Redis 7 + RabbitMQ + ES 8 + API）
+#
+#   docker compose -f docker/docker-compose.yml up -d             # 全部启动
+#   docker compose -f docker/docker-compose.yml up -d mysql redis # 只起基础中间件
+#   docker compose -f docker/docker-compose.yml logs -f api
+#
+# 启动后：
+#   MySQL      localhost:3306   库 women_fashion_b2b（自动执行 docker/schema.sql）
+#   Redis      localhost:6379
+#   RabbitMQ   localhost:15672  (guest/guest)
+#   ES         localhost:9200
+#   API        localhost:3100   /api/health
+#
+# 说明：Demo 模式（DATA_DRIVER=memory）不需要任何外部服务，
+#       只有在把 apps/api 切到 MySQL 时才需要本文件。
+# ============================================================================
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: wfb-mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=500
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-wfb_root_pass}
+      MYSQL_DATABASE: ${DB_NAME:-women_fashion_b2b}
+      TZ: Asia/Shanghai
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # 首次启动自动建表（22 张表 + 2 个看板视图 + 版本权益种子数据）
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-p${DB_PASSWORD:-wfb_root_pass}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: wfb-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory', '512mb', '--maxmemory-policy', 'allkeys-lru']
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: wfb-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-wfb}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-wfb_pass}
+      TZ: Asia/Shanghai
+    ports:
+      - '${RABBITMQ_PORT:-5672}:5672'
+      - '15672:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: wfb-es
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: 'false'
+      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      TZ: Asia/Shanghai
+    ports:
+      - '${ES_PORT:-9200}:9200'
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fs http://localhost:9200/_cluster/health || exit 1']
+      interval: 20s
+      timeout: 10s
+      retries: 6
+      start_period: 60s
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    container_name: wfb-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '3100'
+      DATA_DRIVER: ${DATA_DRIVER:-memory}
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-wfb_root_pass}
+      DB_NAME: ${DB_NAME:-women_fashion_b2b}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-wfb}:${RABBITMQ_PASSWORD:-wfb_pass}@rabbitmq:5672
+      ES_HOST: elasticsearch
+      ES_PORT: '9200'
+      JWT_SECRET: ${JWT_SECRET:-please-change-this-in-production}
+      JWT_EXPIRES_IN: 7d
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_DEFAULT_MODEL: ${AI_DEFAULT_MODEL:-deepseek-chat}
+      CONTENT_SECURITY_PROVIDER: ${CONTENT_SECURITY_PROVIDER:-mock}
+    ports:
+      - '${API_PORT:-3100}:3100'
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # 生产入口：HTTPS + 静态站点 + API 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: wfb-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      # H5 / PC Web 静态产物（先执行 pnpm --filter @wfb/miniapp build:h5）
+      - ../apps/miniapp/dist/h5:/usr/share/nginx/html/web:ro
+    depends_on:
+      - api
+    profiles: ['prod']
+
+volumes:
+  mysql_data:
+  redis_data:
+  rabbitmq_data:
+  es_data:

@@ -1,0 +1,308 @@
+@import '../../styles/variables.scss';
+
+.mt-xs {
+  margin-top: 8px;
+}
+
+/* ---------- 头部 ---------- */
+.home-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-xs $gap-xs $gap;
+}
+.home-head__title {
+  font-size: $fs-xxl;
+  font-weight: 600;
+  color: $text-1;
+}
+.home-head__sub {
+  font-size: $fs-sm;
+  color: $text-3;
+  margin-top: 6px;
+}
+.home-bell {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: $bg-card;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-sm;
+}
+.home-bell__icon {
+  font-size: 40px;
+  line-height: 1;
+}
+.home-bell__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 16px;
+  background: $danger;
+  color: #fff;
+  font-size: 18px;
+  line-height: 32px;
+  text-align: center;
+}
+
+/* ---------- 早报条 ---------- */
+.home-news {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius;
+  padding: $gap-sm $gap;
+  margin-bottom: $gap-sm;
+}
+.home-news__label {
+  font-size: $fs-xs;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: $radius-pill;
+  padding: 4px 14px;
+  margin-right: $gap-xs;
+  flex-shrink: 0;
+}
+.home-news__title {
+  flex: 1;
+  min-width: 0;
+  font-size: $fs-sm;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.home-news__arrow {
+  font-size: $fs-sm;
+  color: #fff;
+  margin-left: $gap-xs;
+}
+
+/* ---------- 模块入口 ---------- */
+.home-mods {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: $gap-sm;
+}
+.home-mod {
+  flex: 1;
+  min-width: 0;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-right: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+.home-mod:last-child {
+  margin-right: 0;
+}
+.home-mod__icon {
+  font-size: 44px;
+  line-height: 1;
+}
+.home-mod__name {
+  font-size: $fs-md;
+  font-weight: 600;
+  color: $text-1;
+  margin-top: $gap-xs;
+}
+.home-mod__desc {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-top: 4px;
+}
+
+/* ---------- 快捷工具 ---------- */
+.home-tools {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm $gap-xs;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+.home-tool {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $gap-xs 0;
+}
+.home-tool__icon {
+  font-size: 44px;
+  line-height: 1;
+}
+.home-tool__name {
+  font-size: $fs-xs;
+  color: $text-2;
+  margin-top: 8px;
+}
+.home-tool__quota {
+  font-size: 18px;
+  color: $text-4;
+  margin-top: 2px;
+}
+
+/* ---------- 区块标题 ---------- */
+.home-sec {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-xs 0 $gap-xs;
+}
+.home-sec__title {
+  font-size: $fs-lg;
+  font-weight: 600;
+  color: $text-1;
+}
+.home-sec__more {
+  font-size: $fs-sm;
+  color: $text-3;
+}
+.home-strategy {
+  font-size: $fs-xs;
+  color: $brand;
+  background: $brand-light;
+  border-radius: $radius-pill;
+  padding: 4px 12px;
+  margin-left: $gap-xs;
+}
+
+/* ---------- 推荐流 ---------- */
+.home-tabs {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: $gap-xs;
+}
+.home-tab {
+  font-size: $fs-md;
+  color: $text-3;
+  margin-right: $gap;
+  padding-bottom: 6px;
+}
+.home-tab.is-active {
+  color: $text-1;
+  font-weight: 600;
+  border-bottom: 4px solid $brand;
+}
+
+.hf-item {
+  display: flex;
+  flex-direction: row;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+.hf-item__cover {
+  width: 200px;
+  height: 200px;
+  border-radius: $radius-sm;
+  background: $line;
+  flex-shrink: 0;
+}
+.hf-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-left: $gap-sm;
+}
+.hf-item__title {
+  font-size: $fs-md;
+  font-weight: 600;
+  color: $text-1;
+  line-height: 1.4;
+}
+.hf-item__reason {
+  font-size: $fs-xs;
+  color: $accent;
+  margin-top: 6px;
+}
+.hf-item__meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $gap-xs;
+}
+.hf-item__author {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 0;
+}
+.hf-item__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: 8px;
+}
+.hf-item__name {
+  font-size: $fs-xs;
+  color: $text-2;
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hf-item__stats {
+  font-size: $fs-xs;
+  color: $text-3;
+}
+
+/* ---------- 热门货源 ---------- */
+.home-products {
+  white-space: nowrap;
+  margin-bottom: $gap-sm;
+}
+.home-product {
+  display: inline-block;
+  width: 260px;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-xs;
+  margin-right: $gap-xs;
+  vertical-align: top;
+  box-shadow: $shadow-sm;
+}
+.home-product__img {
+  width: 100%;
+  height: 320px;
+  border-radius: $radius-sm;
+  background: $line;
+}
+.home-product__title {
+  font-size: $fs-sm;
+  color: $text-1;
+  margin-top: $gap-xs;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.home-product__price {
+  font-size: $fs-md;
+  color: $accent;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.home-product__meta {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-top: 4px;
+}

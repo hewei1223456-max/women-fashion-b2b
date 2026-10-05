@@ -1,0 +1,28 @@
+@import '../../styles/variables.scss';
+
+.chip-select {
+  margin-bottom: $gap-sm;
+}
+
+.chip-select__item {
+  padding: 10px 24px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+}
+
+.chip-select__item.is-active {
+  background: $brand-light;
+  border: 1px solid $brand;
+}
+
+.chip-select__text {
+  font-size: $fs-sm;
+  color: $text-2;
+}
+
+.chip-select__item.is-active .chip-select__text {
+  color: $brand;
+  font-weight: 600;
+}

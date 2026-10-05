@@ -1,0 +1,51 @@
+@import '../../styles/variables.scss';
+
+.filter-bar {
+  background: $bg-card;
+  padding: 6px 0;
+}
+
+.filter-bar__group {
+  padding: 6px $gap-sm;
+}
+
+.filter-bar__label {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.filter-bar__scroll {
+  white-space: nowrap;
+}
+
+.filter-bar__row {
+  flex-direction: row;
+  align-items: center;
+}
+
+.filter-bar__chip {
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 $gap-sm;
+  margin-right: $gap-xs;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-bar__chip.is-active {
+  background: $brand-light;
+}
+
+.filter-bar__chip-text {
+  font-size: $fs-sm;
+  color: $text-2;
+  line-height: 1;
+}
+
+.filter-bar__chip.is-active .filter-bar__chip-text {
+  color: $brand;
+  font-weight: 600;
+}

@@ -1,0 +1,35 @@
+@import '../../styles/variables.scss';
+
+.empty-state {
+  padding: 100px $gap;
+}
+
+.empty-state__icon {
+  font-size: 96px;
+  line-height: 1;
+  margin-bottom: $gap-sm;
+  opacity: 0.85;
+}
+
+.empty-state__title {
+  font-weight: 600;
+}
+
+.empty-state__desc {
+  margin-top: $gap-xs;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.empty-state__actions {
+  margin-top: $gap;
+}
+
+.empty-state__secondary {
+  margin-left: $gap-xs;
+  padding: 0 $gap;
+}
+
+.empty-state .btn {
+  padding: 0 $gap;
+}
