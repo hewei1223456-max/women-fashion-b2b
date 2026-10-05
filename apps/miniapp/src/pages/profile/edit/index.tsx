@@ -8,6 +8,17 @@ import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
 import './index.scss';
 
+const CERT_LABELS: Record<string, string> = {
+  none: '未认证',
+  pending: '审核中',
+  approved: '已认证',
+  rejected: '未通过',
+};
+
+function go(url: string) {
+  Promise.resolve(Taro.navigateTo({ url })).catch(() => Taro.showToast({ title: '页面开发中，敬请期待', icon: 'none' }));
+}
+
 export default function ProfileEdit() {
   const user = useAppStore((s) => s.user);
   const setUser = useAppStore((s) => s.setUser);
@@ -183,6 +194,26 @@ export default function ProfileEdit() {
         <View className="ed-row" onClick={() => setPushEnabled((v) => !v)}>
           <Text className="ed-row__key">接收主动私信推送</Text>
           <Text className={`ed-toggle ${pushEnabled ? 'is-on' : ''}`}>{pushEnabled ? '已开启' : '已关闭'}</Text>
+        </View>
+      </View>
+
+      <View className="card">
+        <Text className="f-md bold">更多设置</Text>
+        <View className="ed-row" onClick={() => go('/pages/profile/settings')}>
+          <Text className="ed-row__key">通知与隐私设置</Text>
+          <Text className="ed-row__val">黑名单 / 接收条数 ›</Text>
+        </View>
+        <View className="ed-row" onClick={() => go('/pages/auth/certify')}>
+          <Text className="ed-row__key">企业认证</Text>
+          <Text className="ed-row__val">{CERT_LABELS[user.certStatus] ?? '未认证'} ›</Text>
+        </View>
+        <View className="ed-row" onClick={() => go('/pages/profile/collection')}>
+          <Text className="ed-row__key">我的收藏</Text>
+          <Text className="ed-row__val">›</Text>
+        </View>
+        <View className="ed-row" onClick={() => go('/pages/content/my-content')}>
+          <Text className="ed-row__key">我的内容</Text>
+          <Text className="ed-row__val">›</Text>
         </View>
       </View>
 

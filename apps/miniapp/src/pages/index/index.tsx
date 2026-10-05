@@ -8,6 +8,8 @@ import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
 import TabBar from '@/components/TabBar';
+import ListEmpty from '@/components/ListEmpty';
+import LoadMore from '@/components/LoadMore';
 import './index.scss';
 
 type HomeTab = 'recommend' | 'follow';
@@ -161,7 +163,7 @@ export default function Index() {
       <View className="home-sec">
         <View className="row">
           <Text className="home-sec__title">为你推荐</Text>
-          {strategy ? <Text className="home-strategy">{coldStart ? '冷启动·探索通道' : strategy}</Text> : null}
+          {strategy ? <Text className="home-strategy">{coldStart ? '冷启动·探索通道' : '推荐策略生效'}</Text> : null}
         </View>
         <Text className="home-sec__more" onClick={() => go('/pages/info/distillation')}>
           资料库 ›
@@ -176,18 +178,21 @@ export default function Index() {
         ))}
       </View>
 
-      {feed.isLoading && list.length === 0 ? <View className="loading">内容加载中…</View> : null}
-
-      {feed.isError && list.length === 0 ? (
-        <View className="card" onClick={() => feed.refetch()}>
-          <Text className="f-md t2">内容加载失败，请检查网络</Text>
-          <Text className="f-sm brand mt-xs">点击重试</Text>
-        </View>
+      {strategy ? (
+        <Text className="home-strategy-full ellipsis-2">
+          本次策略：{strategy}
+          {feed.data?.visitCount ? `（第 ${feed.data.visitCount} 次访问）` : ''}
+        </Text>
       ) : null}
 
-      {!feed.isLoading && !feed.isError && list.length === 0 ? (
-        <View className="empty">暂无推荐内容{tab === 'follow' ? '，先去关注几个同行吧' : ''}</View>
-      ) : null}
+      <ListEmpty
+        loading={feed.isLoading && list.length === 0}
+        error={feed.isError && list.length === 0 ? `内容加载失败：${(feed.error as Error)?.message ?? '网络异常'}` : null}
+        empty={!feed.isLoading && !feed.isError && list.length === 0}
+        emptyText={tab === 'follow' ? '还没有关注的人发布内容' : '暂无推荐内容'}
+        emptyDesc={tab === 'follow' ? '去资讯流关注几个同行，这里就会热闹起来' : '换个标签或稍后再试'}
+        onRetry={() => feed.refetch()}
+      />
 
       {list.map((item) => (
         <View key={item.id} className="hf-item" onClick={() => go(`/pages/info/detail?id=${item.id}`)}>
@@ -210,11 +215,12 @@ export default function Index() {
         </View>
       ))}
 
-      {list.length > 0 ? (
-        <View className="loading" onClick={loadMoreClick}>
-          {feed.isFetching ? '加载中…' : feed.data?.hasMore ? '点击加载更多' : '没有更多了'}
-        </View>
-      ) : null}
+      <LoadMore
+        loading={feed.isFetching && list.length > 0}
+        hasMore={feed.data?.hasMore}
+        count={list.length}
+        onLoadMore={loadMoreClick}
+      />
 
       <TabBar current="home" />
     </View>

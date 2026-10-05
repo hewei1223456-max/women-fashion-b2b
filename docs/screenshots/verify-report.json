@@ -1,0 +1,350 @@
+{
+  "base": "http://localhost:8099",
+  "api": "http://localhost:3100",
+  "at": "2026-10-05T17:26:13.770Z",
+  "passed": 23,
+  "total": 23,
+  "jsErr": 0,
+  "apiErr": [
+    "403 /api/manufacturer/contact/dashboard"
+  ],
+  "results": [
+    {
+      "name": "01-首页",
+      "url": "/pages/index/index",
+      "expect": [
+        "女装",
+        "资讯",
+        "货源",
+        "功能"
+      ],
+      "ok": true,
+      "ms": 3652,
+      "textLen": 1588,
+      "note": "命中[女装,资讯,货源,功能]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "02-资讯详情",
+      "url": "/pages/info/detail?id=1",
+      "expect": [
+        "评论",
+        "点赞",
+        "收藏"
+      ],
+      "ok": true,
+      "ms": 3574,
+      "textLen": 728,
+      "note": "命中[评论]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "03-游学资料库",
+      "url": "/pages/info/distillation",
+      "expect": [
+        "游学",
+        "期"
+      ],
+      "ok": true,
+      "ms": 3478,
+      "textLen": 386,
+      "note": "命中[游学,期]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "04-课程列表",
+      "url": "/pages/info/course",
+      "expect": [
+        "课程",
+        "讲师"
+      ],
+      "ok": true,
+      "ms": 3513,
+      "textLen": 337,
+      "note": "命中[课程,讲师]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "05-货源首页",
+      "url": "/pages/source/index",
+      "expect": [
+        "加微信",
+        "起订",
+        "货源"
+      ],
+      "ok": true,
+      "ms": 3775,
+      "textLen": 930,
+      "note": "命中[加微信,起订,货源]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "06-款详情",
+      "url": "/pages/source/detail?id=1",
+      "expect": [
+        "加微信",
+        "起订",
+        "厂家"
+      ],
+      "ok": true,
+      "ms": 3690,
+      "textLen": 680,
+      "note": "命中[加微信,起订,厂家]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "07-拼单广场",
+      "url": "/pages/source/groupbuy",
+      "expect": [
+        "拼单",
+        "成团"
+      ],
+      "ok": true,
+      "ms": 3458,
+      "textLen": 590,
+      "note": "命中[拼单,成团]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "08-订货会",
+      "url": "/pages/source/ordering-fair",
+      "expect": [
+        "订货会",
+        "报名"
+      ],
+      "ok": true,
+      "ms": 3394,
+      "textLen": 480,
+      "note": "命中[订货会,报名]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "09-工具首页",
+      "url": "/pages/tools/index",
+      "expect": [
+        "文案改写",
+        "去水印",
+        "额度"
+      ],
+      "ok": true,
+      "ms": 3406,
+      "textLen": 402,
+      "note": "命中[文案改写,去水印,额度]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "10-文案改写",
+      "url": "/pages/tools/rewrite",
+      "expect": [
+        "改写",
+        "风格",
+        "免费"
+      ],
+      "ok": true,
+      "ms": 3356,
+      "textLen": 151,
+      "note": "命中[改写,风格,免费]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "11-爆款选题",
+      "url": "/pages/tools/trending",
+      "expect": [
+        "选题",
+        "风格"
+      ],
+      "ok": true,
+      "ms": 3499,
+      "textLen": 116,
+      "note": "命中[选题,风格]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "12-提词器",
+      "url": "/pages/tools/teleprompter",
+      "expect": [
+        "提词",
+        "语速"
+      ],
+      "ok": true,
+      "ms": 3506,
+      "textLen": 76,
+      "note": "命中[提词]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "13-消息中心",
+      "url": "/pages/interaction/message-center",
+      "expect": [
+        "消息",
+        "通知",
+        "私信"
+      ],
+      "ok": true,
+      "ms": 3212,
+      "textLen": 59,
+      "note": "命中[通知,私信]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "14-话题榜",
+      "url": "/pages/topic/index",
+      "expect": [
+        "话题",
+        "热度"
+      ],
+      "ok": true,
+      "ms": 3455,
+      "textLen": 578,
+      "note": "命中[话题,热度]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "15-大店列表",
+      "url": "/pages/landmark/list",
+      "expect": [
+        "大店",
+        "营收"
+      ],
+      "ok": true,
+      "ms": 3496,
+      "textLen": 640,
+      "note": "命中[大店,营收]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "16-厂家看板",
+      "url": "/pages/manufacturer/admin",
+      "expect": [
+        "曝光",
+        "加微",
+        "转化"
+      ],
+      "ok": true,
+      "ms": 3369,
+      "textLen": 344,
+      "note": "命中[曝光,加微,转化]",
+      "errors": [],
+      "apiFails": [
+        "403 /api/manufacturer/contact/dashboard"
+      ]
+    },
+    {
+      "name": "17-我的",
+      "url": "/pages/profile/index",
+      "expect": [
+        "我的",
+        "收藏",
+        "内容"
+      ],
+      "ok": true,
+      "ms": 3369,
+      "textLen": 278,
+      "note": "命中[我的,收藏,内容]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "18-我的收藏",
+      "url": "/pages/profile/collection",
+      "expect": [
+        "收藏"
+      ],
+      "ok": true,
+      "ms": 3434,
+      "textLen": 772,
+      "note": "命中[收藏]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "19-内容发布",
+      "url": "/pages/content/publish",
+      "expect": [
+        "发布",
+        "标题",
+        "标签"
+      ],
+      "ok": true,
+      "ms": 3478,
+      "textLen": 175,
+      "note": "命中[发布,标签]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "20-内容看板",
+      "url": "/pages/content/content-analytics",
+      "expect": [
+        "浏览",
+        "数据",
+        "来源"
+      ],
+      "ok": true,
+      "ms": 3446,
+      "textLen": 76,
+      "note": "命中[浏览,数据,来源]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "21-我的内容",
+      "url": "/pages/content/my-content",
+      "expect": [
+        "全部",
+        "浏览",
+        "发布"
+      ],
+      "ok": true,
+      "ms": 3344,
+      "textLen": 153,
+      "note": "命中[全部,浏览,发布]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "22-登录页",
+      "url": "/pages/auth/login",
+      "expect": [
+        "登录",
+        "演示",
+        "账号"
+      ],
+      "ok": true,
+      "ms": 3314,
+      "textLen": 682,
+      "note": "命中[登录,演示,账号]",
+      "errors": [],
+      "apiFails": []
+    },
+    {
+      "name": "23-认证页",
+      "url": "/pages/auth/certify",
+      "expect": [
+        "认证",
+        "营业执照"
+      ],
+      "ok": true,
+      "ms": 3450,
+      "textLen": 606,
+      "note": "命中[认证,营业执照]",
+      "errors": [],
+      "apiFails": []
+    }
+  ]
+}

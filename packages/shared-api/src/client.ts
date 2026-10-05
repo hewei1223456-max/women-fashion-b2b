@@ -56,6 +56,7 @@ import type {
   SubAccount,
   TeleprompterDto,
   Topic,
+  ToolQuotaResult,
   ToolResult,
   TrendingDto,
   UnreadCount,
@@ -103,7 +104,8 @@ export interface ApiClient {
   source: {
     feed(q?: SourceFeedQuery): Promise<FeedResult<Product>>;
     detail(id: number): Promise<Product & { related: Product[]; liked: boolean; collected: boolean; followed: boolean; toolEntries: { key: string; label: string; path: string }[] }>;
-    search(q: SearchQuery): Promise<SearchResult>;
+    /** 货源筛选检索：返回货源 FeedResult（含 strategy），与综合搜索 /api/search 的 SearchResult 形状不同 */
+    search(q: SearchQuery): Promise<FeedResult<Product>>;
     manufacturers(q?: Record<string, unknown>): Promise<Paged<UserBrief & { productCount: number; contactRate: number }>>;
   };
   contact: {
@@ -164,7 +166,7 @@ export interface ApiClient {
     detail(id: number): Promise<GroupBuy>;
     join(id: number): Promise<GroupBuy>;
     quit(id: number): Promise<GroupBuy>;
-    mine(): Promise<GroupBuy[]>;
+    mine(): Promise<Paged<GroupBuy>>;
   };
   fair: {
     list(q?: Record<string, unknown>): Promise<Paged<OrderingFair>>;
@@ -187,7 +189,8 @@ export interface ApiClient {
     operationAdvice(dto: OperationAdviceDto): Promise<ToolResult>;
     teleprompter(dto: TeleprompterDto): Promise<ToolResult>;
     videoEdit(dto: { templateId: string; materialUrls: string[] }): Promise<ToolResult>;
-    quota(): Promise<{ tool: string; used: number; limit: number }[]>;
+    /** 今日各工具用量：返回 { date, userId, memberLevel, list[], ai } */
+    quota(): Promise<ToolQuotaResult>;
   };
   recommend: {
     feed(q: RecommendFeedQuery): Promise<FeedResult<ArticleSummary | Product>>;

@@ -3,6 +3,7 @@ import { Ctx, Router, createHttpServer } from './core/server';
 import { createStore, syncSequences } from './core/db';
 import { seedStore } from './core/seed';
 import { verifyToken } from './core/security';
+import { svgPlaceholder, SVG_RATIOS, type SvgRatio } from './core/placeholder';
 import { registerAuthModule } from './modules/auth/register';
 import { registerSubAccountModule } from './modules/manufacturer/subaccount';
 import { registerRecommendModule } from './modules/recommend/register';
@@ -20,6 +21,7 @@ import { registerFairModule } from './modules/fair/register';
 import { registerTopicModule } from './modules/topic/register';
 import { registerLandmarkModule } from './modules/landmark/register';
 import { registerCourseModule } from './modules/course/register';
+import { registerSourceModule } from './modules/source/register';
 import { registerAdminModule } from './modules/admin/register';
 
 /* =========================================================================
@@ -68,6 +70,8 @@ export const MODULES: ModuleRegistration[] = [
   { name: 'landmark', register: registerLandmarkModule },
   // 课程 / 游学蒸馏 / 资讯搜索
   { name: 'course', register: registerCourseModule },
+  // 资讯/货源首页流与详情（复用 recommend 规则引擎，仅做过滤映射）
+  { name: 'feed', register: registerSourceModule },
   // 管理后台（KPI 仪表盘 / 用户 / 认证 / 复审 / 重置演示数据）
   { name: 'admin', register: registerAdminModule },
 ];
@@ -115,6 +119,30 @@ export function createApp() {
       return out;
     },
     { auth: false, summary: '各表数据量统计' },
+  );
+
+  /**
+   * 演示图片：按 seed 确定性生成 SVG 占位图（**不依赖任何外部 CDN**）。
+   * 播种数据里所有 image 字段都指向这里，离线 / 内网 / CDN 不可达时界面依然完整。
+   * 上线时把图片换成 OSS 直链，本路由可直接下线。
+   *
+   * 注意：必须注册在 MODULES 之前、且路径以 /uploads 开头 ——
+   * Ctx.raw() 对字符串按 text/plain 发送，浏览器仍会按 SVG 渲染（img 标签不校验 MIME），
+   * 但如果命中下面的 staticDirs 静态目录逻辑则会 404，所以这里优先匹配。
+   */
+  router.get(
+    '/uploads/demo/img.svg',
+    (ctx) => {
+      const seed = ctx.str('seed', { fallback: 'wfb' });
+      const label = ctx.str('label');
+      const w = ctx.num('w', { fallback: 600, min: 16, max: 2000 });
+      const h = ctx.num('h', { fallback: 800, min: 16, max: 2000 });
+      const ratio = ctx.str('ratio', { fallback: 'portrait' });
+      const safeRatio = (ratio in SVG_RATIOS ? ratio : 'portrait') as SvgRatio;
+      ctx.svg(svgPlaceholder(`${seed}|${w}x${h}`, label, safeRatio));
+      return null;
+    },
+    { auth: false, summary: '演示占位图（SVG，无外部依赖）' },
   );
 
   /* ------------------------- 业务模块 ------------------------- */

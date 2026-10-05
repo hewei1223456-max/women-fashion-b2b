@@ -5,6 +5,49 @@
 
 ---
 
+## 零、最终验收结果（2026-10-06 实测）
+
+一条命令复现全部结果：**`pnpm verify`**（每项都在干净实例上跑，避免业务规则导致的假失败）
+
+| 验收项 | 命令 | 结果 |
+|---|---|---|
+| 契约包编译 | `pnpm --filter "./packages/*" run build` | ✅ 3 包 Done |
+| 后端编译 | `pnpm --filter @wfb/api run build` | ✅ 0 error TS |
+| 前端类型检查 | `pnpm --filter @wfb/miniapp run typecheck` | ✅ 0 error TS |
+| 后端全链路冒烟 | `node scripts/smoke-api.mjs`（**每次全新实例**） | ✅ **67 / 67 通过，0 失败** |
+| 微信小程序编译 | `build:weapp` | ✅ Compiled successfully |
+| 抖音小程序编译 | `build:tt` | ✅ Compiled successfully |
+| 支付宝小程序编译 | `build:alipay` | ✅ Compiled successfully |
+| H5 / PC Web 编译 | `build:h5` | ✅ Compiled successfully（含 index.html） |
+| 产物 JS 语法合法性 | `pnpm check:bundles` | ✅ 110 个文件全部合法 |
+| H5 逐页运行时校验 | `pnpm verify:pages`（Playwright + 真实 API） | ✅ **23 / 23 页面通过，0 jsError** |
+| 运营后台构建 | `pnpm --filter @wfb/admin run build` | ✅ 8 条路由 |
+| 运营后台运行时 | `pnpm verify:admin` | ✅ **8 / 8 页面通过** |
+
+**接口规模**：`GET /api/routes` 共 **116 条**路由，覆盖三大模块 + UGC 互动 + 私信通知 + 推荐搜索 + 审核 + 管理后台。
+**产物体积**：微信小程序主包 622.9 KB + 6 个分包共 199.6 KB（主包远低于 2 MB 限制）。
+**截图存档**：`docs/screenshots/` 共 32 张（H5 主链路 23 张 + PC Web 1 张 + 后台 8 张）。
+
+### 开发中修复的三个「构建成功但产物不可用」的静默故障
+
+这三个问题的共同点是**退出码 0、日志显示 Compiled successfully，但产物坏了**：
+只有运行态校验才能发现。详见 [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) 第 6 节。
+
+| # | 故障 | 症状 | 修复 |
+|---|---|---|---|
+| 1 | Taro 默认 `terser.output.quote_keys:true` + terser 5.51 把类私有字段压成 `#"name"` | H5 产物浏览器解析即 SyntaxError，整站白屏（1182 处非法 token） | 覆盖 `h5.terser.output.quote_keys:false`，新增 `scripts/check-bundles.mjs` 守门 |
+| 2 | 缺 `src/index.html` + 自定义 `h5.output.filename` | `dist/h5` 不产出 `index.html`，静态部署 404 | 补 `src/index.html`（含首屏骨架）+ 回退默认文件名 |
+| 3 | Taro H5 `setStorageSync` 把值包成 `{"data":...}` | 登录后一刷新就掉登录（token 被当畸形串发出→401→前端清 token） | 存储层对称包/拆 + `http.ts` 加 token 字符白名单 |
+
+### 演示数据的自洽性修复
+
+原播种逻辑按索引轮转分配「风格标签 / 厂家 / 发货地」，出现「休闲基础款纯棉T恤」被标成「韩系」、
+「韩系针织连衣裙」发货地是杭州（厂家在桐乡）这类**一眼假**的数据。
+已改为**由标题关键词推导风格 → 由风格反推厂家 → 发货地取厂家所在城市**，
+保证「标题 ↔ 风格标签 ↔ 厂家 ↔ 发货地」四者自洽，前端的风格/发货地筛选与推荐引擎的拿货地匹配才有意义。
+
+---
+
 ## 一、PRD 验收标准逐条对照
 
 | # | 验收项（PRD 原文） | 状态 | 实现位置 | 验证方式 |
@@ -169,20 +212,45 @@
 pnpm install
 pnpm --filter "./packages/*" run build
 
-# 1) 后端（Demo 模式，零中间件）
-pnpm dev:api
-node scripts/smoke-api.mjs              # 约 80 个用例，覆盖三大模块 + 互动 + 工具 + 推荐 + 审核 + 后台
+# 1) 一键全量验收（推荐，含浏览器运行时校验）
+pnpm dev:api &        # 后端 3100（Windows 用两个终端分别执行）
+pnpm serve:demo &     # 单端口演示服务器 8099
+pnpm verify           # 11 项全量验收
 
-# 2) 前端
-pnpm --filter @wfb/miniapp run typecheck
-pnpm --filter @wfb/miniapp run build:weapp
-pnpm --filter @wfb/miniapp run build:h5
-pnpm --filter @wfb/admin run build
-
-# 3) 人工走一遍 PRD 19.5 的完整用户旅程
-#    资讯方法论 → 底部「相关厂家款」→ 款详情 → 加微信（弹微信号 + 生成海报入口）
-#    → AI 配图工具（带入款图）→ 结果页「推荐阅读」回到资讯
+# 2) 或分步执行
+pnpm verify:fast                              # 编译 + 类型 + 全新实例冒烟
+node scripts/smoke-api.mjs http://localhost:3100
+pnpm check:bundles
+pnpm verify:pages                             # H5 逐页（截图存 docs/screenshots）
+pnpm verify:admin                             # 运营后台逐页
+pnpm evidence                                 # 打印三模块验收证据
 ```
 
-浏览器里可直接访问 `http://localhost:3100/api/routes` 查看当前所有已挂载路由，
+浏览器里可直接访问 `http://localhost:3100/api/routes` 查看当前所有已挂载路由（116 条），
 与 `docs/API.md` 对照即可确认接口覆盖度。
+
+### 手工走一遍完整用户旅程（PRD 19.5 的闭环）
+
+1. 打开 `http://localhost:8099/`，用「杭州·小满家（主理人）」演示账号登录
+2. 首页 → 点击行业早报或推荐流里的《韩系店铺夏季组货逻辑》进资讯详情
+3. 详情底部「相关厂家款」→ 进入货源款详情（**资讯→货源 联动**）
+4. 点击「加微信」→ 弹出微信号 + 4 个后续动作建议（生成海报 / 去背景 / 写文案 / 剪视频）
+5. 点「一键生成商品主图」→ 跳转 AI 配图工具，自动带入款图（**货源→功能 联动**）
+6. 工具结果页底部「推荐阅读」→ 回到资讯（**功能→资讯 联动**）
+7. 切到 `http://localhost:8099/admin/`，用「七叔（平台运营）」登录
+   → 「厂家与加微」页确认刚才的加微记录已进入看板，「推荐策略」页查看规则引擎的中间结果
+
+---
+
+## 八、最终交付清单
+
+| 类别 | 内容 |
+|---|---|
+| 后端 | `apps/api` — 116 条路由，21 个业务模块，零原生依赖，Go-live 零中间件 |
+| 移动端（一套代码四端） | `apps/miniapp` — 50 个页面（主包 26 + 6 个分包 24）、26 个共享组件 |
+| 运营后台 | `apps/admin` — 8 个页面（概览 KPI / 内容复审 / 用户 / 认证 / 厂家加微 / 推荐策略 / 内容互动） |
+| 契约层 | `packages/{shared-types,shared-utils,shared-api}` |
+| 数据库 | `docker/schema.sql` — 31 张表 + 2 个看板视图 + 版本权益种子数据 |
+| 部署 | `docker/{docker-compose.yml,api.Dockerfile,nginx.conf}` |
+| 文档 | `docs/{PRD,API,ARCHITECTURE,DEPLOY,DELIVERY}.md` + 32 张截图 |
+| 验收脚本 | `scripts/{verify-all,smoke-api,verify-pages,verify-admin,check-bundles,acceptance-evidence,serve-demo}.mjs` |

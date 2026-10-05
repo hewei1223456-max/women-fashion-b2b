@@ -36,10 +36,23 @@ pnpm dev:admin
 
 **验收自测**：
 ```bash
-node scripts/smoke-api.mjs          # 后端全链路冒烟（约 80 个用例）
+pnpm verify        # 一键全量验收：11 项，含全新实例上的后端冒烟 + 浏览器逐页运行时校验
 ```
 
-> ⚠️ 本机 3000 端口已被其它服务占用，所以本项目统一用 **3100**（API）/ **10086**（H5）/ **3101**（后台）。
+`pnpm verify` 覆盖：契约包编译 → 后端编译 → 前端 typecheck → 后端冒烟 67/67（**每次干净实例**）→
+微信/抖音/支付宝小程序 + H5 四端编译 → 产物 JS 语法校验 → H5 逐页运行时校验 23/23 → 运营后台构建。
+
+> ⚠️ 本机 3000 端口已被其它服务占用，所以本项目统一用 **3100**（API）/ **10086**（H5 dev）/ **3101**（后台）/ **8099**（单端口演示服务器）。
+
+### 只想看效果？一条命令起完整演示站
+
+```bash
+pnpm dev:api          # 后端 3100
+pnpm serve:demo       # 单端口演示服务器 8099（H5 + 后台 + /api 反代）
+#  用户端   http://localhost:8099/
+#  运营后台 http://localhost:8099/admin/
+# 需要外网访问：cloudflared tunnel --url http://localhost:8099
+```
 
 ---
 
@@ -159,12 +172,29 @@ women-fashion-b2b/
 pnpm install                                  # 安装
 pnpm --filter "./packages/*" run build        # 编译契约包（改契约后必跑）
 pnpm dev:api                                  # 后端（3100）
-pnpm dev:h5                                   # H5/PC Web（10086）
+pnpm dev:h5                                   # H5/PC Web dev（10086）
 pnpm dev:admin                                # 运营后台（3101）
+pnpm serve:demo                               # 单端口演示服务器（8099，含后台与 API 反代）
 pnpm build                                    # 全量构建
 pnpm typecheck                                # 全量类型检查
-node scripts/smoke-api.mjs                    # 后端冒烟验收
+pnpm verify                                   # ★ 一键全量验收（11 项）
+pnpm verify:fast                              # 快速验收（编译 + 类型 + 冒烟）
+pnpm smoke                                    # 后端冒烟（需 3100 在跑）
+pnpm verify:pages                             # H5 逐页浏览器校验（截图存 docs/screenshots）
+pnpm check:bundles                            # 产物 JS 语法合法性
+pnpm evidence                                 # 打印三模块验收证据
 ```
+
+## 九·补、工程防护（为什么需要额外的校验脚本）
+
+构建**成功**不等于产物**可用**。本项目在开发中真实遇到三个「退出码 0 但产物坏了」的静默故障，
+都已修掉并加了防护（细节见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 第 6 节）：
+
+| 静默故障 | 症状 | 防护 |
+|---|---|---|
+| Terser `quote_keys` 把类私有字段压成 `#"name"` | H5 产物浏览器解析即白屏 | `pnpm check:bundles` 用真正的 JS 解析器逐个校验产物 |
+| 缺 `src/index.html` + 自定义 output 文件名 | `dist/h5` 没有 index.html，部署 404 | 已补模板并回退默认文件名 |
+| Taro H5 存储把值包成 `{"data":...}` | 登录后一刷新就掉登录 | 存储层对称包/拆 + token 字符白名单校验 |
 
 ---
 

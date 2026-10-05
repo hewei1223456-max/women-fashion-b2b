@@ -4,6 +4,7 @@ import Taro, { useReachBottom } from '@tarojs/taro';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { MARKETS, PRICE_BANDS, STYLE_TAGS } from '@wfb/shared-types';
 import { api } from '@/services/request';
+import type { Product, ArticleSummary, UserBrief } from '@wfb/shared-types';
 import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
 import Tabs from '@/components/Tabs';
@@ -13,8 +14,14 @@ import UserRow from '@/components/UserRow';
 import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
 import Card from '@/components/Card';
-import { errMsg } from '@/components/utils';
+import { errMsg, asList } from '@/components/utils';
 import './index.scss';
+
+/** 单页结果条数（SearchResult 或 products-only 两种形态都兼容） */
+function pageCount(p: { products?: Product[]; articles?: ArticleSummary[]; manufacturers?: UserBrief[] }): number {
+  const products = p.products?.length ? p.products.length : asList<Product>(p).length;
+  return products + (p.articles?.length ?? 0) + (p.manufacturers?.length ?? 0);
+}
 
 const RESULT_TABS = [
   { key: 'all', label: '全部' },
@@ -39,8 +46,9 @@ export default function SourceSearch() {
     initialPageParam: 1,
     enabled: !!submitted,
     queryFn: ({ pageParam }) =>
-      api.source.search({
+      api.search.all({
         keyword: submitted,
+        board: 'all',
         style: style || undefined,
         priceBand: priceBand || undefined,
         shipFrom: shipFrom || undefined,
@@ -49,15 +57,15 @@ export default function SourceSearch() {
       }),
     getNextPageParam: (last, allPages) => {
       // SearchResult 无分页字段：用 total 与已加载条数推导
-      const loaded = allPages.reduce((n, p) => n + (p.products?.length ?? 0) + (p.articles?.length ?? 0) + (p.manufacturers?.length ?? 0), 0);
+      const loaded = allPages.reduce((n, p) => n + pageCount(p), 0);
       return last.total > 0 && loaded < last.total ? allPages.length + 1 : undefined;
     },
   });
 
   const pages = result.data?.pages ?? [];
-  const products = useMemo(() => pages.flatMap((p) => p.products ?? []), [pages]);
+  const products = useMemo(() => pages.flatMap((p) => (p.products?.length ? p.products : asList<Product>(p))), [pages]);
   const articles = useMemo(() => pages.flatMap((p) => p.articles ?? []), [pages]);
-  const manufacturers = useMemo(() => pages.flatMap((p) => p.manufacturers ?? []), [pages]);
+  const manufacturers = useMemo(() => pages.flatMap((p) => (p.manufacturers ?? []) as UserBrief[]), [pages]);
   const breakdown = pages[0]?.scoreBreakdown ?? [];
   const total = pages[0]?.total ?? 0;
   const hasMore = !!result.hasNextPage;

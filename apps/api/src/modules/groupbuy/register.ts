@@ -45,10 +45,13 @@ export function registerGroupBuyModule(router: Router, store: Store) {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .map((g) => groupBuyView(store, g, user.id));
 
+      // 拼单成功率口径：**全部拼单**（含招募中）里已成团（formed/completed）的占比。
+      // 与 /api/admin/overview 的「拼单成功率（全部拼单）」同源，避免两处口径漂移。
       const stats = {
         recruiting: rows.filter((r) => r.status === 'recruiting').length,
         formed: rows.filter((r) => r.status === 'formed').length,
         successRate: rows.length ? Math.round((rows.filter((r) => r.status === 'formed' || r.status === 'completed').length / rows.length) * 1000) / 10 : 0,
+        successRateBase: '全部拼单' as const,
       };
       return { ...pageOf(rows, page, pageSize), stats };
     },

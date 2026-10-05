@@ -1,4 +1,4 @@
-import type { Comment, CommentDto, CollectDto, FollowDto, InteractionState, LikeDto, ShareDto, User, UserBrief } from '@wfb/shared-types';
+import type { Comment, CommentDto, CollectDto, InteractionState, LikeDto, ShareDto, User, UserBrief } from '@wfb/shared-types';
 import { calcCesScore, precheckText } from '@wfb/shared-utils';
 import type { AuditLogRow, Store } from '../../core/db';
 import { all, byTimeDesc, nextId, pageOf } from '../../core/db';

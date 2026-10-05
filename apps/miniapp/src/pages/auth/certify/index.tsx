@@ -164,6 +164,12 @@ export default function Certify() {
           <View className="cf-progress__fill" style={{ width: `${Math.min(100, Math.max(2, progress))}%` }} />
         </View>
         <Text className="f-xs t3">当前进度 {progress}%（四步全部完成后进入人工审批）</Text>
+        {status.isLoading ? <Text className="f-xs t3">认证进度同步中…</Text> : null}
+        {status.isError ? (
+          <Text className="f-xs brand" onClick={() => status.refetch()}>
+            认证进度同步失败，点击重试
+          </Text>
+        ) : null}
 
         <View className="divider" />
 

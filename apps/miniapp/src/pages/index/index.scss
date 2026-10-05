@@ -177,6 +177,14 @@
   border-radius: $radius-pill;
   padding: 4px 12px;
   margin-left: $gap-xs;
+  flex-shrink: 0;
+}
+.home-strategy-full {
+  display: block;
+  font-size: 20px;
+  color: $text-4;
+  line-height: 1.5;
+  margin-bottom: $gap-xs;
 }
 
 /* ---------- 推荐流 ---------- */

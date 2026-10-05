@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ArticleSummary } from '@wfb/shared-types';
 import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
+import ListEmpty from '@/components/ListEmpty';
+import LoadMore from '@/components/LoadMore';
 import './index.scss';
 
 type StatusKey = 'all' | 'pending' | 'approved' | 'rejected';
@@ -134,16 +136,15 @@ export default function ContentManage() {
         </View>
       </View>
 
-      {query.isLoading && list.length === 0 ? <View className="loading">加载中…</View> : null}
-
-      {query.isError && list.length === 0 ? (
-        <View className="card" onClick={() => query.refetch()}>
-          <Text className="f-md t2">加载失败（{(query.error as Error)?.message ?? '网络异常'}）</Text>
-          <Text className="f-sm brand mt-xs">点击重试</Text>
-        </View>
-      ) : null}
-
-      {!query.isLoading && !query.isError && filtered.length === 0 ? <View className="empty">该状态下暂无内容</View> : null}
+      <ListEmpty
+        loading={query.isLoading && list.length === 0}
+        error={query.isError && list.length === 0 ? `加载失败：${(query.error as Error)?.message ?? '网络异常'}` : null}
+        empty={!query.isLoading && !query.isError && filtered.length === 0}
+        emptyIcon="🧾"
+        emptyText={status === 'all' ? '还没有可管理的内容' : '该状态下暂无内容'}
+        emptyDesc="审核中 / 已通过 / 未通过的内容都会在这里汇总"
+        onRetry={() => query.refetch()}
+      />
 
       {filtered.map((item) => (
         <View key={item.id} className="ct-item">
@@ -188,11 +189,15 @@ export default function ContentManage() {
         </View>
       ))}
 
-      {list.length > 0 ? (
-        <View className="loading" onClick={() => (query.data?.hasMore && !query.isFetching ? setPage((p) => p + 1) : undefined)}>
-          {query.isFetching ? '加载中…' : query.data?.hasMore ? '点击加载更多' : '没有更多了'}
-        </View>
-      ) : null}
+      <LoadMore
+        loading={query.isFetching && list.length > 0}
+        hasMore={query.data?.hasMore}
+        count={list.length}
+        onLoadMore={() => {
+          if (query.isFetching || !query.data?.hasMore) return;
+          setPage((p) => p + 1);
+        }}
+      />
     </View>
   );
 }

@@ -3,6 +3,7 @@ import { calcCesScore, freshnessBoost, styleMatch } from '@wfb/shared-utils';
 import type { ArticleRow, BehaviorRow, Store } from '../core/db';
 import { nextId } from '../core/db';
 import { toUserBrief } from '../core/security';
+import { pushNotification as pushNotificationRaw } from '../modules/notification/service';
 
 /* =========================================================================
  * 平台公共能力（跨模块复用）
@@ -65,22 +66,34 @@ export interface NotifyInput {
   targetId?: number;
 }
 
+/**
+ * 写通知 —— **统一复用 notification 域的 implements（api-ugc）**，
+ * 保证「通知行的形状」全站只有一份实现（actor 只存 { id }，出参再补 UserBrief）。
+ * 这里只做一个签名适配层（actor: User → actorId），方便功能板块/加微/拼团调用。
+ */
 export function pushNotification(store: Store, input: NotifyInput): Notification {
-  const id = nextId(store, 'notifications');
-  const row: Notification = {
-    id,
+  const row = pushNotificationRaw(store, {
     userId: input.userId,
     type: input.type,
     title: input.title,
     body: input.body,
-    actor: input.actor ? (toUserBrief(input.actor as User) as UserBrief) : undefined,
+    actorId: input.actor?.id,
     targetType: input.targetType,
     targetId: input.targetId,
+    // 系统/审核类通知允许自己触发自己（例如管理后台复审后通知作者本人）
+    allowSelf: !input.actor,
+  });
+  if (row) return row;
+  // 被规则跳过时返回一个只读的回显对象，调用方无需判空
+  return {
+    id: 0,
+    userId: input.userId,
+    type: input.type,
+    title: input.title,
+    body: input.body,
     isRead: false,
     createdAt: new Date().toISOString(),
-  };
-  store.notifications.set(id, row);
-  return row;
+  } as Notification;
 }
 
 /* ------------------------------ 行为埋点 ------------------------------ */

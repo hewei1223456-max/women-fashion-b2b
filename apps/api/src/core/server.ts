@@ -155,11 +155,29 @@ export class Ctx {
     this.send(payload, statusCode);
   }
 
+  /** 直接返回 SVG（演示占位图等），带正确的 Content-Type 与缓存头 */
+  svg(markup: string, cacheSeconds = 86400) {
+    if (this.res.writableEnded) return;
+    this.res.writeHead(200, {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': `public, max-age=${cacheSeconds}, immutable`,
+      'X-Request-Id': this.id,
+      'Access-Control-Allow-Origin': this.headers.origin ?? '*',
+    });
+    this.res.end(markup);
+  }
+
   private send(payload: unknown, statusCode: number) {
     if (this.res.writableEnded) return;
-    const body = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    const isString = typeof payload === 'string';
+    const looksLikeSvg = isString && (payload as string).trimStart().startsWith('<svg');
+    const body = isString ? (payload as string) : JSON.stringify(payload);
     this.res.writeHead(statusCode, {
-      'Content-Type': typeof payload === 'string' ? 'text/plain; charset=utf-8' : 'application/json; charset=utf-8',
+      'Content-Type': looksLikeSvg
+        ? 'image/svg+xml; charset=utf-8'
+        : isString
+          ? 'text/plain; charset=utf-8'
+          : 'application/json; charset=utf-8',
       'X-Request-Id': this.id,
       'X-Response-Time': `${Date.now() - this.startedAt}ms`,
       'Access-Control-Allow-Origin': this.headers.origin ?? '*',
@@ -378,6 +396,8 @@ function readBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {
 async function tryStatic(ctx: Ctx, dirs: { prefix: string; dir: string }[]): Promise<boolean> {
   for (const d of dirs) {
     if (!ctx.path.startsWith(d.prefix)) continue;
+    // 动态演示图由路由处理（/uploads/demo/img.svg），不要当成静态文件去找
+    if (ctx.path.startsWith('/uploads/demo/')) continue;
     const rel = ctx.path.slice(d.prefix.length).replace(/^\/+/, '');
     // 防目录穿越
     const full = path.resolve(d.dir, rel);

@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Comment } from '@wfb/shared-types';
 import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
+import ListEmpty from '@/components/ListEmpty';
+import LoadMore from '@/components/LoadMore';
 import './index.scss';
 
 type SortKey = 'hot' | 'time';
@@ -58,14 +60,15 @@ export default function CommentManage() {
           <Text className="f-lg bold">评论管理</Text>
           <Text className="f-sm t3">选择一篇内容，集中回复与删除评论</Text>
         </View>
-        {mine.isLoading ? <View className="loading">内容加载中…</View> : null}
-        {mine.isError ? (
-          <View className="card" onClick={() => mine.refetch()}>
-            <Text className="f-md t2">内容加载失败（{(mine.error as Error)?.message ?? '网络异常'}）</Text>
-            <Text className="f-sm brand mt-xs">点击重试</Text>
-          </View>
-        ) : null}
-        {!mine.isLoading && !mine.isError && rows.length === 0 ? <View className="empty">还没有内容</View> : null}
+        <ListEmpty
+          loading={mine.isLoading}
+          error={mine.isError ? `内容加载失败：${(mine.error as Error)?.message ?? '网络异常'}` : null}
+          empty={!mine.isLoading && !mine.isError && rows.length === 0}
+          emptyIcon="🗂️"
+          emptyText="还没有内容"
+          emptyDesc="发布内容后即可在这里管理评论"
+          onRetry={() => mine.refetch()}
+        />
         {rows.length > 0 ? (
           <View className="card">
             {rows.map((r) => (
@@ -125,16 +128,15 @@ export default function CommentManage() {
         </Text>
       </View>
 
-      {comments.isLoading ? <View className="loading">评论加载中…</View> : null}
-
-      {comments.isError ? (
-        <View className="card" onClick={() => comments.refetch()}>
-          <Text className="f-md t2">评论加载失败（{(comments.error as Error)?.message ?? '网络异常'}）</Text>
-          <Text className="f-sm brand mt-xs">点击重试</Text>
-        </View>
-      ) : null}
-
-      {!comments.isLoading && !comments.isError && list.length === 0 ? <View className="empty">还没有评论</View> : null}
+      <ListEmpty
+        loading={comments.isLoading && list.length === 0}
+        error={comments.isError ? `评论加载失败：${(comments.error as Error)?.message ?? '网络异常'}` : null}
+        empty={!comments.isLoading && !comments.isError && list.length === 0}
+        emptyIcon="💬"
+        emptyText="还没有评论"
+        emptyDesc="读者评论后可以在这里回复或删除"
+        onRetry={() => comments.refetch()}
+      />
 
       {list.length > 0 ? (
         <View className="card">
@@ -174,11 +176,15 @@ export default function CommentManage() {
         </View>
       ) : null}
 
-      {comments.data?.hasMore ? (
-        <View className="loading" onClick={() => setPage((p) => p + 1)}>
-          加载更多评论
-        </View>
-      ) : null}
+      <LoadMore
+        loading={comments.isFetching && list.length > 0}
+        hasMore={comments.data?.hasMore}
+        count={list.length}
+        onLoadMore={() => {
+          if (comments.isFetching || !comments.data?.hasMore) return;
+          setPage((p) => p + 1);
+        }}
+      />
 
       <View className="fixed-bottom">
         {replyTo ? (

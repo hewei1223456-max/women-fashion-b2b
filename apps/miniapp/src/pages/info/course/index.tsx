@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import type { Course } from '@wfb/shared-types';
 import { compactNumber } from '@wfb/shared-utils';
 import { api } from '@/services/request';
+import ListEmpty from '@/components/ListEmpty';
+import LoadMore from '@/components/LoadMore';
 import './index.scss';
 
 export default function CourseList() {
@@ -46,16 +48,15 @@ export default function CourseList() {
         ))}
       </View>
 
-      {query.isLoading && list.length === 0 ? <View className="loading">课程加载中…</View> : null}
-
-      {query.isError && list.length === 0 ? (
-        <View className="card" onClick={() => query.refetch()}>
-          <Text className="f-md t2">课程加载失败（{(query.error as Error)?.message ?? '网络异常'}）</Text>
-          <Text className="f-sm brand mt-xs">点击重试</Text>
-        </View>
-      ) : null}
-
-      {!query.isLoading && !query.isError && visible.length === 0 ? <View className="empty">该分类下暂无课程</View> : null}
+      <ListEmpty
+        loading={query.isLoading && list.length === 0}
+        error={query.isError && list.length === 0 ? `课程加载失败：${(query.error as Error)?.message ?? '网络异常'}` : null}
+        empty={!query.isLoading && !query.isError && visible.length === 0}
+        emptyIcon="🎓"
+        emptyText={category === '全部' ? '暂无课程' : `「${category}」分类下暂无课程`}
+        emptyDesc="讲师课程持续上新"
+        onRetry={() => query.refetch()}
+      />
 
       {visible.map((c) => (
         <View
@@ -83,11 +84,15 @@ export default function CourseList() {
         </View>
       ))}
 
-      {list.length > 0 ? (
-        <View className="loading" onClick={() => (query.data?.hasMore && !query.isFetching ? setPage((p) => p + 1) : undefined)}>
-          {query.isFetching ? '加载中…' : query.data?.hasMore ? '点击加载更多' : '没有更多了'}
-        </View>
-      ) : null}
+      <LoadMore
+        loading={query.isFetching && list.length > 0}
+        hasMore={query.data?.hasMore}
+        count={list.length}
+        onLoadMore={() => {
+          if (query.isFetching || !query.data?.hasMore) return;
+          setPage((p) => p + 1);
+        }}
+      />
     </View>
   );
 }

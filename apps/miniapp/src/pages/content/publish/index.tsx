@@ -250,6 +250,20 @@ export default function Publish() {
       </View>
       <Text className="f-xs t3">{typeHint}</Text>
 
+      {draftIdParam > 0 && drafts.isError ? (
+        <View className="card" onClick={() => drafts.refetch()}>
+          <Text className="f-sm t2">草稿加载失败，无法回填（{(drafts.error as Error)?.message ?? '网络异常'}）</Text>
+          <Text className="f-sm brand">点击重试</Text>
+        </View>
+      ) : null}
+
+      {editId > 0 && editDetail.isError ? (
+        <View className="card" onClick={() => editDetail.refetch()}>
+          <Text className="f-sm t2">原内容加载失败，无法回填（{(editDetail.error as Error)?.message ?? '网络异常'}）</Text>
+          <Text className="f-sm brand">点击重试</Text>
+        </View>
+      ) : null}
+
       <View className="card mt-xs">
         <Input
           className="pb-title-input"

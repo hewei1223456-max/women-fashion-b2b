@@ -245,7 +245,13 @@ function toArticleSummary(store: Store, row: ArticleRow, reason?: string): Artic
 
 export function buildInfoFeed(store: Store, q: RecommendQuery): RecommendFeedResult<ArticleSummary> {
   const visit = resolveVisitState(store, q.userId, q.visitCountHeader);
-  const styleTags = q.styleTags;
+  const profile = q.userId ? store.users.get(q.userId) : undefined;
+  /**
+   * 画像兜底放在引擎内（而不是各 register 里）：显式入参优先，缺省时回落登录用户画像。
+   * 这样 /api/recommend/feed 与 /api/info/feed、/api/source/feed 等直接调用 service 的入口
+   * 对同一用户 + 同一 query 得到完全一致的排序与 strategy。
+   */
+  const styleTags = q.styleTags.length ? q.styleTags : ((profile?.styleTags ?? []) as StyleTag[]);
   /** 无任何行为 + 无风格偏好 = 新用户，走热门通道 */
   const hotChannel = !visit.hasBehavior && styleTags.length === 0;
   const weights = visit.coldStart && !hotChannel ? INFO_COLD_WEIGHTS : INFO_WEIGHTS;
@@ -291,12 +297,17 @@ export function buildInfoFeed(store: Store, q: RecommendQuery): RecommendFeedRes
   const pageItems = diversified.slice((q.page - 1) * q.pageSize, q.page * q.pageSize);
   const minStyles = minDistinctInWindows(diversified, styleOf, DIVERSITY_WINDOW);
   const pageStyles = new Set(pageItems.map(styleOf)).size;
-  const pageWindow = pageItems.slice(0, DIVERSITY_WINDOW);
-  const windowStyles = new Set(pageWindow.map(styleOf)).size;
-  const avgStyle = avg(pageItems.map((r) => r.style));
-  const avgCes = avg(pageItems.map((r) => r.ces));
-  const avgHeat = avg(pageItems.map((r) => r.heat));
-  const avgFresh = avg(pageItems.map((r) => r.fresh));
+  /**
+   * 策略文案口径：固定取「排序头窗」（diversified 前 10 条），不随 page/pageSize 变化。
+   * 这样 /api/recommend/feed（按请求 pageSize 分页）与 /api/info/feed、/api/source/feed
+   * （先取全量再按 tab 过滤分页）对同一份排序输出完全相同的 strategy 数值，避免两处口径漂移。
+   */
+  const headWindow = diversified.slice(0, Math.min(DIVERSITY_WINDOW, diversified.length));
+  const windowStyles = new Set(headWindow.map(styleOf)).size;
+  const avgStyle = avg(headWindow.map((r) => r.style));
+  const avgCes = avg(headWindow.map((r) => r.ces));
+  const avgHeat = avg(headWindow.map((r) => r.heat));
+  const avgFresh = avg(headWindow.map((r) => r.fresh));
 
   const strategy = [
     hotChannel
@@ -306,7 +317,7 @@ export function buildInfoFeed(store: Store, q: RecommendQuery): RecommendFeedRes
         : `已收敛第${visit.visitCount}次访问`,
     `风格匹配${round(avgStyle).toFixed(2)}×${weights.style}`,
     `CES热度${round(avgCes).toFixed(1)}(归一${round(avgHeat).toFixed(2)}·新鲜度${round(avgFresh).toFixed(2)})×${weights.heat}`,
-    `打散窗口风格${windowStyles}/${pageWindow.length || 0}(下限${DIVERSITY_MIN_STYLES})`,
+    `打散窗口风格${windowStyles}/${headWindow.length || 0}(下限${DIVERSITY_MIN_STYLES})`,
     `候选${candidates.length}篇`,
   ].join(' → ');
 
@@ -344,6 +355,7 @@ export function buildInfoFeed(store: Store, q: RecommendQuery): RecommendFeedRes
       heatNormalization: 'log(1+CES)/log(1+maxCES) × (0.55 + 0.45×新鲜度)',
       freshnessHalfLifeDays: 3,
       diversify: { windowSize: DIVERSITY_WINDOW, minDistinctStyles: DIVERSITY_MIN_STYLES },
+      metricsWindow: `排序头窗前 ${DIVERSITY_WINDOW} 条（不随 page/pageSize 变化，保证各入口 strategy 口径一致）`,
       coldStartRule: `前${COLD_START_VISITS}次访问混合${COLD_START_MIX.min}-${COLD_START_MIX.max}种风格，第${COLD_START_VISITS + 1}次起收敛`,
       appliedStyleTags: styleTags,
       candidateCount: candidates.length,
@@ -394,9 +406,11 @@ export function recentConversionByManufacturer(store: Store): Map<number, { cont
 
 export function buildSourceFeed(store: Store, q: RecommendQuery): RecommendFeedResult<Product> {
   const visit = resolveVisitState(store, q.userId, q.visitCountHeader);
-  const styleTags = q.styleTags;
-  const userBand = q.priceBand;
-  const userShipFrom = q.shipFrom;
+  const profile = q.userId ? store.users.get(q.userId) : undefined;
+  /** 画像兜底（同资讯流）：显式入参优先，缺省回落价格带 / 拿货地画像 */
+  const styleTags = q.styleTags.length ? q.styleTags : ((profile?.styleTags ?? []) as StyleTag[]);
+  const userBand = q.priceBand || profile?.priceBand || undefined;
+  const userShipFrom = q.shipFrom || profile?.sourcingCities?.[0] || undefined;
   const hotChannel = !visit.hasBehavior && styleTags.length === 0 && !userBand && !userShipFrom;
 
   const recentByProduct = recentContactsByProduct(store);
@@ -469,13 +483,14 @@ export function buildSourceFeed(store: Store, q: RecommendQuery): RecommendFeedR
   const pageItems = diversified.slice((q.page - 1) * q.pageSize, q.page * q.pageSize);
   const minStyles = minDistinctInWindows(diversified, styleOf, DIVERSITY_WINDOW);
   const minShips = minDistinctInWindows(diversified, shipOf, DIVERSITY_WINDOW);
-  const pageWindow = pageItems.slice(0, DIVERSITY_WINDOW);
-  const windowStyles = new Set(pageWindow.map(styleOf)).size;
-  const windowShips = new Set(pageWindow.map(shipOf)).size;
-  const avgStyle = avg(pageItems.map((r) => r.style));
-  const avgMatch = avg(pageItems.map((r) => r.matchScore));
-  const avgConversion = avg(pageItems.map((r) => r.conversion));
-  const avgRate = avg(pageItems.map((r) => r.conversionRate));
+  /** 策略文案口径同资讯流：固定取排序头窗，不随 page/pageSize 变化 */
+  const headWindow = diversified.slice(0, Math.min(DIVERSITY_WINDOW, diversified.length));
+  const windowStyles = new Set(headWindow.map(styleOf)).size;
+  const windowShips = new Set(headWindow.map(shipOf)).size;
+  const avgStyle = avg(headWindow.map((r) => r.style));
+  const avgMatch = avg(headWindow.map((r) => r.matchScore));
+  const avgConversion = avg(headWindow.map((r) => r.conversion));
+  const avgRate = avg(headWindow.map((r) => r.conversionRate));
 
   const strategy = [
     hotChannel
@@ -484,11 +499,11 @@ export function buildSourceFeed(store: Store, q: RecommendQuery): RecommendFeedR
         ? `冷启动第${visit.visitCount}次访问·混合${mixStyles}种风格探索`
         : `已收敛第${visit.visitCount}次访问`,
     `风格匹配${round(avgStyle).toFixed(2)}×${SOURCE_MATCH_WEIGHTS.style}`,
-    `价格带${round(avg(pageItems.map((r) => r.priceBandScore))).toFixed(2)}×${SOURCE_MATCH_WEIGHTS.priceBand}`,
-    `拿货地${round(avg(pageItems.map((r) => r.shipFromScore))).toFixed(2)}×${SOURCE_MATCH_WEIGHTS.shipFrom}`,
+    `价格带${round(avg(headWindow.map((r) => r.priceBandScore))).toFixed(2)}×${SOURCE_MATCH_WEIGHTS.priceBand}`,
+    `拿货地${round(avg(headWindow.map((r) => r.shipFromScore))).toFixed(2)}×${SOURCE_MATCH_WEIGHTS.shipFrom}`,
     `匹配度${round(avgMatch).toFixed(2)}×${SOURCE_WEIGHTS.match}`,
     `加微转化率${(round(avgRate, 4) * 100).toFixed(2)}%(近${RECENT_DAYS}日加权${round(avgConversion).toFixed(2)})×${SOURCE_WEIGHTS.conversion}`,
-    `打散窗口风格${windowStyles}/${pageWindow.length || 0}·发货地${windowShips}/${pageWindow.length || 0}`,
+    `打散窗口风格${windowStyles}/${headWindow.length || 0}·发货地${windowShips}/${headWindow.length || 0}`,
     `候选${candidates.length}款`,
   ].join(' → ');
 
@@ -530,6 +545,7 @@ export function buildSourceFeed(store: Store, q: RecommendQuery): RecommendFeedR
         minDistinctStyles: DIVERSITY_MIN_STYLES,
         minDistinctShipFrom: DIVERSITY_MIN_SHIP_FROM,
       },
+      metricsWindow: `排序头窗前 ${DIVERSITY_WINDOW} 条（不随 page/pageSize 变化，保证各入口 strategy 口径一致）`,
       coldStartRule: `前${COLD_START_VISITS}次访问混合${COLD_START_MIX.min}-${COLD_START_MIX.max}种风格，第${COLD_START_VISITS + 1}次起收敛`,
       appliedStyleTags: styleTags,
       appliedPriceBand: userBand ?? null,

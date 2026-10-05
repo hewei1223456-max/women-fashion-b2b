@@ -38,3 +38,6 @@ pnpm-debug.log*
 # 原生构建
 apps/mobile/ios/Pods/
 apps/mobile/android/.gradle/
+
+# 本地工具（内网穿透用的 cloudflared 等，按需自行下载，不入库）
+tools/

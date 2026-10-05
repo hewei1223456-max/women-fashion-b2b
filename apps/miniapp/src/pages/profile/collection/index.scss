@@ -1,0 +1,18 @@
+@import '../../../styles/variables.scss';
+
+.collection__summary {
+  padding: $gap-xs 0;
+}
+
+.collection__item {
+  margin-bottom: $gap-xs;
+}
+
+.collection__actions {
+  padding: 0 0 $gap-xs;
+  justify-content: flex-end;
+}
+
+.collection__source-btn {
+  margin-left: $gap-xs;
+}

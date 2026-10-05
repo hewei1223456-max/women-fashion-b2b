@@ -11,7 +11,7 @@ import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
 import Tag from '@/components/Tag';
 import { toastError, toastSuccess } from '@/components/Toast';
-import { errMsg, deadlineText } from '@/components/utils';
+import { errMsg, deadlineText, asList } from '@/components/utils';
 import './index.scss';
 
 const TABS = [
@@ -42,7 +42,7 @@ export default function GroupBuySquare() {
 
   const mine = useQuery({ queryKey: ['groupbuy-mine'], queryFn: () => api.groupbuy.mine(), enabled: tab === 'mine' });
 
-  const items: GroupBuy[] = tab === 'square' ? (list.data?.pages ?? []).flatMap((p) => p.list) : (mine.data ?? []);
+  const items: GroupBuy[] = tab === 'square' ? (list.data?.pages ?? []).flatMap((p) => p.list) : asList<GroupBuy>(mine.data);
   const loading = tab === 'square' ? list.isLoading : mine.isLoading;
   const error = tab === 'square' ? list.error : mine.error;
   const refetch = tab === 'square' ? () => list.refetch() : () => mine.refetch();

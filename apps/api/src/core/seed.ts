@@ -1,20 +1,30 @@
 import type { Store } from './db';
 import { nextId, syncSequences } from './db';
+import { svgPlaceholder, type SvgRatio } from './placeholder';
 
 /* =========================================================================
  * 演示数据播种（SEED）
  *
  * 目标：让 Demo 一启动就是一个「看起来已经在运营」的平台：
- *   14 个用户（店主 / 厂家 / 地标大店 / 讲师 / 运营）
- *   24 个款、30 篇内容、8 家大店、6 门课程、拼单、订货会、评论、私信、通知
+ *   18 个用户（店主 / 厂家 / 地标大店 / 讲师 / 运营 + 厂家子账号）
+ *   24 个款、30+ 篇内容、8 家大店、6 门课程、拼单、订货会、评论、私信、通知
  *
- * 图片使用 picsum 稳定外链，离线环境下前端会显示占位底色，不影响布局验证。
- * 所有时间基于「播种时刻」相对生成，保证「刚刚 / 3小时前」等相对时间永远新鲜。
+ * 图片策略：**不使用外链 CDN**。演示图改由后端 `/uploads/demo/*.svg` 托管，
+ * 内容是按 seed 确定性生成的渐变占位图（见 core/placeholder.ts）。
+ * 这样离线 / 内网 / CDN 不可达时界面依然完整，不会出现一片灰色空白。
+ * 生产环境把下面的 img() 换成 OSS 直链即可。
  * ========================================================================= */
 
 const SEED = 20261005;
 const now = Date.now();
-const img = (seed: string, w = 600, h = 800) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+
+/** 生成由 /uploads 托管的演示图地址（支持按内容写文字） */
+const img = (seed: string, w = 600, h = 800, label = ''): string => {
+  const ratio: SvgRatio = w === h ? 'square' : w > h ? (w / h >= 1.6 ? 'wide' : 'landscape') : 'portrait';
+  const q = new URLSearchParams({ seed, ratio, w: String(w), h: String(h) });
+  if (label) q.set('label', label);
+  return `/uploads/demo/img.svg?${q.toString()}`;
+};
 const iso = (minutesAgo: number) => new Date(now - minutesAgo * 60_000).toISOString();
 
 /** 简易稳定伪随机，保证每次播种数据一致 */
@@ -227,13 +237,54 @@ export function seedStore(store: Store): void {
   const MF_IDS = [mf1, mf2, mf3, mf4];
   const MF_STYLES: Record<number, string> = { [mf1]: '法式', [mf2]: '韩系', [mf3]: '新中式', [mf4]: '休闲' };
   const CITIES = ['广州', '桐乡', '深圳', '杭州'];
+  /** 厂家 → 发货地，保证「发货地」与厂家所在地一致（拿货地匹配算法才有意义） */
+  const MF_CITY: Record<number, string> = { [mf1]: '广州', [mf2]: '桐乡', [mf3]: '深圳', [mf4]: '杭州' };
+  /** 风格 → 最擅长该风格的厂家（厂家池只有 4 家，故一家覆盖多种风格） */
+  const MF_BY_STYLE: Record<string, number> = {
+    法式: mf1,
+    轻奢: mf1,
+    通勤: mf2,
+    韩系: mf2,
+    新中式: mf3,
+    复古: mf3,
+    休闲: mf4,
+    甜美: mf4,
+    欧美: mf4,
+  };
+  /** 标题关键词 → 风格标签（顺序即优先级，先匹配到的生效） */
+  const STYLE_FROM_TITLE: { key: string; tag: string }[] = [
+    { key: '韩系', tag: '韩系' },
+    { key: '法式', tag: '法式' },
+    { key: '新中式', tag: '新中式' },
+    { key: '轻奢', tag: '轻奢' },
+    { key: '欧美', tag: '欧美' },
+    { key: '复古', tag: '复古' },
+    { key: '港风', tag: '复古' },
+    { key: '甜美', tag: '甜美' },
+    { key: '通勤', tag: '通勤' },
+    { key: '小香风', tag: '轻奢' },
+    { key: '休闲', tag: '休闲' },
+    { key: '运动', tag: '休闲' },
+    { key: '基础款', tag: '休闲' },
+  ];
 
   const productIds: number[] = [];
   PRODUCT_TITLES.forEach((title, idx) => {
     const id = nextId(store, 'products');
     productIds.push(id);
-    const mfId = MF_IDS[idx % 4];
-    const style = (idx % 4 === 0 ? STYLE_CYCLE[idx % 9] : MF_STYLES[mfId]) as string;
+    /**
+     * 风格标签从**标题关键词**推导，而不是按索引轮转。
+     * 早期版本用 `idx % 4 === 0 ? STYLE_CYCLE[idx%9] : MF_STYLES[mfId]` 轮转，
+     * 会出现「休闲基础款纯棉T恤」被标成「韩系」这种与标题自相矛盾的脏数据。
+     *
+     * 厂家与发货地都**由风格反推**：
+     *   风格 → 最擅长该风格的厂家（MF_BY_STYLE）→ 厂家所在城市（拿货地）。
+     * 这样「标题 ↔ 风格标签 ↔ 厂家 ↔ 发货地」四者自洽，
+     * 前端的风格/发货地筛选与推荐引擎的「拿货地匹配」才有真实意义。
+     * 厂家池只有 4 家而风格有 9 种，所以厂家覆盖多种风格（现实中也是如此）。
+     */
+    const style = STYLE_FROM_TITLE.find((s) => title.includes(s.key))?.tag ?? STYLE_CYCLE[idx % STYLE_CYCLE.length];
+    const mfId = MF_BY_STYLE[style] ?? MF_IDS[idx % MF_IDS.length];
     const priceMin = [39, 59, 89, 129, 199, 259, 329, 459][idx % 8];
     const priceMax = priceMin + [20, 40, 60, 100][idx % 4];
     const viewCount = Math.round(320 + rand() * 4200);
@@ -242,12 +293,12 @@ export function seedStore(store: Store): void {
       id,
       manufacturerId: mfId,
       title,
-      images: [img(`p-${idx}-1`), img(`p-${idx}-2`), img(`p-${idx}-3`)],
+      images: [img(`p-${idx}-1`, 600, 800, title), img(`p-${idx}-2`, 600, 800, title), img(`p-${idx}-3`, 600, 800, title)],
       priceRange: `${priceMin}-${priceMax}`,
       priceMin,
       moq: [10, 20, 30, 50][idx % 4],
       styleTag: style as never,
-      shipFrom: CITIES[idx % 4],
+      shipFrom: MF_CITY[mfId] ?? CITIES[idx % 4],
       description: `${title}。源头工厂直供，支持一件代发与贴牌。面料：${['醋酸混纺', '棉麻', '天丝', '真丝混纺', '精梳棉'][idx % 5]}；版型：${['修身', '宽松', 'A字', '直筒'][idx % 4]}；现货充足，48 小时内发出。`,
       status: 'approved',
       viewCount,
@@ -286,7 +337,7 @@ export function seedStore(store: Store): void {
       city: l.city,
       annualRevenue: l.annualRevenue,
       styleDescription: l.styleDescription,
-      coverUrl: img(`landmark-${idx + 1}`, 800, 500),
+      coverUrl: img(`landmark-${idx + 1}`, 800, 500, l.shopName),
       articleCount: 3 + (idx % 4),
       followerCount: 200 + idx * 317,
       periods: l.periods,
@@ -361,8 +412,8 @@ export function seedStore(store: Store): void {
       title: a.title,
       content: a.content,
       summary: a.summary,
-      coverUrl: a.images?.[0] ?? img(`art-${id}`, 800, 600),
-      images: a.images ?? [img(`art-${id}-1`, 800, 600), img(`art-${id}-2`, 800, 600)],
+      coverUrl: a.images?.[0] ?? img(`art-${id}`, 800, 600, a.title),
+      images: a.images ?? [img(`art-${id}-1`, 800, 600, a.title), img(`art-${id}-2`, 800, 600, a.title)],
       videoUrl: a.videoUrl,
       period: a.period,
       attachments:
@@ -494,7 +545,7 @@ export function seedStore(store: Store): void {
       lecturerId: c.lecturerId,
       title: c.title,
       category: c.category,
-      coverUrl: img(`course-${i + 1}`, 800, 450),
+      coverUrl: img(`course-${i + 1}`, 800, 450, c.title),
       duration: `${30 + i * 12}分钟`,
       price: c.price,
       free: c.free,
@@ -552,7 +603,7 @@ export function seedStore(store: Store): void {
       endAt: new Date(start.getTime() + 2 * 86_400_000).toISOString(),
       theme: f.theme,
       signup: i % 2 === 0 ? '加微信 hzxx2026 报名，备注「订货会」' : '扫码进群报名（二维码见详情）',
-      coverUrl: img(`fair-${i + 1}`, 800, 450),
+      coverUrl: img(`fair-${i + 1}`, 800, 450, f.title),
       styleTags: [STYLE_CYCLE[i % 9]] as never,
       signupCount: 40 + i * 63,
       signedUp: false,

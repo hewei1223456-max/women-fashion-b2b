@@ -665,9 +665,11 @@ interface AccountMetrics {
 
 function parseAccount(accountUrl: string, platform: string): { handle: string; platformLabel: string } {
   const raw = String(accountUrl ?? '').trim();
-  const label =
-    platform === 'douyin' ? '抖音' : platform === 'shipin' ? '视频号' : '小红书';
-  const handle = /\/user\/([a-zA-Z0-9_.-]+)/.exec(raw)?.[1] ?? /@([a-zA-Z0-9_.-]+)/.exec(raw)?.[1] ?? raw.split('/').filter(Boolean).pop() ?? 'unknown';
+  const label = platform === 'douyin' ? '抖音' : platform === 'shipin' ? '视频号' : '小红书';
+  const at = /@([a-zA-Z0-9_.-]+)/.exec(raw)?.[1];
+  // 主页链接形如 /user/profile/<id>，取最后一段才是账号标识
+  const segs = raw.split(/[?#]/)[0].split('/').filter(Boolean);
+  const handle = at ?? segs[segs.length - 1] ?? 'unknown';
   return { handle, platformLabel: label };
 }
 
@@ -710,11 +712,15 @@ export function localAccountAnalysis(store: Store, input: { accountUrl: string; 
   const flavor = STYLE_FLAVOR[m.style] ?? STYLE_FLAVOR['韩系'];
   const bench = s.bench;
 
+  // 100 分 = 平台均值：<80 明显低于均值 / 80-95 略低 / 95-110 持平 / >110 优于均值
+  const verdictOf = (score: number, good: string, mid: string, bad: string) =>
+    score >= 110 ? good : score >= 95 ? mid : score >= 80 ? `略低于均值（${bad}）` : `明显${bad}`;
+
   const dims = [
-    { key: 'content', label: '内容质量', score: s.content, value: `均播 ${m.avgViews}`, benchmark: `平台均值 ${bench.avgViews}`, verdict: s.content >= 100 ? '优于平台均值' : '低于平台均值' },
+    { key: 'content', label: '内容质量', score: s.content, value: `均播 ${m.avgViews}`, benchmark: `平台均值 ${bench.avgViews}`, verdict: verdictOf(s.content, '明显优于均值', '与均值持平', '低于均值') },
     { key: 'fans', label: '粉丝规模', score: s.fans, value: `${m.followers} 粉`, benchmark: '平台中位数约 1.2 万', verdict: m.followers >= 12000 ? '腰部以上' : '尾部账号' },
-    { key: 'engagement', label: '互动效率', score: s.engagement, value: `收藏 ${m.collectRate}% / 评论 ${m.commentRate}%`, benchmark: `平台均值 ${bench.avgCollectRate}% / ${bench.avgCommentRate}%`, verdict: s.engagement >= 100 ? '互动健康' : '互动偏弱' },
-    { key: 'conversion', label: '加微转化', score: s.conversion, value: `${m.contactRate}%`, benchmark: `货源源均 ${bench.avgContactRate}%`, verdict: s.conversion >= 100 ? '转化优秀' : '转化待优化' },
+    { key: 'engagement', label: '互动效率', score: s.engagement, value: `收藏 ${m.collectRate}% / 评论 ${m.commentRate}%`, benchmark: `平台均值 ${bench.avgCollectRate}% / ${bench.avgCommentRate}%`, verdict: verdictOf(s.engagement, '互动健康', '互动正常', '互动偏弱') },
+    { key: 'conversion', label: '加微转化', score: s.conversion, value: `${m.contactRate}%`, benchmark: `货源源均 ${bench.avgContactRate}%`, verdict: verdictOf(s.conversion, '转化优秀', '转化正常', '转化偏弱') },
     { key: 'rhythm', label: '发布节奏', score: s.rhythm, value: `${m.posts} 条`, benchmark: '建议 ≥ 60 条/季', verdict: m.posts >= 60 ? '节奏稳定' : '更新不足' },
   ];
 
@@ -769,11 +775,14 @@ export function localAccountDiagnosis(store: Store, input: { accountUrl: string;
   const s = scoreAccount(store, m);
   const flavor = STYLE_FLAVOR[m.style] ?? STYLE_FLAVOR['韩系'];
 
+  const focusRatio = stableNumber(m.handle, 30, 60, 'focus');
+  const better = (v: number, base: number) => v >= base;
+
   const diagnose = [
     {
       dimension: '账号定位',
-      score: s.fans,
-      problem: `账号风格不聚焦，${m.style}相关选题只占约 ${stableNumber(m.handle, 30, 60, 'focus')}%，算法无法稳定打标`,
+      score: focusRatio,
+      problem: `账号风格不聚焦，${m.style}相关选题只占约 ${focusRatio}%，算法无法稳定打标`,
       evidence: `平台推荐引擎第一层是风格标签匹配度，标签越纯，起量越快；当前 ${m.style} 在库内容 ${s.bench.articleCount} 篇，竞争窗口仍存在`,
       action: `未来 30 天所有内容只打 ${m.style} 标签，简介改成「${flavor.person}｜${flavor.scene}」`,
       expected: '推荐精准度 +25%，自然流量占比从 40% 提到 55%',
@@ -781,15 +790,19 @@ export function localAccountDiagnosis(store: Store, input: { accountUrl: string;
     {
       dimension: '内容结构',
       score: s.content,
-      problem: `均播 ${m.avgViews}，低于平台均值 ${s.bench.avgViews}；开头 3 秒没有钩子，完读率被拉低`,
+      problem: better(m.avgViews, s.bench.avgViews)
+        ? `均播 ${m.avgViews} 已高于平台均值 ${s.bench.avgViews}，但开头 3 秒钩子不固定，爆款不可复制`
+        : `均播 ${m.avgViews}，低于平台均值 ${s.bench.avgViews}；开头 3 秒没有钩子，完读率被拉低`,
       evidence: `平台均值 ${s.bench.avgViews} 浏览、CES ${s.bench.avgCes}；内容分与互动分权重合计 55%`,
       action: `固定「钩子-证据-行动」三段式：第 1 句抛冲突（价格/踩坑），第 2 段给数字，结尾固定扣「1」`,
-      expected: `均播提升到 ${Math.round(s.bench.avgViews * 1.3)}，完读率 +18%`,
+      expected: `均播提升到 ${Math.round(Math.max(m.avgViews, s.bench.avgViews) * 1.3)}，完读率 +18%`,
     },
     {
       dimension: '互动运营',
       score: s.engagement,
-      problem: `收藏率 ${m.collectRate}%、评论率 ${m.commentRate}%，低于平台均值 ${s.bench.avgCollectRate}% / ${s.bench.avgCommentRate}%`,
+      problem: better(m.collectRate, s.bench.avgCollectRate) && better(m.commentRate, s.bench.avgCommentRate)
+        ? `收藏率 ${m.collectRate}%、评论率 ${m.commentRate}% 已达标，但评论区没有二次互动，互动分没吃满`
+        : `收藏率 ${m.collectRate}%、评论率 ${m.commentRate}%，低于平台均值 ${s.bench.avgCollectRate}% / ${s.bench.avgCommentRate}%`,
       evidence: `CES 中评论占 35%、收藏占 28%，是权重最高的两项`,
       action: '每条内容置顶一条自己的提问评论，并在 2 小时内回复前 10 条评论',
       expected: '评论率 +80%，CES 提升约 15 分',
@@ -797,10 +810,12 @@ export function localAccountDiagnosis(store: Store, input: { accountUrl: string;
     {
       dimension: '加微转化',
       score: s.conversion,
-      problem: `加微转化 ${m.contactRate}%，钩子太弱（只有「加微信」没有利益点）`,
+      problem: better(m.contactRate, s.bench.avgContactRate)
+        ? `加微转化 ${m.contactRate}% 高于货源源均 ${s.bench.avgContactRate}%，但钩子没标准化，全靠单条内容运气`
+        : `加微转化 ${m.contactRate}%，低于货源源均 ${s.bench.avgContactRate}%，钩子太弱（只有「加微信」没有利益点）`,
       evidence: `货源板块款均加微转化率 ${s.bench.avgContactRate}%，头部内容可达 12%`,
       action: `把钩子改成「加微信领 ${flavor.items[0]} 拿货价表 + 3 套搭配方案」，主页简介同步放置`,
-      expected: `加微转化率翻倍到 ${round(Math.min(20, m.contactRate * 2), 1)}%`,
+      expected: `加微转化率提升到 ${round(Math.min(20, Math.max(m.contactRate, s.bench.avgContactRate) * 1.5), 1)}%`,
     },
     {
       dimension: '发布节奏',
@@ -811,6 +826,8 @@ export function localAccountDiagnosis(store: Store, input: { accountUrl: string;
       expected: '冷启动流量池从 300 提升到 800+',
     },
   ];
+  // 诊断总分 = 五个维度健康度均值（问题越少分越高）
+  const diagScore = Math.round((diagnose.reduce((sum, d) => sum + d.score, 0) / diagnose.length) * 10) / 10;
 
   const plan = [
     { week: '第 1 周', focus: '定位与视觉统一', tasks: ['简介/头像/背景图统一为 ' + m.style + ' 风格', '把历史内容里 6 条非风格内容设为仅自己可见', '拍 3 条钩子测试素材'] },
@@ -820,7 +837,7 @@ export function localAccountDiagnosis(store: Store, input: { accountUrl: string;
   ];
 
   const text = [
-    `## 深度诊断 · @${m.handle}（综合 ${s.overall}/100）`,
+    `## 深度诊断 · @${m.handle}（综合 ${diagScore}/100）`,
     '',
     ...diagnose.flatMap((d, i) => [
       `### ${i + 1}. ${d.dimension}（${d.score}/100）`,
@@ -837,7 +854,7 @@ export function localAccountDiagnosis(store: Store, input: { accountUrl: string;
   return {
     text,
     items: [
-      { key: 'overall', label: '综合评分', value: s.overall },
+      { key: 'overall', label: '综合评分', value: diagScore },
       ...diagnose.map((d) => ({ key: d.dimension, label: d.dimension, score: d.score, problem: d.problem, evidence: d.evidence, action: d.action, expected: d.expected })),
       { key: 'plan', label: '30 天行动计划', value: plan },
     ],
@@ -1066,12 +1083,12 @@ export function localTeleprompter(input: { text: string }): ToolPayload {
  * ========================================================================= */
 
 const SHOT_TEMPLATES = [
-  { name: '开场钩子', seconds: 3, visual: '正面出镜 + 手持款特写', transition: '硬切' },
-  { name: '痛点共鸣', seconds: 4, visual: '文字卡 + 场景镜头', transition: '叠化' },
-  { name: '细节展示', seconds: 6, visual: '面料/领口/走线特写（微距）', transition: '硬切' },
-  { name: '上身效果', seconds: 6, visual: '全身镜前转身 + 走动', transition: '叠化' },
-  { name: '搭配对比', seconds: 5, visual: '同款两套搭配左右分屏', transition: '硬切' },
-  { name: '价格与行动', seconds: 4, visual: '价格角标 + 起订量字幕', transition: '硬切' },
+  { name: '开场钩子', seconds: 3, visual: '正面出镜 + 手持款特写', transition: '硬切', fallback: '这件我盯了半个月，今天摊开讲' },
+  { name: '痛点共鸣', seconds: 4, visual: '文字卡 + 场景镜头', transition: '叠化', fallback: '新店最怕压货，这批我按结构拿的' },
+  { name: '细节展示', seconds: 6, visual: '面料/领口/走线特写（微距）', transition: '硬切', fallback: '面料：醋酸混纺，垂感抗皱不起球' },
+  { name: '上身效果', seconds: 6, visual: '全身镜前转身 + 走动', transition: '叠化', fallback: '上身显瘦，通勤约会都能穿' },
+  { name: '搭配对比', seconds: 5, visual: '同款两套搭配左右分屏', transition: '硬切', fallback: '同一件换内搭，两套直接抄' },
+  { name: '价格与行动', seconds: 4, visual: '价格角标 + 起订量字幕', transition: '硬切', fallback: '拿货价 129 元，30 件起订' },
 ];
 
 export function localVideoEdit(input: { text?: string; images?: string[]; productId?: number; template?: string; videoUrl?: string }): ToolPayload {
@@ -1085,7 +1102,8 @@ export function localVideoEdit(input: { text?: string; images?: string[]; produc
     seconds: s.seconds,
     timecode: `${String(Math.floor(SHOT_TEMPLATES.slice(0, i).reduce((a, b) => a + b.seconds, 0) / 60)).padStart(2, '0')}:${String(SHOT_TEMPLATES.slice(0, i).reduce((a, b) => a + b.seconds, 0) % 60).padStart(2, '0')}`,
     visual: s.visual,
-    subtitle: (sentences[i] ?? sentences[sentences.length - 1] ?? '').slice(0, 22),
+    // 太短的残句（如只剩「129元」）用镜头默认字幕，保证每屏字幕都可读
+    subtitle: (sentences[i] && sentences[i].length >= 8 ? sentences[i] : s.fallback).slice(0, 22),
     transition: s.transition,
     bgm: i === 0 ? '前奏渐入（音量 40%）' : i === SHOT_TEMPLATES.length - 1 ? '副歌推高 + 渐弱收尾' : '主歌铺垫（音量 25%）',
   }));

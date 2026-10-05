@@ -62,3 +62,39 @@ export function certBadge(status?: CertStatus): string {
   if (status === 'pending') return '认证中';
   return '';
 }
+
+/* ============================ 响应形态归一化 ============================
+ * 后端部分接口实际返回 { list: [...] } 包装（与 client.ts 声明的数组略有出入），
+ * 这里统一兜底，保证 UI 不会因形态差异崩溃。
+ * ========================================================================= */
+
+export interface QuotaEntry {
+  /** 新版返回 key，声明里是 tool，两者都兼容 */
+  tool?: string;
+  key?: string;
+  name?: string;
+  used?: number;
+  limit?: number;
+  remaining?: number;
+  memberOnly?: boolean;
+  locked?: boolean;
+}
+
+/** 配额返回兼容：数组 或 { list: QuotaEntry[] } */
+export function normalizeQuota(data: unknown): QuotaEntry[] {
+  if (Array.isArray(data)) return data as QuotaEntry[];
+  const list = (data as { list?: unknown } | null | undefined)?.list;
+  return Array.isArray(list) ? (list as QuotaEntry[]) : [];
+}
+
+/** 按工具 key 取配额项（兼容 tool / key 字段） */
+export function quotaOf(list: QuotaEntry[], toolKey: string): QuotaEntry | undefined {
+  return list.find((q) => (q.tool ?? q.key) === toolKey);
+}
+
+/** 列表返回兼容：T[] 或 Paged<T> / { list: T[] } */
+export function asList<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  const list = (data as { list?: unknown } | null | undefined)?.list;
+  return Array.isArray(list) ? (list as T[]) : [];
+}

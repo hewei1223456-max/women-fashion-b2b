@@ -414,7 +414,7 @@ export interface Follow {
 export interface Behavior {
   id: number;
   userId: number;
-  action: 'view' | 'like' | 'collect' | 'comment' | 'share' | 'contact' | 'publish' | 'search' | 'tool';
+  action: 'view' | 'like' | 'collect' | 'comment' | 'share' | 'follow' | 'contact' | 'publish' | 'search' | 'tool';
   targetType: string;
   targetId: number;
   keyword?: string;

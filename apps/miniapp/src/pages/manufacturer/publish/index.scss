@@ -1,0 +1,51 @@
+@import '../../../styles/variables.scss';
+
+.pub__limit {
+  background: $accent-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+  margin-bottom: $gap-sm;
+}
+
+.pub__images {
+  min-height: 180px;
+}
+
+.pub__actions {
+  margin-top: $gap-sm;
+}
+
+.pub__cancel {
+  width: 200px;
+  margin-left: $gap-xs;
+  flex-shrink: 0;
+}
+
+.pub__list {
+  padding: 0 $gap $gap-xs;
+}
+
+.pub__row {
+  padding: $gap-sm 0;
+  border-bottom: 1px solid $line;
+}
+
+.pub__row-title {
+  max-width: 420px;
+}
+
+.pub__row-status {
+  flex-shrink: 0;
+}
+
+.pub__row-tags {
+  margin-top: 6px;
+}
+
+.pub__row-actions {
+  margin-top: $gap-xs;
+}
+
+.pub__row-del {
+  margin-left: $gap-xs;
+}

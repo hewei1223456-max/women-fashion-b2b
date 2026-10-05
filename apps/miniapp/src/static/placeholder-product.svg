@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff1ea"/>
+      <stop offset="100%" stop-color="#ffe0d1"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#g)"/>
+  <g fill="#e8b39a">
+    <rect x="228" y="300" width="144" height="180" rx="12" fill="none" stroke="#e8b39a" stroke-width="6"/>
+    <path d="M228 420l44-46 34 38 26-24 40 44" stroke="#e8b39a" stroke-width="6" fill="none"/>
+  </g>
+  <text x="300" y="540" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif" font-size="30" fill="#c98a6b" text-anchor="middle">款图待上传</text>
+  <text x="300" y="584" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif" font-size="22" fill="#d9a98f" text-anchor="middle">厂家可上传 1-9 张款图</text>
+</svg>

@@ -1,0 +1,52 @@
+@import '../../../styles/variables.scss';
+
+.sub__roles {
+  margin-top: $gap-xs;
+  flex-wrap: wrap;
+}
+
+.sub__role-chip {
+  background: $bg-page;
+  border-radius: $radius-pill;
+  padding: 6px 18px;
+  margin-right: $gap-xs;
+  margin-bottom: 6px;
+}
+
+.sub__create {
+  margin-top: $gap-xs;
+}
+
+.sub__form {
+  margin-top: $gap-sm;
+  text-align: left;
+}
+
+.sub-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+
+.sub-row__name {
+  font-size: $fs-md;
+  margin-right: $gap-xs;
+}
+
+.sub-row__role {
+  background: $brand-light;
+  color: $brand;
+  padding: 2px 14px;
+  border-radius: $radius-pill;
+  font-size: $fs-xs;
+}
+
+.sub-row__phone {
+  display: block;
+  margin-top: 6px;
+}

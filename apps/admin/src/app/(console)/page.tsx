@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/api-context';
 import { PageHeader, StatCard, Bar, Empty, Badge } from '@/components/AdminShell';
-import { compact, percent, ROLE_LABELS } from '@/lib/format';
+import { compact, ROLE_LABELS } from '@/lib/format';
 
 /**
  * 数据概览：对应 PRD 第十三篇「核心指标仪表盘」+ 第九篇各表统计。
@@ -61,7 +61,11 @@ export default function OverviewPage() {
         <StatCard label="用户总数" value={compact(data.users.total)} hint={`认证店主 ${data.users.shopOwner} · 厂家 ${data.users.manufacturer}`} />
         <StatCard label="地标大店" value={compact(data.users.landmark)} hint={`今日新增 ${data.users.newToday}`} />
         <StatCard label="内容总数" value={compact(data.content.total)} hint={`待审 ${data.content.pending} · 今日发布 ${data.content.publishedToday}`} />
-        <StatCard label="加微次数" value={compact(data.contacts.total)} hint={`今日 ${data.contacts.today} · 转化率 ${percent(data.contacts.rate, 2)}`} />
+        <StatCard
+          label="加微次数"
+          value={compact(data.contacts.total)}
+          hint={`今日 ${data.contacts.today} · 转化率 ${data.contacts.rate}%`}
+        />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">

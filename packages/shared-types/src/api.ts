@@ -374,6 +374,28 @@ export interface UnreadCount {
 
 /* ------------------------------ 功能板块 ------------------------------ */
 
+/** 单个工具的当日用量 */
+export interface ToolQuotaRow {
+  key: string;
+  /** 中文名（来自 TOOLS 字典） */
+  name?: string;
+  used: number;
+  /** -1 表示不限 */
+  limit: number;
+  remaining: number;
+  /** 0 额度且非会员时锁定 */
+  locked?: boolean;
+}
+
+export interface ToolQuotaResult {
+  /** 统计日期 yyyy-MM-dd */
+  date: string;
+  userId: number;
+  memberLevel: MemberLevel;
+  list: ToolQuotaRow[];
+  ai: { configured: boolean; provider: string | null; model: string | null; cacheSize: number };
+}
+
 export interface ToolResult {
   tool: string;
   /** 是否命中免费额度 */

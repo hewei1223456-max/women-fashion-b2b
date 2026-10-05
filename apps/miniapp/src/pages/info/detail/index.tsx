@@ -7,7 +7,60 @@ import { ARTICLE_TYPE_LABELS, STYLE_COLORS } from '@wfb/shared-types';
 import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
+import ListEmpty from '@/components/ListEmpty';
+import LoadMore from '@/components/LoadMore';
 import './index.scss';
+
+type MdKind = 'h1' | 'h2' | 'h3' | 'p' | 'li' | 'ol' | 'quote' | 'tr';
+
+interface MdBlock {
+  kind: MdKind;
+  text: string;
+  order?: number;
+  /** 表格行：单元格文本 */
+  cells?: string[];
+}
+
+/** 去掉 markdown 行内标记，小程序端不支持原生富文本渲染 markdown */
+function inlineText(raw: string): string {
+  return raw
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\((?:.+?)\)/g, '$1')
+    .replace(/\*\*/g, '')
+    .replace(/^\s*[-*+]\s+/, '')
+    .replace(/^\s*>\s?/, '')
+    .trim();
+}
+
+/** 轻量 markdown 分块（标题/列表/引用/表格/段落），只依赖 View + Text，跨端一致 */
+function parseMarkdown(src: string): MdBlock[] {
+  const out: MdBlock[] = [];
+  src.split(/\r?\n/).forEach((line) => {
+    const t = line.trim();
+    if (!t) return;
+    // 表格行：| a | b |，跳过分隔行 |---|---|
+    if (/^\|.*\|$/.test(t)) {
+      const cells = t
+        .slice(1, -1)
+        .split('|')
+        .map((c) => inlineText(c.trim()));
+      if (cells.every((c) => /^:?-{2,}:?$/.test(c))) return;
+      out.push({ kind: 'tr', text: cells.join(' / '), cells });
+      return;
+    }
+    if (/^###\s+/.test(t)) out.push({ kind: 'h3', text: inlineText(t.replace(/^###\s+/, '')) });
+    else if (/^##\s+/.test(t)) out.push({ kind: 'h2', text: inlineText(t.replace(/^##\s+/, '')) });
+    else if (/^#\s+/.test(t)) out.push({ kind: 'h1', text: inlineText(t.replace(/^#\s+/, '')) });
+    else if (/^>\s?/.test(t)) out.push({ kind: 'quote', text: inlineText(t) });
+    else if (/^\d+[.、)]\s*/.test(t)) {
+      const order = Number(t.match(/^(\d+)/)?.[1] ?? 0);
+      out.push({ kind: 'ol', text: inlineText(t.replace(/^\d+[.、)]\s*/, '')), order });
+    } else if (/^[-*+]\s+/.test(t)) out.push({ kind: 'li', text: inlineText(t) });
+    else out.push({ kind: 'p', text: inlineText(t) });
+  });
+  return out;
+}
 
 function go(url: string) {
   Promise.resolve(Taro.navigateTo({ url })).catch(() => {
@@ -88,6 +141,7 @@ export default function InfoDetail() {
 
   const article = detail.data;
   const isHtml = useMemo(() => !!article && /<[a-z][\s\S]*>/i.test(article.content ?? ''), [article]);
+  const blocks = useMemo(() => (isHtml ? [] : parseMarkdown(article?.content ?? '')), [isHtml, article?.content]);
   const list: Comment[] = comments.data?.list ?? [];
 
   const onShare = () => {
@@ -170,7 +224,25 @@ export default function InfoDetail() {
           {isHtml ? (
             <RichText className="ad-rich" nodes={article.content} />
           ) : (
-            <Text className="ad-content">{article.content}</Text>
+            <View className="ad-md">
+              {blocks.map((b, idx) =>
+                b.kind === 'tr' ? (
+                  <View key={`tr-${idx}`} className="md-tr">
+                    {(b.cells ?? []).map((cell, ci) => (
+                      <View key={`${cell}-${ci}`} className={`md-td ${ci === 0 ? 'is-key' : ''}`}>
+                        <Text className="md-td-text">{cell}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <View key={`${b.kind}-${idx}`} className={`md-block md-${b.kind}`}>
+                    <Text className={`md-text ${b.kind === 'h1' || b.kind === 'h2' || b.kind === 'h3' ? 'bold' : ''}`}>
+                      {b.kind === 'li' ? `• ${b.text}` : b.kind === 'ol' ? `${b.order ?? idx + 1}. ${b.text}` : b.text}
+                    </Text>
+                  </View>
+                ),
+              )}
+            </View>
           )}
 
           {article.location ? <Text className="f-xs t3">📍 {article.location}</Text> : null}
@@ -250,13 +322,14 @@ export default function InfoDetail() {
           ) : null}
         </View>
 
-        {comments.isLoading ? <View className="loading">评论加载中…</View> : null}
-        {comments.isError ? (
-          <View className="loading" onClick={() => comments.refetch()}>
-            评论加载失败，点击重试
-          </View>
-        ) : null}
-        {!comments.isLoading && !comments.isError && list.length === 0 ? <View className="empty">还没有评论，来说两句</View> : null}
+        <ListEmpty
+          loading={comments.isLoading && list.length === 0}
+          error={comments.isError ? `评论加载失败：${(comments.error as Error)?.message ?? '网络异常'}` : null}
+          empty={!comments.isLoading && !comments.isError && list.length === 0}
+          emptyIcon="💬"
+          emptyText="还没有评论，来说两句"
+          onRetry={() => comments.refetch()}
+        />
 
         {list.map((c) => (
           <View key={c.id} className="ac-item">
@@ -283,11 +356,15 @@ export default function InfoDetail() {
           </View>
         ))}
 
-        {comments.data?.hasMore ? (
-          <View className="loading" onClick={() => setCommentPage((p) => p + 1)}>
-            加载更多评论
-          </View>
-        ) : null}
+        <LoadMore
+          loading={comments.isFetching && list.length > 0}
+          hasMore={comments.data?.hasMore}
+          count={list.length}
+          onLoadMore={() => {
+            if (comments.isFetching || !comments.data?.hasMore) return;
+            setCommentPage((p) => p + 1);
+          }}
+        />
       </View>
 
       {/* 底部操作条 */}

@@ -88,13 +88,18 @@ export function buildOverview(store: Store): AdminOverview {
     shares: store.shares.size,
   };
 
-  // 曝光与加微：平台口径 = 款级 contact_count / view_count 加权（与 Product.contactRate 同源）
+  // 曝光与加微：**与 /api/manufacturer/contact/dashboard 完全同源**
+  //   曝光 = 款级 viewCount 累加；加微 = contactLogs 真实记录条数
+  //   转化率 = 加微 / 曝光 × 100（百分数数值，契约要求直接渲染 `${rate}%`，不要再乘 100）
   const exposure = products.reduce((s, p) => s + p.viewCount, 0);
-  const productContacts = products.reduce((s, p) => s + p.contactCount, 0);
-  const contactRate = exposure > 0 ? round((productContacts / exposure) * 100, 2) : 0;
+  const loggedContacts = store.contactLogs.size;
+  const contactRate = exposure > 0 ? round((loggedContacts / exposure) * 100, 2) : 0;
+  // 漏斗第二档：详情页浏览（与厂家看板同一套假设：曝光 × 22% 点击进详情）
+  const detailViews = Math.round(exposure * 0.22);
+  const detailToContactRate = detailViews > 0 ? round((loggedContacts / detailViews) * 100, 2) : 0;
   const contacts = {
     today: [...store.contactLogs.values()].filter((l) => dayKeyOf(l.contactedAt) === today).length,
-    total: store.contactLogs.size,
+    total: loggedContacts,
     rate: contactRate,
   };
 
@@ -125,6 +130,8 @@ export function buildOverview(store: Store): AdminOverview {
   const paidManufacturers = manufacturers.filter((u) => u.memberLevel !== 'manufacturer_free');
   const paidConversion = manufacturers.length ? round((paidManufacturers.length / manufacturers.length) * 100, 1) : 0;
 
+  // 拼单成功率口径：**全部拼单**（formed + completed）/ 全部拼单数。
+  // 种子数据 4 个拼单中 1 个 formed，验收期新建的招募中拼单会稀释分母，属演示数据现象而非缺陷。
   const groupBuys = all(store.groupBuys);
   const formed = groupBuys.filter((g) => g.status === 'formed' || g.status === 'completed').length;
   const groupBuyRate = groupBuys.length ? round((formed / groupBuys.length) * 100, 1) : 0;
@@ -134,11 +141,30 @@ export function buildOverview(store: Store): AdminOverview {
   const cac = 120; // Demo 无投放成本表，取行业 B2B 女装平台获客成本常量
   const ltvCac = round(ltv / cac, 2);
 
+  // KPI label 必须自解释：运营后台把 kpi[] 直接渲染成一排卡片，光看「加微转化率 0.11%」会误判业务。
+  // 两个加微指标并存，口径不同、各自可解释：
+  //   contact_conversion     = 详情页浏览 → 加微（漏斗第二档，PRD 里 8% 的行业基准线对应这一段）
+  //   contact_exposure_rate  = 曝光 → 加微（PRD 第十三篇原文口径，行业基准线约 0.1%）
   const kpi: AdminOverview['kpi'] = [
     { key: 'owner_week1_retention', label: '店主次周留存', value: retention.value, target: 30, unit: '%', pass: retention.value >= 30 },
     { key: 'manufacturer_paid_conversion', label: '厂家付费转化', value: paidConversion, target: 10, unit: '%', pass: paidConversion >= 10 },
-    { key: 'contact_conversion', label: '加微转化率', value: contactRate, target: 8, unit: '%', pass: contactRate >= 8 },
-    { key: 'groupbuy_success', label: '拼单成功率', value: groupBuyRate, target: 50, unit: '%', pass: groupBuyRate >= 50 },
+    {
+      key: 'contact_conversion',
+      label: '加微转化率（详情页浏览→加微）',
+      value: detailToContactRate,
+      target: 8,
+      unit: '%',
+      pass: detailToContactRate >= 8,
+    },
+    {
+      key: 'contact_exposure_rate',
+      label: '曝光→加微转化率',
+      value: contactRate,
+      target: 0.1,
+      unit: '%',
+      pass: contactRate >= 0.1,
+    },
+    { key: 'groupbuy_success', label: '拼单成功率（全部拼单）', value: groupBuyRate, target: 50, unit: '%', pass: groupBuyRate >= 50 },
     { key: 'dau_rate', label: '日活/注册', value: dau.value, target: 5, unit: '%', pass: dau.value >= 5 },
     { key: 'ltv_cac', label: 'LTV/CAC', value: ltvCac, target: 2, unit: '倍', pass: ltvCac >= 2 },
   ];

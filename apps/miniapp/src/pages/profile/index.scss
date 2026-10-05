@@ -1,0 +1,174 @@
+@import '../../styles/variables.scss';
+
+.profile__header {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+}
+
+.profile__avatar {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  margin-right: $gap-sm;
+}
+
+.profile__head-main {
+  justify-content: center;
+}
+
+.profile__name {
+  color: #fff;
+  font-size: $fs-xl;
+  max-width: 300px;
+}
+
+.profile__cert {
+  margin-left: $gap-xs;
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+
+.profile__badges {
+  margin-top: 6px;
+}
+
+.profile__badges .tag {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+
+.profile__styles {
+  margin-top: 6px;
+}
+
+.profile__edit {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+}
+
+.profile__stats {
+  margin-top: $gap;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: $radius-sm;
+  padding: $gap-xs 0;
+}
+
+.profile__stat {
+  flex: 1;
+}
+
+.profile__stat-value {
+  color: #fff;
+  font-size: $fs-lg;
+}
+
+.profile__stat .f-xs {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.profile__menu {
+  padding: 0 $gap;
+}
+
+.profile__menu-item {
+  height: 96px;
+  border-bottom: 1px solid $line;
+}
+
+.profile__menu-item:last-child {
+  border-bottom: none;
+}
+
+.profile__arrow {
+  font-size: $fs-xl;
+}
+
+.profile__badge {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 18px;
+  background: $danger;
+  margin-right: $gap-xs;
+}
+
+.profile__badge-text {
+  color: #fff;
+  font-size: 20px;
+}
+
+.profile__grid {
+  margin-top: $gap-xs;
+}
+
+.profile__grid-cell {
+  width: 25%;
+  padding: $gap-xs 0;
+}
+
+.profile__grid-icon {
+  font-size: 48px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.profile__tabs {
+  margin: $gap-xs 0;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.profile__list {
+  min-height: 300px;
+}
+
+.profile__draft-body {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.profile__draft-foot {
+  margin-top: $gap-xs;
+}
+
+.profile__logout {
+  margin: $gap 0 $gap-lg;
+  height: 88px;
+  border-radius: $radius-pill;
+  background: $bg-card;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile__login {
+  padding: 160px $gap;
+}
+
+.profile__login-icon {
+  font-size: 120px;
+  line-height: 1;
+  margin-bottom: $gap-sm;
+}
+
+.profile__login-title {
+  font-size: $fs-xl;
+}
+
+.profile__login-desc {
+  margin-top: $gap-xs;
+  text-align: center;
+}
+
+.profile__login-btn {
+  margin-top: $gap;
+  padding: 0 $gap-lg;
+}

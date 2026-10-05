@@ -65,6 +65,76 @@
   line-height: 1.8;
   color: $text-2;
 }
+
+/* 轻量 markdown 渲染 */
+.ad-md {
+  padding: $gap-xs 0;
+}
+.md-block {
+  margin-bottom: $gap-xs;
+}
+.md-text {
+  font-size: $fs-md;
+  line-height: 1.8;
+  color: $text-2;
+}
+.md-h1 .md-text {
+  font-size: $fs-xl;
+  color: $text-1;
+  line-height: 1.5;
+}
+.md-h2 .md-text {
+  font-size: $fs-lg;
+  color: $text-1;
+  line-height: 1.5;
+}
+.md-h3 .md-text {
+  font-size: $fs-md;
+  color: $text-1;
+  line-height: 1.6;
+}
+.md-li {
+  padding-left: $gap-sm;
+}
+.md-ol {
+  padding-left: $gap-sm;
+}
+.md-quote {
+  background: $bg-page;
+  border-left: 6px solid $brand;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+.md-quote .md-text {
+  color: $text-3;
+}
+/* markdown 表格 */
+.md-tr {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid $line;
+  padding: 8px 0;
+}
+.md-td {
+  flex: 1;
+  min-width: 0;
+  padding-right: $gap-xs;
+}
+.md-td.is-key {
+  flex: 0 0 220px;
+}
+.md-td-text {
+  font-size: $fs-sm;
+  color: $text-2;
+  line-height: 1.6;
+}
+.md-td.is-key .md-td-text {
+  color: $text-1;
+  font-weight: 600;
+}
+.md-title-gap {
+  height: 8px;
+}
 .ad-rich {
   font-size: $fs-md;
   line-height: 1.8;

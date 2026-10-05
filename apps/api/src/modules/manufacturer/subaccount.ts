@@ -123,8 +123,8 @@ function createSubUser(store: Store, owner: User, dto: CreateSubAccountDto): num
 }
 
 /**
- * SubAccount 契约含 phone：这是厂家自己团队的席位数据（厂家即数据所有者），
- * 不是「把别人的隐私返回给第三方」，因此按契约下发；其余用户信息一律不走这里。
+ * SubAccount 契约含 phone，但按 docs/ARCHITECTURE.md「对外返回用户信息一律脱敏」的硬约束，
+ * 统一掩码中间四位（138****1000）：厂家后台足够区分席位，不落地完整手机号。
  */
 function toSubAccount(store: Store, row: SubAccountRow): SubAccount {
   const u = store.users.get(row.subUserId);
@@ -134,7 +134,20 @@ function toSubAccount(store: Store, row: SubAccountRow): SubAccount {
     subUserId: row.subUserId,
     role: row.role,
     nickname: u?.nickname ?? `子账号${row.id}`,
-    phone: u?.phone,
+    phone: maskPhone(u?.phone),
     createdAt: row.createdAt,
   };
+}
+
+/**
+ * 手机号掩码：13800138000 → 138****8000；长度不足 11 位时统一返回 `***`
+ * （短号/分机号可见位太少，掩码后仍可识别，直接整体打码）。
+ * 兼容带国家码的写法（+86 138...）：取后 11 位再掩码。
+ */
+function maskPhone(phone?: string): string | undefined {
+  const digits = String(phone ?? '').replace(/\D/g, '');
+  if (!digits) return undefined;
+  const core = digits.length > 11 ? digits.slice(-11) : digits;
+  if (core.length < 11) return '***';
+  return `${core.slice(0, 3)}****${core.slice(-4)}`;
 }

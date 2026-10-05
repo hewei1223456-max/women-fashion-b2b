@@ -10,7 +10,7 @@ import { api } from '@/services/request';
 import QuotaHint from '../QuotaHint';
 import Modal from '../Modal';
 import ToolResultView from '../ToolResultView';
-import { errMsg } from '../utils';
+import { errMsg, normalizeQuota, quotaOf, isQuotaError } from '../utils';
 import './index.scss';
 
 interface Props {
@@ -44,7 +44,7 @@ export default function ToolRunner({ toolKey, toolName, form, validate, run, sub
   const [quotaOut, setQuotaOut] = useState(false);
 
   const quotaQuery = useQuery({ queryKey: ['tools-quota'], queryFn: () => api.tools.quota(), staleTime: 10_000 });
-  const entry = quotaQuery.data?.find((q) => q.tool === toolKey);
+  const entry = quotaOf(normalizeQuota(quotaQuery.data), toolKey);
   const fallbackLimit = TOOL_FREE_QUOTA[toolKey] ?? 0;
   const used = entry?.used ?? result?.quotaUsed ?? 0;
   const limit = entry?.limit ?? result?.quotaLimit ?? fallbackLimit;
@@ -65,7 +65,7 @@ export default function ToolRunner({ toolKey, toolName, form, validate, run, sub
     } catch (e) {
       const message = errMsg(e, '生成失败，请稍后重试');
       setError(message);
-      if ((e as { code?: number })?.code === 429) {
+      if (isQuotaError(e)) {
         setQuotaOut(true);
         setUpgradeVisible(true);
       }

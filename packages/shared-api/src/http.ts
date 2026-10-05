@@ -106,7 +106,11 @@ export function createRequest(opts: ApiClientOptions) {
   async function request<T>(method: HttpRequest['method'], path: string, payload?: unknown, query?: Record<string, unknown>): Promise<T> {
     const url = `${opts.baseURL.replace(/\/$/, '')}${path}${buildQuery(query)}`;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = opts.getToken?.() ?? storage.get(TOKEN_KEY) ?? undefined;
+    const rawToken = opts.getToken?.() ?? storage.get(TOKEN_KEY) ?? undefined;
+    // 防御：token 必须是 HTTP header 安全字符。历史上 Taro H5 的存储包裹问题
+    // 会把 `{"data":"eyJ..."}` 这种串当成 token 发出去，这里直接拦截并当作未登录，
+    // 避免把畸形头送到服务端（也避免服务端 401 触发前端「清 token」逻辑）。
+    const token = rawToken && /^[A-Za-z0-9._~+/-]+=*$/.test(rawToken) ? rawToken : undefined;
     if (token) headers.Authorization = `Bearer ${token}`;
 
     let res: HttpResponse<ApiEnvelope<T>>;

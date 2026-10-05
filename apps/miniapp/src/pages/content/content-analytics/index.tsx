@@ -63,6 +63,9 @@ export default function ContentAnalytics() {
   const trend = d?.trend ?? [];
   const maxViews = Math.max(1, ...trend.map((t) => t.views));
   const sources = d?.trafficSource ?? [];
+  /** 后端可能下发 0-1 的占比或 0-100 的百分数，统一按总和判断 */
+  const sourceSum = sources.reduce((acc, s) => acc + (s.percent ?? 0), 0);
+  const asPercent = (v: number) => (sourceSum > 0 && sourceSum <= 1.05 ? v * 100 : v);
 
   const metrics = d
     ? [
@@ -136,7 +139,7 @@ export default function ContentAnalytics() {
             ) : (
               <View className="ca-src">
                 {sources.map((s) => {
-                  const pct = s.percent > 1 ? s.percent : s.percent * 100;
+                  const pct = asPercent(s.percent ?? 0);
                   return (
                     <View key={s.source} className="ca-src__row">
                       <Text className="ca-src__name">{s.source}</Text>

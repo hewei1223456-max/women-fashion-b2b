@@ -196,12 +196,69 @@ pages/auth/certify                认证提交
 ## 5. 提交前自检
 
 ```bash
-pnpm --filter "./packages/*" run build   # 契约包必须先编译（apps 依赖 dist）
-pnpm --filter @wfb/api run build         # 后端类型检查 + 编译
-pnpm --filter @wfb/miniapp run typecheck # 前端类型检查
-pnpm --filter @wfb/miniapp run build:weapp  # 微信小程序必须编译通过
-pnpm --filter @wfb/miniapp run build:h5     # H5 必须编译通过
-node scripts/smoke-api.mjs               # 后端接口冒烟
+pnpm verify            # 一键全量验收（11 项，见下）
+pnpm verify:fast       # 只跑编译 + 类型检查 + 后端冒烟
+pnpm smoke             # 后端冒烟（需已有实例在 3100）
+pnpm check:bundles     # 产物 JS 语法合法性
+pnpm verify:pages      # H5 逐页浏览器运行时校验（需 3100 + 8099 在跑）
+pnpm evidence          # 打印三模块验收证据
 ```
 
+`pnpm verify` 的 11 项：契约包编译 / 后端编译 / 前端 typecheck / 后端冒烟（**每次全新实例**）/
+四端编译（weapp、tt、alipay、h5）/ 产物语法校验 / H5 逐页运行时校验 / 后台构建。
+
 **任何一端编译失败都不算完成。** 结束前必须实际运行上面的命令并把结果写进任务交付说明。
+
+---
+
+## 6. 踩过的坑（都是「看起来成功其实坏了」的静默故障，务必保留这些防护）
+
+这三类问题共同特点是：**构建退出码 0、日志说 Compiled successfully，但产物不可用**。
+它们不会被常规 CI 的「编译通过」发现，只有运行态校验或产物解析才能抓到。
+
+### 6.1 Terser 把类私有字段压成非法语法
+
+- **现象**：`dist/h5` 的 JS 里出现 `#"e"` 这种 token，浏览器解析即 `SyntaxError`，整个 H5 应用起不来；
+  而 `build:h5` 返回 0 且显示 `Compiled successfully`。
+- **根因**：Taro 4.3 的 `H5BaseConfig` 给 terser 传默认 `output.quote_keys: true`
+  （见 `@tarojs/webpack5-runner/dist/webpack/H5BaseConfig.js`），
+  在 terser 5.51.x 下会把**类私有字段名**也加引号；`@tanstack/query-core` 大量使用 `#private` 字段。
+- **修复**：`apps/miniapp/config/index.ts` 的 `h5.terser` 覆盖 `output.quote_keys: false` /
+  `keep_quoted_props: false`（`mini` 端不受影响，无需改）。
+- **防护**：`scripts/check-bundles.mjs` —— 用真正的 JS 解析器逐个解析产物。
+  ⚠️ 不要用 `node --check` 替代：小程序产物是 CJS，用它会有噪声误报。
+
+### 6.2 H5 构建不产出 index.html
+
+- **现象**：`dist/h5` 只有 `js/ css/ chunk/`，没有 `index.html`，静态部署直接 404。
+- **根因（两个叠加）**：
+  1. Taro 只在 `src/index.html` 存在时才注册 HtmlWebpackPlugin
+     （`H5WebpackPlugin.js`：`fs.existsSync(path.join(sourceDir, 'index.html'))`）——缺失时静默跳过；
+  2. 自定义 `h5.output.filename` / `miniCssExtractPluginOption.filename` 会让
+     HtmlWebpackPlugin 匹配不到唯一 chunk，同样静默不产出 HTML。
+- **修复**：新增 `apps/miniapp/src/index.html`（含首屏骨架 + 自动移除），
+  并且**不再覆盖** h5 的 output / miniCssExtract 文件名。
+
+### 6.3 H5 存储包裹导致「登录后一刷新就掉登录」
+
+- **现象**：登录成功，刷新页面后 token 消失、所有接口 401。
+- **根因**：Taro 的 H5 实现在 `setStorageSync` 时把值写成 `{"data": <原值>}`（小程序端是原生字符串）。
+  读的时候如果不拆包裹，拿到的就是 `'{"data":"eyJ..."}'`——
+  它被当成 Bearer token 发出去 → 后端 401 → 前端的 401 分支把 token 删掉。
+- **修复**：`apps/miniapp/src/services/request.ts` 的 `taroStorage` 做**对称的包/拆**处理
+  （同时兼容历史裸值），并在 `packages/shared-api/src/http.ts` 加了 token 字符白名单，
+  拒绝把畸形串当 header 发出去。
+- **防护**：`scripts/verify-pages.mjs` 里写入登录态时必须用 Taro 的包裹格式
+  `localStorage.setItem('wfb_token', JSON.stringify({ data: token }))`；
+  另外 **Taro H5 是 hash 路由**，页面地址要写成 `/#/pages/xxx/yyy`，
+  直接请求 `/pages/xxx/yyy` 只会拿到壳（这两点都曾导致「所有页面看起来都是首页」的假象）。
+
+---
+
+## 7. monorepo 的两个约定
+
+1. **契约包要先编译**：`apps/*` 通过 `main: dist/index.js` 引用 `packages/*`（Taro 的 bundler 不处理
+   工作区内的 TS 源码），但 `types` 指向 `src/index.ts`，所以类型检查永远看最新源码。
+   改了 `packages/*` 之后先跑 `pnpm --filter "./packages/*" run build`。
+2. **Windows 上调 pnpm 要用 `pnpm.cmd`**，并且 Node ≥ 20 在 `shell: false` 下不能 spawn `.cmd`
+   （会 `EINVAL`）——`scripts/verify-all.mjs` 已封装好这个差异。

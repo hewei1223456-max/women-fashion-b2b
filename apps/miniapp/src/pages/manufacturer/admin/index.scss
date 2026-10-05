@@ -1,0 +1,122 @@
+@import '../../../styles/variables.scss';
+
+.mfr-admin__kpis {
+  margin-top: $gap-xs;
+}
+
+.mfr-admin__kpi {
+  width: 25%;
+  padding: $gap-xs 0;
+}
+
+.mfr-admin__kpi-value {
+  font-size: $fs-lg;
+}
+
+.mfr-admin__funnel {
+  margin-bottom: $gap-xs;
+}
+
+.mfr-admin__funnel-track {
+  margin-top: 6px;
+  height: 24px;
+  border-radius: $radius-sm;
+  background: #f2f4f8;
+  overflow: hidden;
+}
+
+.mfr-admin__funnel-bar {
+  height: 24px;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $brand 0%, #4a63e8 100%);
+}
+
+.mfr-admin__note {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.5;
+}
+
+.mfr-admin__locked {
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-sm;
+}
+
+.mfr-admin__locked-desc {
+  display: block;
+  margin-top: 6px;
+}
+
+.mfr-admin__upgrade {
+  margin-top: $gap-xs;
+  width: 220px;
+}
+
+.mfr-admin__chart {
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.mfr-admin__chart-col {
+  flex: 1;
+}
+
+.mfr-admin__chart-bars {
+  height: 170px;
+  align-items: flex-end;
+}
+
+.mfr-admin__chart-bar {
+  width: 16px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, $brand 0%, #7d92ff 100%);
+}
+
+.mfr-admin__chart-bar--accent {
+  background: linear-gradient(180deg, $accent 0%, #ffb08f 100%);
+  margin-left: 4px;
+}
+
+.mfr-admin__chart-label {
+  font-size: 18px;
+  color: $text-3;
+  margin-top: 6px;
+}
+
+.mfr-admin__quota-track {
+  margin-top: $gap-xs;
+  height: 14px;
+  border-radius: 7px;
+  background: #f2f4f8;
+  overflow: hidden;
+}
+
+.mfr-admin__quota-bar {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, $accent 0%, #ff8f5e 100%);
+}
+
+.mfr-admin__quota-btn {
+  margin-top: $gap-sm;
+  width: 240px;
+}
+
+.mfr-admin__plan {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.mfr-admin__plan.is-current {
+  background: $brand-light;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-xs;
+  margin-bottom: $gap-xs;
+}
+
+.mfr-admin__plan-desc {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.5;
+}

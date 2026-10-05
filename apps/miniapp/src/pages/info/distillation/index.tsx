@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import type { ArticleSummary } from '@wfb/shared-types';
 import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
+import ListEmpty from '@/components/ListEmpty';
+import LoadMore from '@/components/LoadMore';
 import './index.scss';
 
 const PERIODS = [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -47,16 +49,15 @@ export default function Distillation() {
         ))}
       </View>
 
-      {query.isLoading && list.length === 0 ? <View className="loading">加载中…</View> : null}
-
-      {query.isError && list.length === 0 ? (
-        <View className="card" onClick={() => query.refetch()}>
-          <Text className="f-md t2">资料加载失败（{(query.error as Error)?.message ?? '网络异常'}）</Text>
-          <Text className="f-sm brand mt-xs">点击重试</Text>
-        </View>
-      ) : null}
-
-      {!query.isLoading && !query.isError && list.length === 0 ? <View className="empty">该期数暂无蒸馏资料</View> : null}
+      <ListEmpty
+        loading={query.isLoading && list.length === 0}
+        error={query.isError && list.length === 0 ? `资料加载失败：${(query.error as Error)?.message ?? '网络异常'}` : null}
+        empty={!query.isLoading && !query.isError && list.length === 0}
+        emptyIcon="📚"
+        emptyText={period === 0 ? '资料库暂无内容' : `第${period}期暂无蒸馏资料`}
+        emptyDesc="游学蒸馏资料持续更新中"
+        onRetry={() => query.refetch()}
+      />
 
       {list.map((item) => (
         <View
@@ -90,11 +91,15 @@ export default function Distillation() {
         </View>
       ))}
 
-      {list.length > 0 ? (
-        <View className="loading" onClick={() => (query.data?.hasMore && !query.isFetching ? setPage((p) => p + 1) : undefined)}>
-          {query.isFetching ? '加载中…' : query.data?.hasMore ? '点击加载更多' : '没有更多了'}
-        </View>
-      ) : null}
+      <LoadMore
+        loading={query.isFetching && list.length > 0}
+        hasMore={query.data?.hasMore}
+        count={list.length}
+        onLoadMore={() => {
+          if (query.isFetching || !query.data?.hasMore) return;
+          setPage((p) => p + 1);
+        }}
+      />
     </View>
   );
 }

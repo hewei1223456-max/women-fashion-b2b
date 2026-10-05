@@ -11,7 +11,7 @@ import type {
   Visibility,
 } from '@wfb/shared-types';
 import { CONTENT_TYPES, STYLE_TAGS, VISIBILITIES } from '@wfb/shared-types';
-import { calcCesScore, lastDays, midpointOfRange, parseTopics, precheckText, seededRandom } from '@wfb/shared-utils';
+import { lastDays, midpointOfRange, parseTopics, precheckText, seededRandom } from '@wfb/shared-utils';
 import type { ArticleRow, AuditLogRow, DraftRow, ProductRow, Store } from '../../core/db';
 import { all, byTimeDesc, nextId, pageOf } from '../../core/db';
 import { Errors } from '../../core/server';
@@ -172,6 +172,13 @@ export function publishContent(store: Store, user: User, dto: PublishContentDto)
   const visibility = normalizeVisibility(dto.visibility);
   const coverUrl = String(dto.coverUrl ?? '').trim() || images[0] || `https://picsum.photos/seed/wfb-${Date.now()}/800/600`;
 
+  // 关联款校验（先校验再落库）：资讯板块可选，货源板块必关联款
+  let productId = dto.productId ? Number(dto.productId) : undefined;
+  if (productId && !store.products.has(productId)) throw Errors.notFound('关联的款不存在');
+  if (board === 'source' && !productId && dto.publishAs !== 'product') {
+    throw Errors.badRequest('货源板块发布必须关联款：请传 productId，或传 publishAs=product 由平台自动建款');
+  }
+
   // 1) 同步文本审核 + 2) 异步媒体任务号
   const id = nextId(store, 'articles');
   const media = [...images, ...(dto.videoUrl ? [String(dto.videoUrl)] : [])];
@@ -185,8 +192,6 @@ export function publishContent(store: Store, user: User, dto: PublishContentDto)
   }
 
   // 3) publishAs=product：同步落一条款，货源流 / 搜索 / 拼单可复用
-  let productId = dto.productId ? Number(dto.productId) : undefined;
-  if (productId && !store.products.has(productId)) throw Errors.notFound('关联的款不存在');
   if (dto.publishAs === 'product' && !productId) {
     const pid = nextId(store, 'products');
     const priceRange = String(dto.priceRange ?? '面议');

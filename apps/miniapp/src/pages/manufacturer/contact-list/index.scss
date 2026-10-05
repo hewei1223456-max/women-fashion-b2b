@@ -1,0 +1,29 @@
+@import '../../../styles/variables.scss';
+
+.contact-row {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+
+.contact-row__foot {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid $line;
+}
+
+.contact-row__status {
+  flex-shrink: 0;
+}
+
+.contact-row__form {
+  margin-top: $gap-sm;
+  text-align: left;
+}
+
+.contact-row__textarea {
+  margin-top: $gap-xs;
+  min-height: 180px;
+}

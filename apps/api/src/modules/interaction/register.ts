@@ -1,4 +1,4 @@
-import type { CollectDto, CommentDto, FollowDto, LikeDto, ShareDto, TargetType } from '@wfb/shared-types';
+import type { CollectDto, CommentDto, LikeDto, ShareDto, TargetType } from '@wfb/shared-types';
 import type { Router } from '../../core/server';
 import type { Store } from '../../core/db';
 import {
