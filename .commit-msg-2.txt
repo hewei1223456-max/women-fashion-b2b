@@ -1,7 +1,0 @@
-feat(scripts): 新增 tunnel.mjs 统一管理内网穿透（快速/命名隧道 + 状态落盘）
-
-- 快速隧道零配置，自动从 cloudflared 日志里提取公网地址并写入 .tunnel.json
-- 命名隧道支持固定域名（--name/--hostname），避免每次重启换 URL
-- 提供 --status / --stop，演示结束可立即关闭公开访问
-- 状态文件读取剥离 PowerShell 5.1 写入的 BOM
-- docs/DEPLOY.md 路径 B 改为脚本化流程，并写明「小程序端不能用穿透域名」等三条注意事项
