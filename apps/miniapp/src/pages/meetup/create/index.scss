@@ -88,6 +88,96 @@
   margin-top: $gap-sm;
 }
 
+/* ---------- 封面图 ---------- */
+.mt-create__upload {
+  margin-top: $gap-xs;
+  height: 240px;
+  border: 2px dashed #d7dce5;
+  border-radius: $radius;
+  background: $bg-page;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.mt-create__upload-plus {
+  font-size: 60px;
+  color: $text-4;
+  line-height: 1.1;
+}
+
+.mt-create__upload-tip {
+  font-size: $fs-sm;
+  color: $text-3;
+  margin-top: $gap-xs;
+}
+
+.mt-create__cover-wrap {
+  margin-top: $gap-xs;
+}
+
+.mt-create__cover {
+  width: 100%;
+  height: 320px;
+  border-radius: $radius;
+  background: $bg-page;
+}
+
+.mt-create__cover-actions {
+  margin-top: $gap-xs;
+}
+
+.mt-create__cover-clear {
+  margin-left: $gap;
+}
+
+/* ---------- 活动流程编辑 ---------- */
+.mt-create__agenda-head {
+  margin-bottom: $gap-xs;
+  align-items: center;
+}
+
+.mt-create__agenda-row {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.mt-create__agenda-line {
+  align-items: center;
+}
+
+.mt-create__agenda-time {
+  width: 150px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.mt-create__agenda-title {
+  margin-left: $gap-xs;
+}
+
+.mt-create__agenda-del {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+  color: $danger;
+}
+
+.mt-create__agenda-desc {
+  margin-top: $gap-xs;
+  background: #f7f8fb;
+}
+
+.mt-create__agenda-add {
+  margin-top: $gap-sm;
+}
+
+.mt-create__agenda-tip {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.6;
+}
+
 .mt-create__tip {
   display: block;
   text-align: center;

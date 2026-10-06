@@ -523,6 +523,21 @@ export function seedStore(store: Store): void {
     // CES 评分：评论35% + 收藏28% + 完读18% + 分享12% + 点赞7%（第六篇）
     const ces =
       commentCount * 0.35 + collectCount * 0.28 + viewCount * 0.18 + shareCount * 0.12 + likeCount * 0.07;
+    /**
+     * 资讯封面的宽高比要**多样化**。
+     *
+     * 首页是小红书式双列瀑布流，卡片高度取决于封面比例；
+     * 早期所有封面都是 800×600（比例 0.75），两列几乎没有错落（只有标题行数差异带来的 38px），
+     * 看起来就像「等高网格」而不是瀑布流。这里按 4 种真实常见的封面比例轮换：
+     *   竖版 3:4（小红书/抖音主流）、方形 1:1、横版 4:3、宽横版 16:9
+     */
+    const coverShapes: { w: number; h: number }[] = [
+      { w: 600, h: 800 },
+      { w: 750, h: 750 },
+      { w: 800, h: 600 },
+      { w: 900, h: 506 },
+    ];
+    const coverShape = coverShapes[id % coverShapes.length];
     store.articles.set(id, {
       id,
       authorId: a.authorId,
@@ -531,8 +546,11 @@ export function seedStore(store: Store): void {
       title: a.title,
       content: a.content,
       summary: a.summary,
-      coverUrl: a.images?.[0] ?? img(`art-${id}`, 800, 600, a.title),
-      images: a.images ?? [img(`art-${id}-1`, 800, 600, a.title), img(`art-${id}-2`, 800, 600, a.title)],
+      coverUrl: a.images?.[0] ?? img(`art-${id}`, coverShape.w, coverShape.h, a.title),
+      images: a.images ?? [
+        img(`art-${id}-1`, coverShape.w, coverShape.h, a.title),
+        img(`art-${id}-2`, coverShape.w, coverShape.h, a.title),
+      ],
       videoUrl: a.videoUrl,
       period: a.period,
       attachments:
@@ -1222,6 +1240,8 @@ export function seedStore(store: Store): void {
     targetAudience: string;
     attendees: number[];
     daysAgo: number;
+    /** 活动流程（参考闪动的时间线） */
+    agenda: { time: string; title: string; desc?: string }[];
   }[] = [
     {
       initiator: owner1,
@@ -1244,6 +1264,14 @@ export function seedStore(store: Store): void {
       targetAudience: '刚开店、想学怎么在档口拿货的新手店主',
       attendees: [owner2, owner5],
       daysAgo: 1,
+      agenda: [
+        { time: '07:00', title: '6 楼 B12 档口门口集合', desc: '认一下人，发当日扫款清单' },
+        { time: '07:15', title: '进市场第一轮扫款', desc: '看 6 楼韩系档口，重点记款号和起批量' },
+        { time: '08:30', title: '换 7 楼法式区', desc: '对比同款不同档口的报价' },
+        { time: '10:00', title: '楼下茶餐厅复盘', desc: '各自说今天看中的 3 款和理由' },
+        { time: '10:40', title: '回场下单', desc: '想拿的当场拿，不拿也可以' },
+        { time: '11:00', title: '结束', desc: '' },
+      ],
     },
     {
       initiator: owner3,
@@ -1266,6 +1294,13 @@ export function seedStore(store: Store): void {
       targetAudience: '做新中式、有稳定客群的店主',
       attendees: [owner1],
       daysAgo: 2,
+      agenda: [
+        { time: '14:00', title: '南油 B 座 208 集合', desc: '看样衣、摸面料' },
+        { time: '14:30', title: '确认颜色与件数分配', desc: '每人报自己要的颜色和数量' },
+        { time: '15:20', title: '工厂视频连线看版房', desc: '确认工期与出货时间' },
+        { time: '16:00', title: '统一收款下单', desc: '按件分摊，当场付定金' },
+        { time: '17:00', title: '结束', desc: '15 天后各自到货' },
+      ],
     },
     {
       initiator: lm1,
@@ -1288,6 +1323,14 @@ export function seedStore(store: Store): void {
       targetAudience: '单店年销 300-1000 万、想突破瓶颈的店主',
       attendees: [owner1, owner2],
       daysAgo: 3,
+      agenda: [
+        { time: '08:00', title: '四季青 3 号门集合', desc: '发当日流程表' },
+        { time: '08:30', title: '开门理货', desc: '看怎么把昨晚到的货快速上架' },
+        { time: '10:00', title: '陈列调整', desc: '重点看橱窗与中岛的动线设计' },
+        { time: '13:00', title: '下午场接待', desc: '听店员怎么推款、怎么连带' },
+        { time: '17:00', title: '盘数据', desc: '看当日动销、哪些款该补、哪些该清' },
+        { time: '18:30', title: '结束', desc: '各自带走一份改进清单' },
+      ],
     },
     {
       initiator: owner4,
@@ -1310,6 +1353,13 @@ export function seedStore(store: Store): void {
       targetAudience: '年销 500 万以上的实体店主与档口老板',
       attendees: [owner1, owner3, owner5],
       daysAgo: 0,
+      agenda: [
+        { time: '15:00', title: '南油大厦星巴克门口集合', desc: '一起走到茶室' },
+        { time: '15:20', title: '轮流过自己的备货节奏', desc: '每人 10 分钟，讲真实数字' },
+        { time: '16:40', title: '聊清库存的办法', desc: '哪些渠道清得快、打几折' },
+        { time: '17:30', title: '自由交流', desc: '' },
+        { time: '18:00', title: '结束', desc: '' },
+      ],
     },
   ];
 
@@ -1333,6 +1383,7 @@ export function seedStore(store: Store): void {
       endAt: end.toISOString(),
       signupMethod: m.signupMethod,
       signupRequirement: m.signupRequirement,
+      agenda: m.agenda,
       capacity: m.capacity,
       joinedCount: 0,
       fee: m.fee,
@@ -1350,7 +1401,16 @@ export function seedStore(store: Store): void {
         id: sid,
         meetupId: id,
         userId: uid,
-        note: uid === m.initiator ? '发起人' : undefined,
+        /**
+         * 报名留言：发起人是「发起人」，参与者给一句真实的动机，
+         * 这样详情页的报名名单才有信息量（不是只有头像）。
+         */
+        note:
+          uid === m.initiator
+            ? '发起人'
+            : ['想去看看有没有适合我客群的款', '第一次去，想跟着学怎么拿货', '想找一起拼单的同行', '主要想看新中式的面料'][
+                (uid + id) % 4
+              ],
         createdAt: iso(60 * 24 * m.daysAgo + 60),
       });
     });
@@ -1374,7 +1434,7 @@ export function seedStore(store: Store): void {
       contentType: 'meetup',
       title: `${kindLabel}｜${m.title}`,
       summary: `${m.city} · ${m.venue}`,
-      content: `${m.description}\n\n**集合点**：${m.gatheringPoint}\n**报名方式**：${m.signupMethod}\n**报名条件**：${m.signupRequirement}`,
+      content: `${m.description}\n\n**集合点**：${m.gatheringPoint}\n**报名方式**：${m.signupMethod}\n**报名条件**：${m.signupRequirement}\n\n**活动流程**\n${m.agenda.map((a) => `${a.time} ${a.title}${a.desc ? `（${a.desc}）` : ''}`).join('\n')}`,
       coverUrl: cover,
       images: [cover],
       attachments: [],

@@ -1,0 +1,121 @@
+@import '../../../styles/variables.scss';
+
+/* 厂家端 · 建联 */
+
+.connect__head {
+  padding: $gap-xs 0 $gap-sm;
+}
+
+.connect__title {
+  font-size: $fs-xxl;
+}
+
+.connect__sub {
+  display: block;
+  margin-top: 6px;
+  color: $text-3;
+}
+
+.connect__bar {
+  padding: $gap-xs 0;
+}
+
+.connect__owner {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+
+.connect__intent-btn {
+  margin-left: $gap-xs;
+  flex-shrink: 0;
+}
+
+.connect__note {
+  display: block;
+  margin: $gap-xs 0 $gap;
+  line-height: 1.6;
+}
+
+.connect__meetup-status {
+  margin-left: $gap-xs;
+}
+
+.connect__meetup-title {
+  display: block;
+  margin-top: 8px;
+  font-size: $fs-lg;
+}
+
+.connect__meetup-foot {
+  margin-top: $gap-xs;
+}
+
+.connect__stat-row {
+  margin-bottom: $gap-xs;
+}
+
+.connect__stat {
+  flex: 1;
+  background: $bg-card;
+  border-radius: $radius-sm;
+  padding: $gap-xs 0;
+  margin-right: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+
+.connect__stat:last-child {
+  margin-right: 0;
+}
+
+.connect__stat-value {
+  font-size: $fs-lg;
+}
+
+.connect__inbound {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.connect__inbound-foot {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed $line;
+}
+
+.connect__conv {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.connect__conv:last-child {
+  border-bottom: none;
+}
+
+.connect__conv-badge {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 18px;
+  background: $danger;
+}
+
+.connect__conv-badge-text {
+  color: #fff;
+  font-size: 20px;
+}
+
+.connect__form {
+  margin-top: $gap-sm;
+  text-align: left;
+}
+
+.connect__picker {
+  margin-bottom: $gap-xs;
+}
+
+.connect__textarea {
+  min-height: 240px;
+}

@@ -1,0 +1,125 @@
+@import '../../../styles/variables.scss';
+
+/* ---------- 列表卡角标（单行） ---------- */
+.mt-count {
+  border-radius: $radius-pill;
+  padding: 4px 16px;
+  background: $brand-light;
+  flex-shrink: 0;
+}
+
+.mt-count__inline {
+  font-size: $fs-xs;
+  color: $brand;
+  font-weight: 600;
+}
+
+.mt-count--ongoing {
+  background: #e7f8ef;
+}
+.mt-count--ongoing .mt-count__inline {
+  color: #0b8a51;
+}
+
+.mt-count--ended,
+.mt-count--cancelled {
+  background: #f2f4f8;
+}
+.mt-count--ended .mt-count__inline,
+.mt-count--cancelled .mt-count__inline {
+  color: $text-3;
+  font-weight: 400;
+}
+
+/* ---------- 详情页四宫格 ---------- */
+.mt-count-block {
+  background: linear-gradient(135deg, #eef2ff 0%, #f7f9ff 100%);
+  border-radius: $radius;
+  padding: $gap-sm;
+}
+
+.mt-count-block--ongoing {
+  background: linear-gradient(135deg, #e7f8ef 0%, #f6fdf9 100%);
+}
+
+.mt-count-block--ended,
+.mt-count-block--cancelled {
+  background: #f7f8fb;
+}
+
+.mt-count-block__head {
+  align-items: center;
+}
+
+.mt-count-block__label {
+  font-size: $fs-sm;
+  color: $text-2;
+  font-weight: 600;
+}
+
+.mt-count-block__phase {
+  border-radius: $radius-pill;
+  padding: 2px 14px;
+  background: $brand;
+}
+
+.mt-count-block__phase-text {
+  font-size: 20px;
+  color: #fff;
+}
+
+.mt-count-block__phase.is-ongoing {
+  background: $success;
+}
+
+.mt-count-block__phase.is-ended,
+.mt-count-block__phase.is-cancelled {
+  background: #d7dce5;
+}
+.mt-count-block__phase.is-ended .mt-count-block__phase-text,
+.mt-count-block__phase.is-cancelled .mt-count-block__phase-text {
+  color: $text-2;
+}
+
+.mt-count-block__cells {
+  margin-top: $gap-xs;
+}
+
+.mt-count-block__cell {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: $radius-sm;
+  padding: 10px 0;
+  margin-right: $gap-xs;
+}
+.mt-count-block__cell:last-child {
+  margin-right: 0;
+}
+
+.mt-count-block__num {
+  font-size: $fs-xl;
+  color: $brand;
+  line-height: 1.2;
+}
+
+.mt-count-block--ongoing .mt-count-block__num {
+  color: #0b8a51;
+}
+
+.mt-count-block__unit {
+  font-size: 18px;
+  color: $text-3;
+}
+
+.mt-count-block__done {
+  display: block;
+  font-size: $fs-lg;
+  color: $text-2;
+  font-weight: 600;
+  padding: $gap-xs 0 4px;
+}
+
+.mt-count-block__time {
+  display: block;
+  margin-top: $gap-xs;
+}

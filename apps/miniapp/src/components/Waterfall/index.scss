@@ -1,0 +1,24 @@
+@import '../../styles/variables.scss';
+
+/**
+ * 双列瀑布流容器：flex 两个纵向 column（不用 CSS columns —— 小程序端支持不好）。
+ * 列间距用 margin 而不是 gap，兼容旧版小程序基础库。
+ */
+.wf {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.wf__col {
+  flex: 1;
+  min-width: 0;
+}
+
+.wf__col:first-child {
+  margin-right: $gap-xs;
+}
+
+.wf__cell {
+  margin-bottom: $gap-xs;
+}

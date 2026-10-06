@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useReachBottom } from '@tarojs/taro';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { ArticleSummary, FeedQuery, Meetup } from '@wfb/shared-types';
-import { CONTENT_TYPE_LABELS } from '@wfb/shared-types';
 import { compactNumber } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
 import TabBar from '@/components/TabBar';
-import ArticleCard from '@/components/ArticleCard';
 import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
+import Waterfall from '@/components/Waterfall';
+import { coverRatioOf } from '@/components/Waterfall/ratio';
 import { errMsg } from '@/components/utils';
-import Badge from '@/components/Badge';
-import { kindLabel, meetupDateTime, meetupRange, meetupStatus, seatText } from '@/pages/meetup/meetup-utils';
+import WaterfallCard from './WaterfallCard';
+import { kindLabel, meetupDateTime, meetupStatus, seatText } from '@/pages/meetup/meetup-utils';
 import './index.scss';
 
 /* =========================================================================
@@ -21,11 +21,12 @@ import './index.scss';
  *
  * 用户反馈：「第一页的资讯里面就只剩下游学了」「把首页改成资讯」
  *          「工具你放得太置顶了，它应该只属于功能那个模块」
+ *          「内容资讯那里要跟小红书那样瀑布流」
  *
- * 因此本页 = 资讯信息流（UGC 社区），工具只保留最底部一行轻量入口。
+ * 因此本页 = 资讯信息流（UGC 社区），信息流用**双列错落瀑布流**，工具只保留最底部一行轻量入口。
  * 区块顺序（规格 REDESIGN-V2 第 4 节）：
  *   ① 问候 + 未读铃铛 ② 行业早报条 ③ 今日组局横滑条
- *   ④ 内容流 Tabs ⑤ 信息流卡片 ⑥ 底部轻量工具入口
+ *   ④ 内容流 Tabs ⑤ 双列瀑布流卡片 ⑥ 底部轻量工具入口
  * ========================================================================= */
 
 type FeedTabKey = 'recommend' | 'follow' | 'city' | 'meetup' | 'rant' | 'review';
@@ -55,59 +56,32 @@ function go(url: string, tab = false) {
   });
 }
 
-function Stars({ rating }: { rating?: number }) {
-  const n = Math.max(0, Math.min(5, Math.round(rating ?? 0)));
-  if (!rating) return null;
-  return (
-    <View className="row info-row__stars">
-      <Text className="info-row__stars-icon">{'★'.repeat(n)}{'☆'.repeat(5 - n)}</Text>
-      <Text className="info-row__stars-text">{n}.0</Text>
-    </View>
-  );
-}
+/* ------------------------- 瀑布流高度预估 -------------------------
+ * 只影响「两列怎么分」，不影响真实渲染尺寸：
+ *   列宽（750 设计稿）= (750 - 32 页面内边距 - 8 列间距) / 2 ≈ 355
+ * 封面高度按解析出的原始高宽比算（与卡片里 padding-top 用的是同一个数），
+ * 因此预估高度和真实高度基本一致，两列才不会一边倒。
+ * ------------------------------------------------------------------ */
+const COL_WIDTH = 355;
+const BODY_PADDING = 24;
+const TITLE_LINE = 38;
+const TITLE_CHARS_PER_LINE = 14;
+const REVIEW_ROW = 34;
+const MEETUP_BLOCK = 88;
+const AUTHOR_ROW = 48;
 
-/**
- * 「组局」Tab 的整宽卡片：线下要素一次看全（时间 / 地点 / 集合点 / 报名方式 / 报名条件）。
- * 样式只依赖本页 index.scss —— 首页在主包，不引用分包目录里的样式，避免小程序分包 CSS 顺序问题。
- */
-function MeetupFeedCard({ meetup, onClick }: { meetup: Meetup; onClick: () => void }) {
-  const status = meetupStatus(meetup);
-  return (
-    <View className="info-meetup-full" onClick={onClick}>
-      <View className="row-between">
-        <View className="row">
-          <View className="tag info-meetup__kind">
-            <Text>{kindLabel(meetup.kind)}</Text>
-          </View>
-          <Text className={`info-meetup__status info-meetup__status--${status.tone}`}>{status.text}</Text>
-        </View>
-        <Text className="f-xs t3">{seatText(meetup)}</Text>
-      </View>
-      <Text className="info-meetup-full__title bold t1 ellipsis-2">{meetup.title}</Text>
-      <View className="info-meetup-full__facts">
-        <Text className="info-meetup__line">🕐 时间：{meetupRange(meetup.startAt, meetup.endAt)}</Text>
-        <Text className="info-meetup__line">📍 地点：{[meetup.city, meetup.venue].filter(Boolean).join(' · ')}</Text>
-        <Text className="info-meetup__line">🚩 集合点：{meetup.gatheringPoint || '待定'}</Text>
-        <Text className="info-meetup__line">✍️ 报名方式：{meetup.signupMethod || '待定'}</Text>
-        <Text className="info-meetup__line">✅ 报名条件：{meetup.signupRequirement || '待定'}</Text>
-        {meetup.fee ? <Text className="info-meetup__line">💰 费用：{meetup.fee}</Text> : null}
-      </View>
-      <View className="row-between info-meetup__foot">
-        <View className="row flex-1">
-          <Image className="info-meetup__avatar" src={meetup.initiator?.avatarUrl} mode="aspectFill" />
-          <Text className="f-xs t2 ellipsis info-meetup__name">{meetup.initiator?.nickname ?? '匿名同行'} 发起</Text>
-          {meetup.initiator ? <Badge user={meetup.initiator} size="xs" max={2} /> : null}
-        </View>
-        <Text className="info-meetup__cta">{meetup.joined ? '已报名 ›' : '去报名 ›'}</Text>
-      </View>
-    </View>
-  );
+function estimateCardHeight(a: ArticleSummary): number {
+  const cover = a.images?.[0] || a.coverUrl;
+  const coverHeight = COL_WIDTH * coverRatioOf(cover);
+  const titleLines = (a.title?.length ?? 0) > TITLE_CHARS_PER_LINE ? 2 : 1;
+  const isReview = a.contentType === 'review' && !!a.rating;
+  const isMeetup = a.contentType === 'meetup' && !!a.meetup;
+  const extra = isReview ? REVIEW_ROW : isMeetup ? MEETUP_BLOCK : 0;
+  return coverHeight + BODY_PADDING + titleLines * TITLE_LINE + extra + AUTHOR_ROW;
 }
 
 export default function Index() {
   const [tab, setTab] = useState<FeedTabKey>('recommend');
-  const [page, setPage] = useState(1);
-  const [list, setList] = useState<ArticleSummary[]>([]);
 
   const user = useAppStore((s) => s.user);
   const unreadTotal = useAppStore((s) => s.unread.total);
@@ -118,6 +92,7 @@ export default function Index() {
   /* ① 行业早报条：资讯流里 type=news 的一条 */
   const news = useQuery({ queryKey: ['info-morning-news'], queryFn: () => api.info.feed({ page: 1, pageSize: 10 }) });
 
+
   /* ③ 今日组局横滑条：组局是一等公民（闪动形态），单独取，卡片才能展示线下要素 */
   const meetups = useQuery({
     queryKey: ['meetups-today'],
@@ -126,19 +101,22 @@ export default function Index() {
   });
 
   /* ⑤ 信息流：六个 Tab 统一走 /api/info/feed；组局/吐槽/实评按 contentType 过滤
-   *    （后端已在摘要行上下发 rating / wouldRebuy / meetup，卡片可直接渲染） */
-  const feed = useQuery({
-    queryKey: ['info-feed', tab, city, page],
-    queryFn: () =>
+   *    （后端已在摘要行上下发 rating / wouldRebuy / meetup，卡片可直接渲染）
+   *    双列瀑布流需要翻页累积，所以用 useInfiniteQuery + useReachBottom */
+  const feed = useInfiniteQuery({
+    queryKey: ['info-feed', tab, city],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
       api.info.feed(
         infoFeedQuery({
-          page,
-          pageSize: 10,
+          page: Number(pageParam),
+          pageSize: 12,
           tab: tab === 'city' ? 'city' : tab === 'follow' ? 'follow' : 'recommend',
           type: tab === 'meetup' || tab === 'rant' || tab === 'review' ? tab : 'all',
           city: tab === 'city' ? city : undefined,
         }),
       ),
+    getNextPageParam: (last) => (last?.hasMore ? last.page + 1 : undefined),
   });
 
   const unread = useQuery({ queryKey: ['unread-count'], queryFn: () => api.notification.unreadCount() });
@@ -147,28 +125,23 @@ export default function Index() {
     if (unread.data) setUnread(unread.data);
   }, [unread.data, setUnread]);
 
-  useEffect(() => {
-    if (!feed.data) return;
-    const rows = feed.data.list ?? [];
-    setList((prev) => (page <= 1 ? rows : [...prev, ...rows]));
-  }, [feed.data, page]);
+  /** 所有分页拍平；useMemo 只在数据变化时算，配合 Waterfall 内部的分配 memo，滚动时不重算 */
+  const list = useMemo<ArticleSummary[]>(() => (feed.data?.pages ?? []).flatMap((p) => p?.list ?? []), [feed.data]);
 
   const meetupRows = useMemo<Meetup[]>(() => meetups.data?.list ?? [], [meetups.data]);
 
   const switchTab = (key: FeedTabKey) => {
     if (key === tab) return;
     setTab(key);
-    setPage(1);
-    setList([]);
   };
 
   useReachBottom(() => {
-    if (feed.isFetching || !feed.data?.hasMore) return;
-    setPage((p) => p + 1);
+    if (feed.hasNextPage && !feed.isFetchingNextPage) feed.fetchNextPage();
   });
 
   const morningNews = (news.data?.list ?? []).find((a) => a.type === 'news') ?? news.data?.list?.[0];
-  const strategy = feed.data?.strategy;
+  const strategy = feed.data?.pages?.[0]?.strategy;
+  const visitCount = feed.data?.pages?.[0]?.visitCount;
 
   return (
     <View className="page-safe info-home">
@@ -277,11 +250,11 @@ export default function Index() {
       {strategy ? (
         <Text className="info-strategy ellipsis-2">
           推荐策略：{strategy}
-          {feed.data?.visitCount ? `（第 ${feed.data.visitCount} 次访问）` : ''}
+          {visitCount ? `（第 ${visitCount} 次访问）` : ''}
         </Text>
       ) : null}
 
-      {/* ⑤ 信息流卡片：组局走整宽的线下要素卡，吐槽/实评用普通卡片 + UGC 补充信息 */}
+      {/* ⑤ 双列错落瀑布流（小红书式）：封面按原始比例、两列按预估高度贪心分配 */}
       <View>
         <ListEmpty
           loading={feed.isLoading && list.length === 0}
@@ -310,52 +283,31 @@ export default function Index() {
           onRetry={() => feed.refetch()}
         />
 
-        {list.map((item) => {
-          const typeLabel = CONTENT_TYPE_LABELS[item.contentType] ?? '内容';
-          const isReview = item.contentType === 'review';
-          if (item.contentType === 'meetup' && item.meetup) {
-            return (
-              <MeetupFeedCard
-                key={item.id}
-                meetup={item.meetup}
-                onClick={() => go(`/pages/meetup/detail?id=${item.meetup?.id ?? 0}`)}
-              />
-            );
-          }
-          return (
-            <View key={item.id} className="info-row">
-              <ArticleCard
+        {list.length ? (
+          <Waterfall
+            items={list}
+            heightOf={estimateCardHeight}
+            itemKey={(item) => item.id}
+            renderItem={(item) => (
+              <WaterfallCard
                 article={item}
-                showReason
-                onClick={() => go(`/pages/info/detail?id=${item.id}`)}
-                onUserClick={(uid) => uid && go(`/pages/profile/index?userId=${uid}`)}
-                footer={
-                  item.contentType === 'rant' || isReview || item.contentType === 'meetup' ? (
-                    <View className="info-row__ugc">
-                      <View className="tag tag-outline">
-                        <Text>#{typeLabel}</Text>
-                      </View>
-                      {isReview ? <Stars rating={item.rating} /> : null}
-                      {isReview && item.wouldRebuy !== undefined ? (
-                        <View className={`tag ${item.wouldRebuy ? 'tag-success' : 'tag-gray'}`}>
-                          <Text>{item.wouldRebuy ? '会再拿' : '不会复拿'}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  ) : null
+                onClick={() =>
+                  item.contentType === 'meetup' && item.meetup
+                    ? go(`/pages/meetup/detail?id=${item.meetup.id}`)
+                    : go(`/pages/info/detail?id=${item.id}`)
                 }
+                onUserClick={(uid) => uid && go(`/pages/profile/index?userId=${uid}`)}
               />
-            </View>
-          );
-        })}
+            )}
+          />
+        ) : null}
 
         <LoadMore
-          loading={feed.isFetching && list.length > 0}
-          hasMore={feed.data?.hasMore}
+          loading={feed.isFetchingNextPage}
+          hasMore={!!feed.hasNextPage}
           count={list.length}
           onLoadMore={() => {
-            if (feed.isFetching || !feed.data?.hasMore) return;
-            setPage((p) => p + 1);
+            if (feed.hasNextPage && !feed.isFetchingNextPage) feed.fetchNextPage();
           }}
         />
       </View>

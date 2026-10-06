@@ -16,6 +16,32 @@
   background: $brand-light;
   color: $brand;
   font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.meetup-card__progress {
+  margin-top: $gap-xs;
+}
+
+.meetup-card__chips {
+  margin-top: $gap-xs;
+}
+
+.meetup-card__chip {
+  background: #f2f4f8;
+  border-radius: $radius-sm;
+  padding: 4px 14px;
+  margin-right: $gap-xs;
+  margin-bottom: 6px;
+}
+
+.meetup-card__chip-text {
+  font-size: $fs-xs;
+  color: $text-2;
+}
+
+.meetup-card__chip-ellipsis {
+  max-width: 380px;
 }
 
 .meetup-card__title {
@@ -87,6 +113,11 @@
 
 .meetup-card__name {
   max-width: 320px;
+}
+
+.meetup-card__ago {
+  margin-left: $gap-xs;
+  flex-shrink: 0;
 }
 
 .meetup-card__cta {

@@ -23,6 +23,7 @@ import type {
   CreateSubAccountDto,
   DashboardAnalytics,
   Draft,
+  FairPermission,
   FeedQuery,
   FeedResult,
   FollowDto,
@@ -35,6 +36,7 @@ import type {
   LoginResult,
   Meetup,
   Message,
+  MyFairs,
   Notification,
   NotificationQuery,
   OperationAdviceDto,
@@ -185,13 +187,20 @@ export interface ApiClient {
     detail(id: number): Promise<OrderingFair>;
     create(dto: CreateFairDto): Promise<OrderingFair>;
     signup(id: number): Promise<OrderingFair>;
+    /** 我发布的 + 我报名的（后端已实现，之前未声明） */
+    mine(): Promise<MyFairs>;
+    /** 发布权限与版本配额（受版本权益限制） */
+    permission(): Promise<FairPermission>;
+    /** 即将开始的场次（首页/工作台用） */
+    upcoming(q?: Record<string, unknown>): Promise<Paged<OrderingFair>>;
   };
   /** 组局（一起去拿货 / 一起做货 / 交流局），带时间地点与报名条件 */
   meetup: {
     list(q?: { kind?: string; city?: string; status?: string } & Record<string, unknown>): Promise<Paged<Meetup>>;
     detail(id: number): Promise<Meetup & { article?: ArticleSummary }>;
     create(dto: CreateMeetupDto): Promise<Meetup>;
-    join(id: number): Promise<Meetup>;
+    /** 报名；note 是报名留言（你想得到什么 / 能提供什么） */
+    join(id: number, note?: string): Promise<Meetup>;
     quit(id: number): Promise<Meetup>;
     mine(): Promise<Paged<Meetup>>;
   };
@@ -354,12 +363,15 @@ export function createApiClient(req: Requester): ApiClient {
       detail: (id) => req.get(`/api/ordering-fair/detail/${id}`),
       create: (dto) => req.post('/api/ordering-fair/create', dto),
       signup: (id) => req.post(`/api/ordering-fair/signup/${id}`),
+      mine: () => req.get('/api/ordering-fair/mine'),
+      permission: () => req.get('/api/ordering-fair/permission'),
+      upcoming: (p) => req.get('/api/ordering-fair/upcoming', q(p)),
     },
     meetup: {
       list: (p) => req.get('/api/meetup/list', q(p)),
       detail: (id) => req.get(`/api/meetup/detail/${id}`),
       create: (dto) => req.post('/api/meetup/create', dto),
-      join: (id) => req.post(`/api/meetup/join/${id}`),
+      join: (id, note) => req.post(`/api/meetup/join/${id}`, note ? { note } : {}),
       quit: (id) => req.post(`/api/meetup/quit/${id}`),
       mine: () => req.get('/api/meetup/mine'),
     },

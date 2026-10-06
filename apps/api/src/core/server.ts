@@ -2,6 +2,7 @@ import http from 'node:http';
 import { URL } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { randomUUID } from 'node:crypto';
 import type { User } from '@wfb/shared-types';
 
@@ -172,18 +173,37 @@ export class Ctx {
     const isString = typeof payload === 'string';
     const looksLikeSvg = isString && (payload as string).trimStart().startsWith('<svg');
     const body = isString ? (payload as string) : JSON.stringify(payload);
-    this.res.writeHead(statusCode, {
-      'Content-Type': looksLikeSvg
-        ? 'image/svg+xml; charset=utf-8'
-        : isString
-          ? 'text/plain; charset=utf-8'
-          : 'application/json; charset=utf-8',
+    const contentType = looksLikeSvg
+      ? 'image/svg+xml; charset=utf-8'
+      : isString
+        ? 'text/plain; charset=utf-8'
+        : 'application/json; charset=utf-8';
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
       'X-Request-Id': this.id,
       'X-Response-Time': `${Date.now() - this.startedAt}ms`,
       'Access-Control-Allow-Origin': this.headers.origin ?? '*',
       'Access-Control-Allow-Credentials': 'true',
-    });
-    this.res.end(body);
+    };
+
+    /**
+     * 列表接口动辄几十 KB JSON，经公网隧道访问时不压缩会明显变慢
+     * （用户反馈「打开很卡」，这是其中一环）。阈值设 1KB，
+     * 太小的响应压缩反而增加开销。
+     */
+    const buf = Buffer.from(body, 'utf8');
+    const acceptsGzip = /\bgzip\b/.test(String(this.headers['accept-encoding'] || ''));
+    if (acceptsGzip && buf.length >= 1024 && !looksLikeSvg) {
+      headers['Content-Encoding'] = 'gzip';
+      headers.Vary = 'Accept-Encoding';
+      this.res.writeHead(statusCode, headers);
+      this.res.end(zlib.gzipSync(buf, { level: 6 }));
+      return;
+    }
+
+    headers['Content-Length'] = String(buf.length);
+    this.res.writeHead(statusCode, headers);
+    this.res.end(buf);
   }
 }
 

@@ -177,3 +177,22 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ---------- 账号与设置（厂家端「我的」Tab 收尾区块） ---------- */
+.wb-setting {
+  height: 88px;
+  border-bottom: 1px solid $line;
+}
+
+.wb-setting:last-child {
+  border-bottom: none;
+}
+
+.wb-setting__arrow {
+  color: $text-3;
+  font-size: $fs-lg;
+}
+
+.wb-setting__danger {
+  color: $danger;
+}

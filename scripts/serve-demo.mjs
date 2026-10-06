@@ -20,6 +20,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,11 @@ const API = arg('api', process.env.DEMO_API || 'http://localhost:3100').replace(
 const ADMIN_API = arg('admin-api', process.env.DEMO_ADMIN_API || 'http://localhost:3101').replace(/\/$/, '');
 const H5_DIR = path.resolve(ROOT, arg('h5', 'apps/miniapp/dist/h5'));
 const ADMIN_DIR = path.resolve(ROOT, arg('admin', 'apps/admin/out'));
+/**
+ * 用户端反代目标（可选）。给了就把 H5 请求转发到 Taro dev server，
+ * 这样开着 watch 模式的开发服务器时 8099 也能实时看到最新代码。
+ */
+const H5_DEV = arg('h5-dev', process.env.DEMO_H5_DEV || '').replace(/\/$/, '');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -57,7 +63,24 @@ const MIME = {
   '.map': 'application/json; charset=utf-8',
 };
 
-function sendFile(res, file) {
+/**
+ * 压缩传输。
+ *
+ * 为什么必须做：H5 产物 19MB / 59 个 JS 文件，首屏要下 862KB、
+ * 每次切页再下 330-350KB。本地是局域网所以察觉不到，
+ * 但用户是通过 Cloudflare 隧道访问的（约 600KB/s），不压缩就是「很卡」的根因。
+ * gzip 对 JS/CSS 通常能压到 1/4 左右。
+ */
+function acceptsGzip(req) {
+  return /\bgzip\b/.test(String(req.headers['accept-encoding'] || ''));
+}
+
+/** 可压缩的文本类型（图片/字体本身已压缩，再压没意义还费 CPU） */
+function isCompressible(ext) {
+  return ['.js', '.mjs', '.css', '.html', '.json', '.svg', '.txt', '.map'].includes(ext);
+}
+
+function sendFile(req, res, file) {
   if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('404 not found');
@@ -67,6 +90,25 @@ function sendFile(res, file) {
   const headers = { 'Content-Type': MIME[ext] ?? 'application/octet-stream' };
   if (ext === '.js' || ext === '.css' || ext === '.woff2') headers['Cache-Control'] = 'public, max-age=31536000, immutable';
   else headers['Cache-Control'] = 'no-cache';
+  /** 内容变了 URL 就该变；这里给 ETag 让 304 生效（HTML 走 no-cache + ETag 最省） */
+  const stat = fs.statSync(file);
+  const etag = `W/"${stat.size.toString(16)}-${Math.floor(stat.mtimeMs).toString(16)}"`;
+  headers.ETag = etag;
+  if (req.headers['if-none-match'] === etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+
+  if (isCompressible(ext) && acceptsGzip(req)) {
+    headers['Content-Encoding'] = 'gzip';
+    headers.Vary = 'Accept-Encoding';
+    res.writeHead(200, headers);
+    fs.createReadStream(file).pipe(zlib.createGzip({ level: 6 })).pipe(res);
+    return;
+  }
+
+  headers['Content-Length'] = String(stat.size);
   res.writeHead(200, headers);
   fs.createReadStream(file).pipe(res);
 }
@@ -140,10 +182,21 @@ const server = http.createServer((req, res) => {
     if (!fs.existsSync(file) && fs.existsSync(path.join(ADMIN_DIR, 'index.html'))) {
       file = path.join(ADMIN_DIR, 'index.html');
     }
-    return sendFile(res, file);
+    return sendFile(req, res, file);
   }
 
   // 3) H5 / PC Web 用户端
+  /**
+   * 开发模式（--h5-dev）：把用户端请求反代到 Taro dev server（默认 10086）。
+   *
+   * 为什么需要：`dev:h5` 是 watch 模式，产物在内存里，**不会写 dist/h5**，
+   * 所以只要开发服务器开着，dist/h5 就是空的、8099 会全站 404。
+   * 有了这个开关，单人开发时 8099 能直接看到最新代码，不用反复全量 build。
+   */
+  if (H5_DEV) {
+    return proxyTo(req, res, H5_DEV, `${pathname}${url.search}`);
+  }
+
   let file = path.join(H5_DIR, pathname === '/' ? 'index.html' : pathname);
   if (!file.startsWith(H5_DIR)) {
     res.writeHead(403).end('forbidden');
@@ -153,17 +206,19 @@ const server = http.createServer((req, res) => {
     // 前端路由回退
     file = path.join(H5_DIR, 'index.html');
   }
-  if (!fs.existsSync(H5_DIR)) {
+  if (!fs.existsSync(H5_DIR) || !fs.existsSync(path.join(H5_DIR, 'index.html'))) {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(
       `<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;padding:40px;max-width:720px">
       <h2>H5 产物尚未构建</h2>
-      <p>请先执行：<code>pnpm --filter @wfb/miniapp run build:h5</code></p>
+      <p>方式一：<code>pnpm --filter @wfb/miniapp run build:h5</code>（产出静态文件）</p>
+      <p>方式二：<code>pnpm --filter @wfb/miniapp dev:h5</code> 起开发服务器后，用
+      <code>node scripts/serve-demo.mjs --h5-dev http://localhost:10086</code> 让本服务器反代过去</p>
       <p>当前后端代理目标：<code>${API}</code>，健康检查 <a href="/api/health">/api/health</a></p></body>`,
     );
     return;
   }
-  sendFile(res, file);
+  sendFile(req, res, file);
 });
 
 server.listen(PORT, '0.0.0.0', () => {

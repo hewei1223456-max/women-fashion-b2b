@@ -98,6 +98,14 @@ export default defineConfig<'webpack5'>(async (merge) => {
         port: 10086,
         host: '0.0.0.0',
         allowedHosts: 'all',
+        /**
+         * 关掉编译告警浮层。
+         *
+         * 本项目有大量 Sass `@import` 弃用告警（94 条），dev server 默认会把它们
+         * 铺满整个页面遮住 UI，导致「页面看起来坏了」并且截图/验收都没法用。
+         * 这些告警无害（Dart Sass 3.0 才会移除 @import），错误浮层保留。
+         */
+        client: { overlay: { errors: true, warnings: false, runtimeErrors: true } },
         proxy: {
           // 本机 3000 端口被其它服务（one-api）占用，本项目后端统一用 3100
           '/api': { target: process.env.TARO_APP_API_PROXY || 'http://localhost:3100', changeOrigin: true },

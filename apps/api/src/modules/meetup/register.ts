@@ -78,6 +78,7 @@ export function registerMeetupModule(router: Router, store: Store) {
         signupRequirement: ctx.str('signupRequirement', { required: true }),
         capacity: ctx.num('capacity', { fallback: 0, min: 0, max: 10000 }),
         fee: ctx.str('fee') || undefined,
+        agenda: Array.isArray(ctx.body?.agenda) ? (ctx.body.agenda as never) : undefined,
         productId: ctx.num('productId', { fallback: 0 }) || undefined,
         market: ctx.str('market') || undefined,
         styleTags: ctx.arr('styleTags'),
@@ -92,8 +93,8 @@ export function registerMeetupModule(router: Router, store: Store) {
 
   router.post(
     '/api/meetup/join/:id',
-    (ctx) => joinMeetup(store, ctx.auth(), ctx.num('id', { required: true })),
-    { summary: '报名组局' },
+    (ctx) => joinMeetup(store, ctx.auth(), ctx.num('id', { required: true }), ctx.str('note') || undefined),
+    { summary: '报名组局（可带 note 留言：你想得到什么 / 能提供什么）' },
   );
 
   router.post(

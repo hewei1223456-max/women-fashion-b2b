@@ -2,7 +2,10 @@ import { View, Text, Image } from '@tarojs/components';
 import type { Meetup } from '@wfb/shared-types';
 import { clsx, timeAgo } from '@wfb/shared-utils';
 import Badge from '@/components/Badge';
-import { kindLabel, meetupRange, meetupStatus, seatText } from './meetup-utils';
+import { hexToRgba } from '@/components/utils';
+import { kindColor, kindLabel, meetupRange, meetupStatus, seatText } from './meetup-utils';
+import Countdown from './components/Countdown';
+import ProgressBar from './components/ProgressBar';
 import './MeetupCard.scss';
 
 interface FactProps {
@@ -28,30 +31,36 @@ interface Props {
   onClick?: () => void;
   /** 是否展示完整线下要素（详情页留空，广场/首页列表展示全部） */
   showAllFacts?: boolean;
+  /** 是否展示报名进度条（列表默认展示） */
+  showProgress?: boolean;
+  /** 是否展示倒计时角标 */
+  showCountdown?: boolean;
   className?: string;
 }
 
 /**
  * 组局卡片：参考「闪动」的线下要素口径 ——
- * 活动形态 / 时间 / 地点 / 集合点 / 已报名（上限）/ 报名方式 / 报名条件。
+ * 活动形态（色标）/ 时间 / 地点 / 集合点 / 已报名（进度条 + 上限）/ 报名方式 / 报名条件 / 费用。
  * 首页横滑条、组局广场、我的组局共用同一张卡。
  */
-export default function MeetupCard({ meetup, onClick, showAllFacts = true, className }: Props) {
+export default function MeetupCard({ meetup, onClick, showAllFacts = true, showProgress = true, showCountdown = true, className }: Props) {
   const status = meetupStatus(meetup);
   const toneClass = status.tone === 'accent' ? 'tag-accent' : status.tone === 'gray' ? 'tag-gray' : '';
+  const color = kindColor(meetup.kind);
+  const kindStyle = { backgroundColor: hexToRgba(color, 0.12), color, borderColor: hexToRgba(color, 0.3) };
 
   return (
     <View className={clsx('meetup-card', className)} onClick={onClick}>
       <View className="meetup-card__head row-between">
         <View className="row">
-          <View className="tag meetup-card__kind">
+          <View className="tag meetup-card__kind" style={kindStyle as never}>
             <Text>{kindLabel(meetup.kind)}</Text>
           </View>
           <View className={clsx('tag', toneClass)}>
             <Text>{status.text}</Text>
           </View>
         </View>
-        <Text className="f-xs t3">{timeAgo(meetup.createdAt)}发起</Text>
+        {showCountdown ? <Countdown startAt={meetup.startAt} endAt={meetup.endAt} status={meetup.status} tickMs={30000} /> : null}
       </View>
 
       <Text className="meetup-card__title bold t1 ellipsis-2">{meetup.title}</Text>
@@ -66,7 +75,7 @@ export default function MeetupCard({ meetup, onClick, showAllFacts = true, class
             <Fact icon="🙋" label="人数" value={seatText(meetup)} />
             <Fact icon="✍️" label="报名方式" value={meetup.signupMethod} />
             <Fact icon="✅" label="报名条件" value={meetup.signupRequirement} />
-            {meetup.fee ? <Fact icon="💰" label="费用" value={meetup.fee} /> : null}
+            <Fact icon="💰" label="费用" value={meetup.fee || '免费 / AA'} />
           </View>
         ) : (
           <View className="row wrap">
@@ -82,11 +91,38 @@ export default function MeetupCard({ meetup, onClick, showAllFacts = true, class
         )}
       </View>
 
+      {showProgress ? (
+        <ProgressBar joined={meetup.joinedCount ?? 0} capacity={meetup.capacity ?? 0} className="meetup-card__progress" />
+      ) : null}
+
+      <View className="meetup-card__chips row wrap">
+        {meetup.fee ? (
+          <View className="meetup-card__chip">
+            <Text className="meetup-card__chip-text">💰 {meetup.fee}</Text>
+          </View>
+        ) : (
+          <View className="meetup-card__chip">
+            <Text className="meetup-card__chip-text">💰 免费 / AA</Text>
+          </View>
+        )}
+        {meetup.market ? (
+          <View className="meetup-card__chip">
+            <Text className="meetup-card__chip-text">🧵 {meetup.market}</Text>
+          </View>
+        ) : null}
+        {meetup.targetAudience ? (
+          <View className="meetup-card__chip">
+            <Text className="meetup-card__chip-text ellipsis meetup-card__chip-ellipsis">👥 {meetup.targetAudience}</Text>
+          </View>
+        ) : null}
+      </View>
+
       <View className="meetup-card__foot row-between">
         <View className="row flex-1 meetup-card__author">
           <Image className="meetup-card__avatar" src={meetup.initiator?.avatarUrl} mode="aspectFill" />
           <Text className="meetup-card__name f-xs t2 ellipsis">{meetup.initiator?.nickname ?? '匿名同行'}</Text>
           {meetup.initiator ? <Badge user={meetup.initiator} size="xs" max={2} /> : null}
+          <Text className="meetup-card__ago f-xs t3">{timeAgo(meetup.createdAt)}发起</Text>
         </View>
         <Text className={clsx('meetup-card__cta', meetup.joined && 'is-joined')}>{meetup.joined ? '已报名 ›' : '去报名 ›'}</Text>
       </View>

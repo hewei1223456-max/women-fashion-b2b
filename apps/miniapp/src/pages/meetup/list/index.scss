@@ -39,9 +39,15 @@
 .mt-chip--city {
   padding: 8px 22px;
 }
+.mt-chip--sub {
+  padding: 8px 20px;
+}
 .mt-chip__text {
   font-size: $fs-sm;
   color: $text-2;
+}
+.mt-chip--sub .mt-chip__text {
+  font-size: $fs-xs;
 }
 .mt-chip.is-active {
   background: $brand;
@@ -50,6 +56,15 @@
 .mt-chip.is-active .mt-chip__text {
   color: #fff;
   font-weight: 600;
+}
+
+.mt-summary {
+  padding: 4px 0 $gap-xs;
+  align-items: center;
+}
+
+.mt-clear {
+  margin-bottom: $gap-sm;
 }
 
 .mt-fab {

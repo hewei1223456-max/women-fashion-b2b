@@ -75,15 +75,34 @@ export default defineAppConfig({
     {
       root: 'pages/manufacturer',
       name: 'manufacturer',
-      pages: ['admin', 'publish', 'contact-list', 'sub-account', 'workbench'],
+      pages: [
+        // 厂家端独立信息架构（task-9）：货源 / 建联 / 订货会 三个 Tab 页
+        'home',
+        'connect',
+        'fair',
+        // 厂家后台（版本配额 / 发布款 / 私信 / 子账号 / 数据看板）
+        'workbench',
+        'admin',
+        'publish',
+        'contact-list',
+        'sub-account',
+      ],
     },
   ],
 
-  /** 进入资讯首页后预下载资讯 / 组局分包，减少点击「资讯」「组局」时的等待 */
+  /**
+   * 进入资讯首页后预下载资讯 / 组局分包，减少点击「资讯」「组局」时的等待；
+   * 进入「我的」页（视角切换入口所在页）时预下载厂家分包，
+   * 这样切到厂家端后点「货源 / 建联 / 订货会」无需再等分包下载。
+   */
   preloadRule: {
     'pages/index/index': {
       network: 'all',
       packages: ['pages/info', 'pages/meetup'],
+    },
+    'pages/profile/index': {
+      network: 'all',
+      packages: ['pages/manufacturer'],
     },
   },
 

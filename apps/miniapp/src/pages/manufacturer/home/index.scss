@@ -1,0 +1,205 @@
+@import '../../../styles/variables.scss';
+
+/* 厂家端 · 货源（我要卖货） */
+
+.mfr-home__head {
+  background: linear-gradient(135deg, #1f2a52 0%, #3550a8 100%);
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+}
+
+.mfr-home__avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: $radius-sm;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.mfr-home__name {
+  color: #fff;
+  font-size: $fs-lg;
+  max-width: 320px;
+}
+
+.mfr-home__sub {
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 6px;
+}
+
+.mfr-home__switch {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: $radius-pill;
+  padding: 10px 20px;
+}
+
+.mfr-home__switch .f-xs {
+  color: #fff;
+}
+
+.mfr-home__kpis {
+  margin-top: $gap-xs;
+}
+
+.mfr-home__kpi {
+  width: 25%;
+  padding: $gap-xs 0;
+}
+
+.mfr-home__kpi-value {
+  font-size: $fs-lg;
+}
+
+.mfr-home__quota {
+  margin-top: $gap-xs;
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+
+.mfr-home__quota-track {
+  margin-top: 8px;
+  height: 10px;
+  border-radius: 5px;
+  background: #e8ecf3;
+  overflow: hidden;
+}
+
+.mfr-home__quota-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, $brand 0%, $accent 100%);
+}
+
+.mfr-home__publish {
+  padding: $gap-sm $gap 0;
+}
+
+.mfr-home__publish-btn {
+  height: 96px;
+  border-radius: $radius;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+}
+
+.mfr-home__publish-text {
+  color: #fff;
+  font-size: $fs-lg;
+  font-weight: 600;
+}
+
+.mfr-home__scroll {
+  white-space: nowrap;
+  padding: $gap-sm $gap 0;
+}
+
+.mfr-home__scroll-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.mfr-home__pcard {
+  position: relative;
+  width: 240px;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: $gap-xs;
+}
+
+.mfr-home__pcard-img {
+  width: 216px;
+  height: 270px;
+  border-radius: $radius-sm;
+  background: $line;
+}
+
+.mfr-home__pcard-status {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  border-radius: $radius-pill;
+  padding: 2px 12px;
+}
+
+.mfr-home__pcard-status.is-ok {
+  background: #e7f8ef;
+}
+
+.mfr-home__pcard-status.is-wait {
+  background: #fff7e6;
+}
+
+.mfr-home__pcard-status.is-bad {
+  background: #fef3f2;
+}
+
+.mfr-home__pcard-status-text {
+  font-size: 18px;
+  color: $text-2;
+}
+
+.mfr-home__pcard-title {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.4;
+  white-space: normal;
+  height: 62px;
+}
+
+.mfr-home__pcard-foot {
+  margin-top: 6px;
+}
+
+.mfr-home__need {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.mfr-home__need:last-child {
+  border-bottom: none;
+}
+
+.mfr-home__todo {
+  height: 88px;
+  border-bottom: 1px solid $line;
+}
+
+.mfr-home__todo:last-child {
+  border-bottom: none;
+}
+
+.mfr-home__arrow {
+  color: $text-3;
+  font-size: $fs-lg;
+  margin-left: 6px;
+}
+
+.mfr-home__fair {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.mfr-home__fair-new {
+  padding-top: $gap-xs;
+}
+
+.mfr-home__tools {
+  margin-top: $gap-xs;
+}
+
+.mfr-home__tool {
+  width: 25%;
+  padding: $gap-xs 0;
+}
+
+.mfr-home__tool-icon {
+  font-size: 48px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}

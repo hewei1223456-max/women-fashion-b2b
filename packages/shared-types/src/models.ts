@@ -3,6 +3,7 @@ import type {
   CertStatus,
   ContentType,
   GroupBuyStatus,
+  MeetupAgendaItem,
   MeetupKind,
   MemberLevel,
   NotificationType,
@@ -397,6 +398,11 @@ export interface Meetup {
   startAt: string;
   /** 结束时间 */
   endAt: string;
+  /**
+   * 活动流程 / 行程安排（参考闪动：一场局要让人知道每个时段干什么）。
+   * 例如 07:00 集合签到 → 07:30 进市场扫款 → 10:00 复盘选款 → 11:00 结束
+   */
+  agenda?: MeetupAgendaItem[];
   /** 报名方式（留微信号 / 扫码 / 站内报名） */
   signupMethod: string;
   /** 报名条件（例如「认证店主，有实体店」「需自带样品」） */
@@ -419,8 +425,10 @@ export interface Meetup {
   initiator: UserBrief;
   /** 当前用户是否已报名 */
   joined?: boolean;
-  /** 报名者（列表页只取前几个头像） */
+  /** 报名者（详情页展示完整名单，列表页只取前几个头像） */
   attendees?: UserBrief[];
+  /** 报名留言，与 attendees 一一对应 */
+  attendeeNotes?: { userId: number; note: string }[];
 }
 
 export interface OrderingFair {
@@ -439,6 +447,44 @@ export interface OrderingFair {
   signupCount: number;
   signedUp?: boolean;
   host: UserBrief;
+  /** 时间推导的状态（后端运行时下发） */
+  status?: 'upcoming' | 'ongoing' | 'ended';
+  /** 距开始还有几天（已结束为 0 或负数） */
+  daysLeft?: number;
+  /** 报名名单（仅详情接口下发，列表接口不带） */
+  signupList?: FairSignupRow[];
+  createdAt?: string;
+}
+
+/**
+ * 订货会报名记录（后端在详情接口里把用户信息拍平下发，
+ * 不是嵌套 user —— 前端直接取 nickname/avatarUrl 即可）
+ */
+export interface FairSignupRow {
+  /** 报名记录 id */
+  id: number;
+  userId: number;
+  nickname: string;
+  avatarUrl: string;
+  createdAt: string;
+  /** 身份标识（后端若补上则可用，缺省前端按 role 兜底） */
+  badges?: UserBadge[];
+}
+
+/** 订货会发布权限（受版本权益限制） */
+export interface FairPermission {
+  canCreate: boolean;
+  /** 不能发布时的升级引导文案 */
+  upgradeHint?: string;
+  /** 当前版本已发布场次 / 上限（-1 表示不限） */
+  used?: number;
+  limit?: number;
+}
+
+/** 我参与的订货会：我发布的 + 我报名的 */
+export interface MyFairs {
+  hosted: OrderingFair[];
+  joined: OrderingFair[];
 }
 
 export interface Course {

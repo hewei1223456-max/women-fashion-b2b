@@ -1,0 +1,42 @@
+@import '../../../styles/variables.scss';
+
+.mt-progress {
+  width: 100%;
+}
+
+.mt-progress__head {
+  margin-bottom: 6px;
+  align-items: center;
+}
+
+.mt-progress__text {
+  color: $text-2;
+  font-weight: 600;
+}
+
+.mt-progress__hint.is-full {
+  color: $accent;
+  font-weight: 600;
+}
+
+.mt-progress__track {
+  height: 14px;
+  border-radius: 7px;
+  background: #eef1f6;
+  overflow: hidden;
+}
+
+.mt-progress__fill {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, $brand 0%, #4a63e8 100%);
+  transition: width 0.3s ease;
+}
+
+.mt-progress__fill.is-full {
+  background: linear-gradient(90deg, $accent 0%, #ff9166 100%);
+}
+
+.mt-progress__fill.is-unlimited {
+  background: #c7d2fe;
+}

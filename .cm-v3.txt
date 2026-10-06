@@ -1,0 +1,42 @@
+feat: 改版 v3 —— 厂家端独立信息架构、小红书式瀑布流、闪动式组局细节、性能优化
+
+按用户第二轮反馈的四点逐一处理（规格见 docs/REDESIGN-V2.md）
+
+一、厂家端不再是店主端换皮（用户最强诉求）
+- 厂家端独立底部导航 5 项：货源(自己的款管理/发布产品) / 建联(找店主+接需求) /
+  订货会(发布与报名名单) / 资讯 / 我的(工作台+版本配额)
+- 店主端仍是 4 项：资讯 / 货源 / 功能 / 我的
+- 新增 pages/manufacturer/{home,connect,fair}，TabBar 按 user.role 出不同导航
+- 新增 scripts/verify-vendor-view.mjs 做回归守卫，并接入 pnpm verify（现 12 项）
+
+二、资讯流改小红书式双列瀑布流
+- 新增 components/Waterfall（flex 双列 + 贪心分配 + useMemo 缓存）与 pages/index/WaterfallCard
+- 封面按原始宽高比渲染，从图片 URL 的 w/h 解析出 padding-top 百分比占位，防布局跳动
+- 卡片类型差异：实评星级+会再拿、组局时间/地点/已报名、吐槽角标、视频播放角标
+- 种子封面比例从单一 0.75 改为 4 种（3:4 / 1:1 / 4:3 / 16:9），否则两列没有错落感
+
+三、组局补全闪动式活动细节
+- 新增倒计时、活动流程时间线、完整报名名单（含报名留言）、发起人名片、
+  查看位置、分享收藏、报名条件匹配提示
+- 后端 Meetup 新增 agenda（活动流程），join 支持 note（报名留言）
+- 列表新增时间范围与费用筛选、报名进度条、形态色标
+
+四、性能（用户反馈「打开很卡」）
+- 根因不是后端（本地接口 1-2ms、切页 150ms），而是公网传输：
+  服务器完全没压缩，而 H5 产物 19MB/59 个 chunk，首屏 862KB、每次切页再下 330KB
+- 演示服务器与 API 都加 gzip（文本资源与 ≥1KB 的 JSON），实测大 JSON 省 82%
+- 静态资源加 ETag，命中的重复请求走 304
+- 新增 scripts/perf-audit.mjs / perf-nav.mjs 用于定位导航耗时
+- dev server 关掉编译告警浮层（94 条 Sass @import 弃用告警会铺满页面遮住 UI）
+
+五、其他修复
+- serve-demo 支持 --h5-dev：把用户端反代到 Taro dev server。因为 dev:h5 的
+  output.clean 会清空 dist/h5（不是并发构建才有的问题），加了开关后开发时 8099 也能用
+- 补 dev:h5 缺失的 @pmmmwh/react-refresh-webpack-plugin / react-refresh 依赖
+- 契约补齐后端已实现但未声明的接口：fair.mine/permission/upcoming、
+  FairSignupRow、FairPermission、MyFairs、OrderingFair.status/daysLeft
+- 修 createMeetup 漏落 agenda（新建组局的详情页看不到发起人自己填的流程）
+- auth/preference 支持 ownerName/city/shopName
+
+验收：pnpm verify 12 项全绿 · 后端冒烟 67/67 · 产物 130 个文件全合法 ·
+H5 逐页 27/27 · 店主端 4 Tab / 厂家端 5 Tab 双视角校验通过 · jsError 0

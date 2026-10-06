@@ -18,7 +18,7 @@ import type {
   User,
   UserBrief,
 } from './models';
-import type { AuditStatus, ContentType, MeetupKind, MemberLevel, StyleTag, TargetType, UserRole, Visibility } from './domain';
+import type { AuditStatus, ContentType, MeetupKind, MeetupAgendaItem, MemberLevel, StyleTag, TargetType, UserRole, Visibility } from './domain';
 
 /* =========================================================================
  * 统一响应信封：所有接口返回 { code, message, data }
@@ -389,6 +389,8 @@ export interface CreateMeetupDto {
   /** 人数上限，0 = 不限 */
   capacity: number;
   fee?: string;
+  /** 活动流程 / 行程安排（参考闪动），填了就让参与者知道每个时段干什么 */
+  agenda?: MeetupAgendaItem[];
   productId?: number;
   market?: string;
   styleTags?: StyleTag[];

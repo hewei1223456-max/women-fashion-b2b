@@ -1,12 +1,14 @@
 import { View, Text, Image } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { planOf } from '@wfb/shared-types';
 import { compactNumber } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
 import Card from '@/components/Card';
 import ListEmpty from '@/components/ListEmpty';
+import TabBar from '@/components/TabBar';
+import { toastError, toastSuccess } from '@/components/Toast';
 import { errMsg } from '@/components/utils';
 import { VIEW_LABELS, viewOfRole, useViewSwitch } from './view-switch';
 import './index.scss';
@@ -32,10 +34,12 @@ interface Entry {
 const ENTRIES: Entry[] = [
   { key: 'publish', icon: '🧵', name: '发布款', desc: '图片 / 视频 / 链接不限', path: '/pages/manufacturer/publish' },
   { key: 'mine', icon: '📦', name: '我的款', desc: '发布页下半部分即我的款', path: '/pages/manufacturer/publish' },
+  { key: 'connect', icon: '🤝', name: '建联', desc: '找店主 / 接需求', path: '/pages/manufacturer/connect' },
+  { key: 'fair', icon: '🏬', name: '订货会', desc: '发布与管理场次', path: '/pages/manufacturer/fair' },
   { key: 'contact', icon: '📨', name: '主动私信', desc: '按画像触达店主', path: '/pages/manufacturer/contact-list' },
   { key: 'sub', icon: '👥', name: '子账号', desc: '团队协作席位', path: '/pages/manufacturer/sub-account' },
   { key: 'wechat', icon: '📈', name: '加微看板', desc: '曝光 → 加微 → 转化率', path: '/pages/manufacturer/admin' },
-  { key: 'dashboard', icon: '📊', name: '数据看板', desc: '内容与流量趋势', path: '/pages/manufacturer/admin' },
+  { key: 'tools', icon: '🛠️', name: '经营工具', desc: '文案 / 配图 / 选题', path: '/pages/tools/index' },
 ];
 
 const DASHBOARD_LABELS: Record<string, string> = {
@@ -53,9 +57,32 @@ function go(url: string) {
 
 export default function ManufacturerWorkbench() {
   const user = useAppStore((s) => s.user);
+  const logout = useAppStore((s) => s.logout);
+  const queryClient = useQueryClient();
   const { current, switching, switchTo } = useViewSwitch();
   const plan = planOf(user?.memberLevel ?? 'manufacturer_free');
   const isManufacturer = viewOfRole(user?.role) === 'manufacturer';
+
+  /* 退出登录：先调后端（失败也允许本地退出，演示环境友好） */
+  const doLogout = () => {
+    Taro.showModal({
+      title: '退出登录',
+      content: '确定要退出当前账号吗？',
+      success: async (res) => {
+        if (!res.confirm) return;
+        try {
+          await api.auth.logout();
+        } catch {
+          /* 后端不可用时仍允许本地退出 */
+        }
+        logout();
+        queryClient.clear();
+        toastSuccess('已退出登录');
+        Taro.redirectTo({ url: '/pages/auth/login' });
+      },
+      fail: () => toastError('操作失败，请重试'),
+    });
+  };
 
   /* 版本配额：已发布款数来自「我的款」 */
   const products = useQuery({
@@ -262,9 +289,38 @@ export default function ManufacturerWorkbench() {
         </View>
       ) : null}
 
-      <View className="wb-foot" onClick={() => Taro.navigateTo({ url: '/pages/profile/index' })}>
-        <Text className="f-sm t3">返回「我的」（设置 / 认证 / 退出登录）›</Text>
-      </View>
+      {/* 账号与设置：厂家端「我的」Tab 的收尾区块（资料 / 认证 / 设置 / 退出） */}
+      <Card title="账号与设置" subtitle="资料 · 认证 · 通知与隐私">
+        <View className="wb-setting row-between" onClick={() => Taro.navigateTo({ url: '/pages/profile/edit' })}>
+          <Text className="f-sm t1">✏️ 编辑资料</Text>
+          <Text className="wb-setting__arrow">›</Text>
+        </View>
+        <View className="wb-setting row-between" onClick={() => Taro.navigateTo({ url: '/pages/auth/certify' })}>
+          <Text className="f-sm t1">🛡️ 认证与资质</Text>
+          <Text className="wb-setting__arrow">›</Text>
+        </View>
+        <View className="wb-setting row-between" onClick={() => Taro.navigateTo({ url: '/pages/profile/settings' })}>
+          <Text className="f-sm t1">⚙️ 设置（通知 / 隐私 / 黑名单）</Text>
+          <Text className="wb-setting__arrow">›</Text>
+        </View>
+        <View className="wb-setting row-between" onClick={() => Taro.navigateTo({ url: '/pages/manufacturer/sub-account' })}>
+          <Text className="f-sm t1">👥 子账号与协作</Text>
+          <Text className="wb-setting__arrow">›</Text>
+        </View>
+        {user?.role === 'manufacturer' ? (
+          <View className="wb-setting row-between" onClick={() => Taro.navigateTo({ url: '/pages/source/index' })}>
+            <Text className="f-sm t1">🔍 去店主端看看（货源大厅）</Text>
+            <Text className="wb-setting__arrow">›</Text>
+          </View>
+        ) : null}
+        <View className="wb-setting row-between" onClick={doLogout}>
+          <Text className="f-sm wb-setting__danger">退出登录</Text>
+          <Text className="wb-setting__arrow">›</Text>
+        </View>
+      </Card>
+
+      {/* 厂家端底部导航（货源 / 建联 / 订货会 / 资讯 / 我的），本页是「我的」 */}
+      <TabBar current="profile" />
     </View>
   );
 }

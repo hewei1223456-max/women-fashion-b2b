@@ -1,0 +1,183 @@
+@import '../../styles/variables.scss';
+
+/* 小红书式瀑布流卡片：轻量（描边代替阴影、无动画、无 filter） */
+.wfc {
+  background: $bg-card;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  border: 1px solid $line;
+}
+
+/* ---------- 封面（padding-top 百分比占位） ---------- */
+.wfc__cover-wrap {
+  position: relative;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+  background: $line;
+}
+
+.wfc__cover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wfc__corner {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #fff;
+  background: rgba(23, 25, 35, 0.55);
+  border-radius: $radius-pill;
+  padding: 0 12px;
+}
+
+.wfc__corner--meetup {
+  background: rgba(43, 74, 203, 0.85);
+}
+
+.wfc__play {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(23, 25, 35, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wfc__play-icon {
+  font-size: 20px;
+  color: #fff;
+  line-height: 1;
+}
+
+.wfc__duration {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #fff;
+  background: rgba(23, 25, 35, 0.55);
+  border-radius: 4px;
+  padding: 0 8px;
+}
+
+.wfc__count {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #fff;
+  background: rgba(23, 25, 35, 0.45);
+  border-radius: 4px;
+  padding: 0 8px;
+}
+
+/* ---------- 正文 ---------- */
+.wfc__body {
+  padding: 12px;
+}
+
+.wfc__title {
+  font-size: $fs-sm;
+  line-height: 1.4;
+  color: $text-1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* review：星级 + 会再拿 */
+.wfc__review {
+  margin-bottom: 6px;
+}
+
+.wfc__stars {
+  font-size: $fs-xs;
+  color: #f7b500;
+  letter-spacing: 1px;
+}
+
+.wfc__rebuy {
+  font-size: 18px;
+  color: $text-3;
+  background: #f2f4f8;
+  border-radius: 4px;
+  padding: 0 8px;
+  margin-left: 8px;
+}
+
+.wfc__rebuy.is-on {
+  color: $success;
+  background: #e7f8ef;
+}
+
+/* meetup：时间 / 地点 / 已报名 */
+.wfc__meetup {
+  margin-top: 8px;
+  background: #fafbfd;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.wfc__meetup-line {
+  display: block;
+  font-size: 18px;
+  line-height: 1.7;
+  color: $text-2;
+}
+
+/* ---------- 底部：作者 + 点赞 ---------- */
+.wfc__foot {
+  margin-top: 10px;
+}
+
+.wfc__author {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.wfc__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.wfc__name {
+  font-size: 20px;
+  color: $text-2;
+  max-width: 120px;
+  margin-right: 6px;
+}
+
+.wfc__like {
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.wfc__like-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.wfc__like-count {
+  font-size: 20px;
+  color: $text-3;
+  margin-left: 4px;
+}

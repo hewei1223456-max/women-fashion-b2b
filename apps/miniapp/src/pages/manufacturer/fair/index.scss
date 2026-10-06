@@ -1,0 +1,127 @@
+@import '../../../styles/variables.scss';
+
+/* 厂家端 · 订货会管理 */
+
+.mfr-fair__head {
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+}
+
+.mfr-fair__head.is-open {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+}
+
+.mfr-fair__head.is-locked {
+  background: linear-gradient(135deg, #6b7280 0%, #9aa3b2 100%);
+}
+
+.mfr-fair__head-title {
+  color: #fff;
+  font-size: $fs-lg;
+}
+
+.mfr-fair__head-sub {
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.mfr-fair__head-btn {
+  flex-shrink: 0;
+  margin-left: $gap-xs;
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: $radius-pill;
+  padding: 12px 22px;
+}
+
+.mfr-fair__head-btn-text {
+  color: #fff;
+  font-size: $fs-xs;
+  font-weight: 600;
+}
+
+.mfr-fair__head-stats {
+  margin-top: $gap-xs;
+}
+
+.mfr-fair__head-stat {
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: $gap;
+}
+
+.mfr-fair__card {
+  padding: $gap-sm 0;
+  border-bottom: 1px solid $line;
+}
+
+.mfr-fair__card:last-child {
+  border-bottom: none;
+}
+
+.mfr-fair__cover {
+  width: 160px;
+  height: 200px;
+  border-radius: $radius-sm;
+  background: $line;
+  flex-shrink: 0;
+  margin-right: $gap-xs;
+}
+
+.mfr-fair__title {
+  font-size: $fs-md;
+  max-width: 340px;
+}
+
+.mfr-fair__line {
+  display: block;
+  margin-top: 6px;
+}
+
+.mfr-fair__foot {
+  margin-top: $gap-xs;
+}
+
+.mfr-fair__signup-btn {
+  margin-left: $gap-xs;
+}
+
+.mfr-fair__note {
+  display: block;
+  margin: $gap-xs 0 $gap;
+  line-height: 1.6;
+}
+
+.mfr-fair__signup-list {
+  margin-top: $gap-sm;
+  text-align: left;
+  max-height: 700px;
+  overflow-y: auto;
+}
+
+.mfr-fair__signup-row {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+}
+
+.mfr-fair__signup-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: $gap-xs;
+  flex-shrink: 0;
+}
+
+.mfr-fair__form {
+  margin-top: $gap-sm;
+  text-align: left;
+}
+
+.mfr-fair__dates {
+  align-items: center;
+}
+
+.mfr-fair__date-sep {
+  padding: 0 $gap-xs;
+}

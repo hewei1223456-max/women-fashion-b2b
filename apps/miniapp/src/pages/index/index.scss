@@ -203,38 +203,6 @@
   margin-right: $gap-xs;
 }
 
-/* 「组局」Tab 的整宽卡片 */
-.info-meetup-full {
-  background: $bg-card;
-  border-radius: $radius;
-  padding: $gap-sm;
-  margin-bottom: $gap-xs;
-  box-shadow: $shadow-sm;
-}
-.info-meetup-full__title {
-  display: block;
-  font-size: $fs-lg;
-  color: $text-1;
-  line-height: 1.4;
-  margin-top: $gap-xs;
-}
-.info-meetup-full__facts {
-  margin-top: $gap-xs;
-  background: #fafbfd;
-  border-radius: $radius-sm;
-  padding: $gap-xs $gap-sm;
-}
-.info-meetup__avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: $line;
-  margin-right: 10px;
-}
-.info-meetup__name {
-  max-width: 340px;
-}
-
 /* ---------- ④ 内容流 Tabs ---------- */
 .info-tabs {
   white-space: nowrap;
@@ -276,31 +244,10 @@
   margin-bottom: $gap-xs;
 }
 
-/* ---------- ⑤ 信息流卡片 ---------- */
-.info-row {
-  margin-bottom: $gap-xs;
-}
-.info-row__ugc {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: $gap-xs;
-}
-.info-row__stars {
-  margin-right: $gap-xs;
-  margin-bottom: $gap-xs;
-}
-.info-row__stars-icon {
-  font-size: $fs-sm;
-  color: #f7b500;
-  letter-spacing: 2px;
-}
-.info-row__stars-text {
-  font-size: $fs-xs;
-  color: $text-3;
-  margin-left: 6px;
-}
+/* ---------- ⑤ 信息流：双列瀑布流 ----------
+ * 卡片自身样式在 pages/index/WaterfallCard.scss（组件局部），
+ * 列容器样式在 components/Waterfall/index.scss，这里只留「推荐策略」一行说明。
+ * ------------------------------------------------------------------ */
 
 /* ---------- ⑥ 底部轻量工具入口 ---------- */
 .info-tools {

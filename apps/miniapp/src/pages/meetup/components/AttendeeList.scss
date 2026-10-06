@@ -1,0 +1,73 @@
+@import '../../../styles/variables.scss';
+
+.mt-attendees {
+  margin-top: $gap-xs;
+}
+
+.mt-attendees__grid {
+  margin-top: $gap-sm;
+}
+
+.mt-attendees__item {
+  width: 25%;
+  margin-bottom: $gap-sm;
+  padding: 0 6px;
+}
+
+.mt-attendees__avatar-wrap {
+  position: relative;
+}
+
+.mt-attendees__avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: $line;
+}
+
+.mt-attendees__crown {
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  margin-left: -46px;
+  width: 92px;
+  border-radius: $radius-pill;
+  background: $brand;
+  align-items: center;
+}
+
+.mt-attendees__crown-text {
+  font-size: 16px;
+  color: #fff;
+  line-height: 1.6;
+}
+
+.mt-attendees__name {
+  max-width: 150px;
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+.mt-attendees__note {
+  max-width: 150px;
+  margin-top: 2px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.mt-attendees__empty {
+  display: block;
+  margin-top: $gap-xs;
+}
+
+.mt-attendees__more {
+  display: block;
+  margin-top: 4px;
+}
+
+.mt-attendees__seat {
+  display: block;
+  margin-top: 4px;
+  padding-top: $gap-xs;
+  border-top: 1px solid $line;
+}

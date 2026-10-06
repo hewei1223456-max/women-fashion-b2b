@@ -77,6 +77,8 @@ function run(cmd, args, opts = {}) {
     shell: true,
     timeout: opts.timeout ?? 600000,
     maxBuffer: 64 * 1024 * 1024,
+    /** 允许子进程覆盖环境变量（例如让校验脚本指向不同的 BASE 地址） */
+    env: opts.env ?? process.env,
   });
   const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
   if (r.error) return { code: r.status ?? 1, out: `${out}\n[spawn error] ${r.error.code}: ${r.error.message}`, spawnError: r.error.code };
@@ -192,6 +194,22 @@ async function main() {
       const pages = run('node', [path.join(ROOT, 'scripts/verify-pages.mjs'), 'http://localhost:8099'], { timeout: 900000 });
       const m = /通过\s*(\d+)\/(\d+)/.exec(pages.out.replace(/\x1b\[[0-9;]*m/g, ''));
       record('H5 逐页运行时校验', m ? m[1] === m[2] : false, m ? `通过 ${m[1]}/${m[2]}` : '未解析到结果');
+
+      /**
+       * 双端视角校验：店主端 4 个 Tab、厂家端 5 个 Tab，且各自页面能打开。
+       * 用户曾反馈「厂家版跟店主版界面一模一样」，这是防止回归的守卫。
+       */
+      const vendorEnv = { ...process.env, BASE: 'http://localhost:8099', WAIT: '3500' };
+      const vendor = run('node', [path.join(ROOT, 'scripts/verify-vendor-view.mjs')], { timeout: 600000, env: vendorEnv });
+      const vendorOut = vendor.out.replace(/\x1b\[[0-9;]*m/g, '');
+      const shopOk = /shop_owner[\s\S]*?4\/4 命中/.test(vendorOut);
+      const mfrOk = /manufacturer[\s\S]*?5\/5 命中/.test(vendorOut);
+      const noErr = !/jsError: [1-9]/.test(vendorOut);
+      record(
+        '店主端/厂家端双视角导航',
+        shopOk && mfrOk && noErr,
+        `店主端 4 Tab ${shopOk ? '✓' : '✗'} · 厂家端 5 Tab ${mfrOk ? '✓' : '✗'} · jsError ${noErr ? '0' : '有'}`,
+      );
     }
   }
 

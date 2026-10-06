@@ -75,6 +75,19 @@ export const MEETUP_KIND_LABELS: Record<MeetupKind, string> = {
   exchange: '同业交流局',
 };
 
+/**
+ * 组局的一个环节（参考闪动的时间线）。
+ * time 用 HH:mm 文本直接展示，前端不需要做时区换算。
+ */
+export interface MeetupAgendaItem {
+  /** 例如 "07:00" */
+  time: string;
+  /** 环节标题，例如「集合签到」 */
+  title: string;
+  /** 补充说明，可省略 */
+  desc?: string;
+}
+
 /** 档口形态 —— 店主判断「能不能实地看货」的关键信息 */
 export const STALL_TYPES = ['factory', 'showroom', 'stall', 'factory_stall'] as const;
 export type StallType = (typeof STALL_TYPES)[number];

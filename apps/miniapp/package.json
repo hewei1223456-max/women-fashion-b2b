@@ -41,6 +41,7 @@
     "@babel/core": "7.26.0",
     "@babel/preset-react": "7.26.3",
     "@babel/runtime": "7.26.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.5.16",
     "@tarojs/cli": "4.3.0",
     "@tarojs/taro-loader": "4.3.0",
     "@tarojs/webpack5-runner": "4.3.0",
@@ -49,6 +50,7 @@
     "@types/webpack-env": "1.18.5",
     "babel-preset-taro": "4.3.0",
     "postcss": "8.5.6",
+    "react-refresh": "0.14.2",
     "sass": "1.105.1",
     "typescript": "5.9.3",
     "webpack": "5.97.1"

@@ -1,4 +1,4 @@
-import type { Meetup, StyleTag, User } from '@wfb/shared-types';
+import type { Meetup, MeetupAgendaItem, StyleTag, User } from '@wfb/shared-types';
 import { MEETUP_KIND_LABELS, STYLE_TAGS } from '@wfb/shared-types';
 import type { MeetupRow, Store } from '../../core/db';
 import { nextId, pageOf } from '../../core/db';
@@ -36,12 +36,33 @@ export interface CreateMeetupInput {
   signupRequirement: string;
   capacity: number;
   fee?: string;
+  /** 活动流程 / 行程安排（参考闪动的时间线） */
+  agenda?: MeetupAgendaItem[];
   productId?: number;
   market?: string;
   styleTags?: string[];
   targetAudience?: string;
   coverUrl?: string;
   publishToFeed?: boolean;
+}
+
+/**
+ * 规范化活动流程：丢弃缺时间或缺标题的项，限制条数。
+ * trace 与标题都做长度截断，避免脏数据把详情页撑坏。
+ */
+function normalizeAgenda(raw: unknown): MeetupAgendaItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((it) => {
+      const item = (it ?? {}) as Record<string, unknown>;
+      const time = String(item.time ?? '').trim();
+      const title = String(item.title ?? '').trim();
+      if (!time || !title) return null;
+      const desc = item.desc ? String(item.desc).trim().slice(0, 120) : undefined;
+      return { time: time.slice(0, 10), title: title.slice(0, 30), desc };
+    })
+    .filter(Boolean)
+    .slice(0, 20) as MeetupAgendaItem[];
 }
 
 const VALID_KINDS = Object.keys(MEETUP_KIND_LABELS);
@@ -90,6 +111,7 @@ export function validateMeetupInput(dto: CreateMeetupInput) {
     signupRequirement,
     capacity: Math.round(capacity),
     fee: dto?.fee ? String(dto.fee).slice(0, 100) : undefined,
+    agenda: normalizeAgenda(dto?.agenda),
     productId: dto?.productId ? Number(dto.productId) : undefined,
     market: dto?.market ? String(dto.market) : undefined,
     styleTags: (Array.isArray(dto?.styleTags) ? dto.styleTags : []).filter((t) => STYLE_TAGS.includes(t as never)) as StyleTag[],
@@ -102,10 +124,13 @@ export function validateMeetupInput(dto: CreateMeetupInput) {
 /** 组装对外的 Meeting 视图：补发起人、报名者、joined 状态 */
 export function toMeetupView(store: Store, row: MeetupRow, viewerId?: number): Meetup {
   const signups = [...store.meetupSignups.values()].filter((s) => s.meetupId === row.id);
-  const attendees = signups
-    .slice(0, 8)
-    .map((s) => toUserBrief(store.users.get(s.userId)))
-    .filter(Boolean);
+  /**
+   * 详情页要展示完整报名名单（不只是几个头像），所以这里给全量；
+   * 列表页卡片只需要头像堆叠，前端自行 slice。
+   * 名字带 note（报名留言），组织者能看出每个人为什么来。
+   */
+  const attendeeRows = signups.map((s) => ({ signup: s, user: toUserBrief(store.users.get(s.userId)) })).filter((x) => x.user);
+  const attendees = attendeeRows.map((x) => x.user);
   const status: Meetup['status'] =
     row.status === 'recruiting' && row.capacity > 0 && signups.length >= row.capacity ? 'full' : row.status;
 
@@ -121,6 +146,7 @@ export function toMeetupView(store: Store, row: MeetupRow, viewerId?: number): M
     gatheringPoint: row.gatheringPoint,
     startAt: row.startAt,
     endAt: row.endAt,
+    agenda: row.agenda ?? [],
     signupMethod: row.signupMethod,
     signupRequirement: row.signupRequirement,
     capacity: row.capacity,
@@ -135,6 +161,8 @@ export function toMeetupView(store: Store, row: MeetupRow, viewerId?: number): M
     initiator: toUserBrief(store.users.get(row.initiatorId)),
     joined: viewerId ? signups.some((s) => s.userId === viewerId) : false,
     attendees,
+    /** 报名留言（与 attendees 一一对应；只有组织者与本人需要看，Demo 阶段直接给） */
+    attendeeNotes: attendeeRows.map((x) => ({ userId: x.user.id, note: x.signup.note ?? '' })),
   };
 }
 
@@ -183,6 +211,8 @@ export function createMeetup(store: Store, user: User, input: ReturnType<typeof 
     endAt: input.endAt,
     signupMethod: input.signupMethod,
     signupRequirement: input.signupRequirement,
+    /** 活动流程必须落库：漏了这行会导致新建组局的详情页看不到时间线（发起人自己填的会「消失」） */
+    agenda: input.agenda,
     capacity: input.capacity,
     joinedCount: 0,
     fee: input.fee,
@@ -204,6 +234,10 @@ export function createMeetup(store: Store, user: User, input: ReturnType<typeof 
   if (input.publishToFeed) {
     const aid = nextId(store, 'articles');
     const kindLabel = MEETUP_KIND_LABELS[input.kind as never] ?? '组局';
+    /** 资讯流里的组局内容也带上活动流程，读者不用跳转就能看明白 */
+    const agendaText = input.agenda?.length
+      ? `\n\n**活动流程**\n${input.agenda.map((a) => `${a.time} ${a.title}${a.desc ? `（${a.desc}）` : ''}`).join('\n')}`
+      : '';
     store.articles.set(aid, {
       id: aid,
       authorId: user.id,
@@ -212,7 +246,7 @@ export function createMeetup(store: Store, user: User, input: ReturnType<typeof 
       contentType: 'meetup',
       title: `${kindLabel}｜${input.title}`,
       summary: `${input.city} ${input.venue} · ${formatMeetupTime(input.startAt)} 集合`,
-      content: `${input.description}\n\n**集合点**：${input.gatheringPoint}\n**时间**：${formatMeetupTime(input.startAt)} - ${formatMeetupTime(input.endAt)}\n**报名方式**：${input.signupMethod}\n**报名条件**：${input.signupRequirement}`,
+      content: `${input.description}\n\n**集合点**：${input.gatheringPoint}\n**时间**：${formatMeetupTime(input.startAt)} - ${formatMeetupTime(input.endAt)}\n**报名方式**：${input.signupMethod}\n**报名条件**：${input.signupRequirement}${agendaText}`,
       coverUrl: row.coverUrl,
       images: [row.coverUrl],
       attachments: [],
@@ -240,27 +274,32 @@ export function createMeetup(store: Store, user: User, input: ReturnType<typeof 
   return toMeetupView(store, row, user.id);
 }
 
-export function joinMeetup(store: Store, user: User, meetupId: number): Meetup {
+export function joinMeetup(store: Store, user: User, meetupId: number, note?: string): Meetup {
   const row = store.meetups.get(meetupId);
   if (!row || row.deleted) throw Errors.notFound('组局不存在或已取消');
   if (row.status === 'cancelled') throw Errors.badRequest('该组局已取消');
   if (new Date(row.endAt).getTime() < Date.now()) throw Errors.badRequest('该组局已结束，无法报名');
 
+  const noteText = note ? String(note).trim().slice(0, 200) : undefined;
   const existing = [...store.meetupSignups.values()].find((s) => s.meetupId === meetupId && s.userId === user.id);
-  if (existing) return toMeetupView(store, row, user.id); // 幂等
+  if (existing) {
+    // 幂等：已报名时允许补/改留言
+    if (noteText && existing.note !== noteText) existing.note = noteText;
+    return toMeetupView(store, row, user.id);
+  }
 
   const count = [...store.meetupSignups.values()].filter((s) => s.meetupId === meetupId).length;
   if (row.capacity > 0 && count >= row.capacity) throw Errors.badRequest('该组局人数已满');
 
   const id = nextId(store, 'meetupSignups');
-  store.meetupSignups.set(id, { id, meetupId, userId: user.id, createdAt: now() });
+  store.meetupSignups.set(id, { id, meetupId, userId: user.id, note: noteText, createdAt: now() });
 
   // 通知发起人（TargetType 目前只覆盖 article/product/comment，组局先按未类型化处理）
   pushNotification(store, {
     userId: row.initiatorId,
     type: 'system',
     title: '有人报名了你的组局',
-    body: `${user.nickname} 报名了「${row.title}」`,
+    body: noteText ? `${user.nickname} 报名了「${row.title}」：${noteText}` : `${user.nickname} 报名了「${row.title}」`,
     actorId: user.id,
     targetType: 'meetup' as never,
     targetId: meetupId,

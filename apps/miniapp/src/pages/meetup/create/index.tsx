@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Input, Textarea, Picker, ScrollView } from '@tarojs/components';
+import { View, Text, Input, Textarea, Picker, ScrollView, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { CreateMeetupDto, Meetup, MeetupKind } from '@wfb/shared-types';
@@ -37,6 +37,41 @@ function timeStr(d: Date): string {
 const SIGNUP_METHOD_PRESETS = ['站内报名，通过后拉群', '加微信报名（评论区留微信号）', '现场集合点直接签到'];
 const SIGNUP_REQUIREMENT_PRESETS = ['认证店主，有实体店', '不限身份，同行即可', '需自带样品/新款', '限同城，能准时到集合点'];
 
+/** 活动流程预设：一键套用一套常见的扫款行程 */
+const AGENDA_PRESETS: { time: string; title: string; desc?: string }[] = [
+  { time: '07:00', title: '集合签到', desc: '集合点碰头，清点人数、分发路线' },
+  { time: '07:30', title: '进市场扫款', desc: '按楼层分头看款，拍照记档口号' },
+  { time: '10:00', title: '复盘选款', desc: '咖啡厅集中，对比价格与起批量' },
+  { time: '11:30', title: '下单 / 拼单', desc: '确定款式与数量，能拼的一起拼' },
+  { time: '12:00', title: '散场', desc: '各自返程，群里同步后续返单' },
+];
+
+interface AgendaRow {
+  time: string;
+  title: string;
+  desc: string;
+}
+
+/** 补齐 7:00 → 07:00，非法值返回空串 */
+function normalizeTime(value: string): string {
+  const raw = String(value ?? '').trim();
+  const m = /^(\d{1,2})[:：]?(\d{0,2})$/.exec(raw);
+  if (!m) return '';
+  const h = Number(m[1]);
+  const min = m[2] ? Number(m[2]) : 0;
+  if (!Number.isFinite(h) || h > 23 || !Number.isFinite(min) || min > 59) return '';
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+}
+
+/**
+ * Demo 未接对象存储：chooseImage 给的是本地临时路径，直接提交给后端会在别人那里显示不出来，
+ * 因此不合规的路径回落到 API 自带的占位图；本地预览仍然展示用户选的那张。
+ */
+function resolveCoverUrl(tempPath: string, seed: string): string {
+  if (/^(https?:\/\/|\/uploads\/)/.test(tempPath)) return tempPath;
+  return `/uploads/demo/img.svg?ratio=landscape&w=900&h=600&label=${encodeURIComponent('组局封面')}&seed=${encodeURIComponent(seed)}`;
+}
+
 export default function MeetupCreate() {
   const queryClient = useQueryClient();
   const user = useAppStore((s) => s.user);
@@ -63,6 +98,47 @@ export default function MeetupCreate() {
   const [targetAudience, setTargetAudience] = useState('');
   const [description, setDescription] = useState('');
   const [publishToFeed, setPublishToFeed] = useState(true);
+  const [agenda, setAgenda] = useState<AgendaRow[]>([]);
+  const [coverLocal, setCoverLocal] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+  const [needApproval, setNeedApproval] = useState(false);
+
+  /* ------------------------------ 活动流程编辑 ------------------------------ */
+  const addAgendaRow = (row?: Partial<AgendaRow>) => {
+    setAgenda((prev) => [...prev, { time: row?.time ?? '', title: row?.title ?? '', desc: row?.desc ?? '' }]);
+  };
+
+  const updateAgendaRow = (index: number, patch: Partial<AgendaRow>) => {
+    setAgenda((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  };
+
+  const removeAgendaRow = (index: number) => {
+    setAgenda((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const applyAgendaPreset = () => {
+    setAgenda(AGENDA_PRESETS.map((p) => ({ time: p.time, title: p.title, desc: p.desc ?? '' })));
+    Taro.showToast({ title: '已套用扫款行程，可自行增删', icon: 'none' });
+  };
+
+  /* ------------------------------ 封面 ------------------------------ */
+  const chooseCover = async () => {
+    try {
+      const res = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] });
+      const temp = res.tempFilePaths?.[0] ?? '';
+      if (!temp) return;
+      setCoverLocal(temp);
+      setCoverUrl(resolveCoverUrl(temp, `${title || 'meetup'}-${Date.now()}`));
+      Taro.showToast({ title: '封面已选择', icon: 'none' });
+    } catch {
+      Taro.showToast({ title: '已取消选择', icon: 'none' });
+    }
+  };
+
+  const clearCover = () => {
+    setCoverLocal('');
+    setCoverUrl('');
+  };
 
   const create = useMutation({
     mutationFn: (dto: CreateMeetupDto) => api.meetup.create(dto),
@@ -101,7 +177,18 @@ export default function MeetupCreate() {
     }
 
     const cap = Number(capacity || 0);
-    create.mutate({
+
+    /* 活动流程：丢掉空行，时间补齐成 HH:mm 并排序；只有标题的环节也保留 */
+    const agendaPayload = agenda
+      .map((row) => ({ time: normalizeTime(row.time), title: row.title.trim(), desc: row.desc.trim() || undefined }))
+      .filter((row) => row.time || row.title)
+      .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+    if (agendaPayload.some((row) => row.time && !row.title)) {
+      return Taro.showToast({ title: '活动流程里有时间点缺标题', icon: 'none' });
+    }
+
+    /* needApproval 暂未纳入 CreateMeetupDto（后端 Demo 阶段只记录设置），用交叉类型带上 */
+    const payload: CreateMeetupDto & { needApproval?: boolean } = {
       kind,
       title: title.trim(),
       description: description.trim(),
@@ -116,8 +203,12 @@ export default function MeetupCreate() {
       fee: fee.trim() || undefined,
       market: market || undefined,
       targetAudience: targetAudience.trim() || undefined,
+      coverUrl: coverUrl || undefined,
       publishToFeed,
-    });
+      agenda: agendaPayload.length ? agendaPayload : undefined,
+      needApproval,
+    };
+    create.mutate(payload);
     return undefined;
   };
 
@@ -131,6 +222,27 @@ export default function MeetupCreate() {
             </View>
           ))}
         </View>
+      </Card>
+
+      <Card title="封面图" subtitle="列表与资讯流都用这张图（Demo 未接对象存储，提交时用平台占位图）">
+        {coverLocal ? (
+          <View className="mt-create__cover-wrap">
+            <Image className="mt-create__cover" src={coverLocal} mode="aspectFill" onClick={chooseCover} />
+            <View className="row mt-create__cover-actions">
+              <Text className="f-xs brand" onClick={chooseCover}>
+                重新选择
+              </Text>
+              <Text className="f-xs t3 mt-create__cover-clear" onClick={clearCover}>
+                移除封面
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View className="mt-create__upload" onClick={chooseCover}>
+            <Text className="mt-create__upload-plus">＋</Text>
+            <Text className="mt-create__upload-tip">上传封面图（相册 / 拍照）</Text>
+          </View>
+        )}
       </Card>
 
       <Card title="基本信息">
@@ -199,6 +311,51 @@ export default function MeetupCreate() {
         </View>
       </Card>
 
+      <Card title="活动流程" subtitle="分时段列出行程，报名的人最关心这个（可增删）">
+        <View className="mt-create__agenda-head row-between">
+          <Text className="f-xs t3">共 {agenda.length} 个环节</Text>
+          <Text className="f-xs brand" onClick={applyAgendaPreset}>
+            一键套用扫款行程
+          </Text>
+        </View>
+
+        {agenda.map((row, idx) => (
+          <View key={`agenda-${idx}`} className="mt-create__agenda-row">
+            <View className="row mt-create__agenda-line">
+              <Input
+                className="input mt-create__agenda-time"
+                value={row.time}
+                placeholder="07:00"
+                maxlength={5}
+                onInput={(e) => updateAgendaRow(idx, { time: e.detail.value })}
+              />
+              <Input
+                className="input flex-1 mt-create__agenda-title"
+                value={row.title}
+                placeholder="环节名称，例如 集合签到"
+                maxlength={20}
+                onInput={(e) => updateAgendaRow(idx, { title: e.detail.value })}
+              />
+              <Text className="mt-create__agenda-del f-xs" onClick={() => removeAgendaRow(idx)}>
+                删除
+              </Text>
+            </View>
+            <Input
+              className="input mt-create__agenda-desc"
+              value={row.desc}
+              placeholder="补充说明（可选）：在哪集合、做什么"
+              maxlength={40}
+              onInput={(e) => updateAgendaRow(idx, { desc: e.detail.value })}
+            />
+          </View>
+        ))}
+
+        <View className="btn btn-plain btn-block mt-create__agenda-add" onClick={() => addAgendaRow()}>
+          <Text>+ 添加环节</Text>
+        </View>
+        <Text className="f-xs t3 mt-create__agenda-tip">时间填 07:00 这样的格式；只填标题不填时间也可以（会排在最后）。</Text>
+      </Card>
+
       <Card title="报名设置" subtitle="报名方式与报名条件会直接展示给同行者">
         <View className="field">
           <Text className="field-label">报名方式（必填）</Text>
@@ -242,6 +399,16 @@ export default function MeetupCreate() {
         <View className="field">
           <Text className="field-label">费用说明（可选）</Text>
           <Input className="input" value={fee} placeholder="例如：AA 制，交通自理" maxlength={40} onInput={(e) => setFee(e.detail.value)} />
+        </View>
+
+        <View className="mt-create__switch row-between" onClick={() => setNeedApproval(!needApproval)}>
+          <View className="col flex-1">
+            <Text className="f-sm t1">报名需审核</Text>
+            <Text className="f-xs t3">开启后报名需要发起人确认（Demo 阶段仅记录该设置，不阻断报名）</Text>
+          </View>
+          <View className={`mt-create__toggle ${needApproval ? 'is-on' : ''}`}>
+            <Text className="mt-create__toggle-text">{needApproval ? '已开启' : '已关闭'}</Text>
+          </View>
         </View>
       </Card>
 

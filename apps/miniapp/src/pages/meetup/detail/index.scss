@@ -126,8 +126,137 @@
   flex-direction: row;
   align-items: center;
 }
+
+.mt-detail__bar-icon {
+  width: 96px;
+  flex-shrink: 0;
+}
+
+.mt-detail__bar-icon-text {
+  font-size: 36px;
+  line-height: 1.2;
+}
+
+.mt-detail__bar-info {
+  flex-shrink: 1;
+  min-width: 0;
+  margin: 0 $gap-xs;
+}
+
+.mt-detail__bar-warn {
+  color: $warning;
+}
+
 .mt-detail__join {
   flex-shrink: 0;
-  margin-left: $gap-sm;
+  margin-left: $gap-xs;
   padding: 0 $gap-lg;
+}
+
+/* ---------- 倒计时 / 发起人名片 ---------- */
+.mt-detail__countdown {
+  margin-top: $gap-sm;
+}
+
+.mt-detail__author-name-row {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mt-detail__author-meta {
+  margin-top: 4px;
+}
+
+.mt-detail__author-bio {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.6;
+}
+
+.mt-detail__others {
+  margin-top: $gap-sm;
+  padding-top: $gap-xs;
+  border-top: 1px solid $line;
+}
+
+.mt-detail__others-title {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.mt-detail__other {
+  padding: $gap-xs 0;
+  border-bottom: 1px solid $line;
+  align-items: center;
+}
+.mt-detail__other:last-child {
+  border-bottom: none;
+}
+
+.mt-detail__other-meta {
+  margin-top: 2px;
+}
+
+/* ---------- 查看位置 ---------- */
+.mt-detail__place-row {
+  margin-top: $gap-xs;
+}
+
+.mt-detail__place-copy {
+  margin-left: $gap-xs;
+}
+
+.mt-detail__place {
+  margin-top: $gap-xs;
+}
+
+.mt-detail__place-line {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+/* ---------- 报名留言 ---------- */
+.mt-detail__note {
+  margin-top: $gap-xs;
+}
+
+.mt-detail__note-presets {
+  margin-top: $gap-xs;
+}
+
+.mt-detail__note-preset {
+  background: $brand-light;
+  border-radius: $radius-pill;
+  padding: 6px 18px;
+  margin-right: $gap-xs;
+  margin-bottom: 6px;
+}
+
+.mt-detail__note-preset-text {
+  color: $brand;
+}
+
+.mt-detail__note-input {
+  width: 100%;
+  margin-top: $gap-xs;
+  min-height: 140px;
+}
+
+.mt-detail__note-count {
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* ---------- 错误 / 重试 ---------- */
+.mt-detail__error-actions {
+  margin-top: $gap-sm;
+}
+
+.mt-detail__error-retry {
+  margin-left: $gap-xs;
+}
+
+.mt-detail__retry {
+  margin-top: $gap-sm;
 }

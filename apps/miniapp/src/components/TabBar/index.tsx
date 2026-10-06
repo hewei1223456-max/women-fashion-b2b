@@ -18,16 +18,29 @@ export const TABS: TabItem[] = [
 ];
 
 /**
- * 厂家视角的第 4 个 tab：切到「工作台」。
- * 用户原话「需要一个单独的厂家端后台，可以在上面切换视角」——
- * 切到厂家端后底部导航第 4 项直接变成工作台，不再是店主端的「我的」。
+ * 厂家端底部导航 —— **不是店主端换皮**，是另一套信息架构。
+ *
+ * 用户原话：「厂家版打开跟店主版的界面一模一样，厂家版核心是发布产品、找店主建联、
+ * 发布订货会，同时也有行业资讯和经营工具，但核心是前面那些功能。」
+ *
+ * 所以厂家端：
+ *   - 第 1 项是「货源」= 自己款管理的主战场（发布产品），不是浏览别人的货
+ *   - 第 2 项「建联」= 找店主、接需求
+ *   - 第 3 项「订货会」= 发布与管理场次
+ *   - 第 4 项「资讯」= 复用资讯流
+ *   - 第 5 项「我的」= 厂家工作台 + 版本配额
+ * 店主端的「功能」（经营工具）在厂家端收进工作台里，不占 Tab 位。
+ *
+ * ⚠️ path 必须写字面量、不能 import pages/manufacturer 下的模块：
+ * 那是分包，主包引用分包模块微信会报错。
  */
-export const MANUFACTURER_TAB: TabItem = {
-  key: 'profile',
-  label: '工作台',
-  icon: '🏭',
-  path: '/pages/manufacturer/workbench',
-};
+export const MANUFACTURER_TABS: TabItem[] = [
+  { key: 'goods', label: '货源', icon: '📦', path: '/pages/manufacturer/home' },
+  { key: 'connect', label: '建联', icon: '🤝', path: '/pages/manufacturer/connect' },
+  { key: 'fair', label: '订货会', icon: '🏬', path: '/pages/manufacturer/fair' },
+  { key: 'info', label: '资讯', icon: '📖', path: '/pages/index/index' },
+  { key: 'profile', label: '我的', icon: '🏭', path: '/pages/manufacturer/workbench' },
+];
 
 /** 兼容历史的 current="home"（首页改名资讯前的调用方） */
 function isActive(item: TabItem, current: string): boolean {
@@ -41,15 +54,17 @@ interface Props {
 }
 
 /**
- * 自定义底部导航：4 个 tab（资讯 / 货源 / 功能 / 我的）。
- * 不用原生 tabBar 的原因：微信小程序不支持「我的」页动态角标以外的定制，
- * 且我们需要在 H5 上保持完全一致的视觉。
- * 按「资讯 / 货源 / 功能」的信息架构固定前 3 项，第 4 项随视角（店主端 / 厂家端）变化。
+ * 自定义底部导航。
+ *
+ * 不用原生 tabBar 的原因：微信小程序原生 tabBar 定制能力很弱（只有角标），
+ * 而我们需要「按身份出不同导航」+ H5/小程序视觉完全一致。
+ * 店主端 4 项、厂家端 5 项，由 store 里的 user.role 决定。
  */
 export default function TabBar({ current }: Props) {
   const unread = useAppStore((s) => s.unread.total);
   const role = useAppStore((s) => s.user?.role);
-  const tabs = role === 'manufacturer' ? [TABS[0], TABS[1], TABS[2], MANUFACTURER_TAB] : TABS;
+  const isMfr = role === 'manufacturer';
+  const tabs = isMfr ? MANUFACTURER_TABS : TABS;
 
   const go = (item: TabItem) => {
     if (isActive(item, current)) return;
@@ -59,7 +74,7 @@ export default function TabBar({ current }: Props) {
   };
 
   return (
-    <View className="tabbar">
+    <View className={`tabbar ${isMfr ? 'tabbar--mfr' : ''}`}>
       {tabs.map((item) => (
         <View
           key={`${item.key}-${item.label}`}
