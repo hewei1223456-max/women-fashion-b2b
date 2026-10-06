@@ -15,6 +15,7 @@ import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
 import ArticleCard from '@/components/ArticleCard';
 import { toast, toastError, toastSuccess } from '@/components/Toast';
+import { UserBadges } from '@/components/Badge';
 import { certBadge, count, errMsg, asList } from '@/components/utils';
 import { VIEW_LABELS, useViewSwitch } from '@/pages/manufacturer/workbench/view-switch';
 import './index.scss';
@@ -146,6 +147,10 @@ export default function Profile() {
                   <Text>{certBadge(user.certStatus)}</Text>
                 </View>
               ) : null}
+            </View>
+            {/* 身份标识：badges 只在 UserBrief 上，因此优先用 profile.detail 下发的 user，再兜底 store 里的账号 */}
+            <View className="row profile__badge-row">
+              <UserBadges user={detail.data?.user ?? user} size="xs" max={3} />
             </View>
             <View className="row profile__badges">
               <View className="tag">

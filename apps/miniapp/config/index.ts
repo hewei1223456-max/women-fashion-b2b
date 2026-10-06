@@ -42,6 +42,12 @@ export default defineConfig<'webpack5'>(async (merge) => {
         pxtransform: { enable: true, config: {} },
         cssModules: { enable: false },
       },
+      /**
+       * 小程序端多页面共享组件样式时的「Conflicting order」是噪声告警：
+       * 退出码仍为 0、产物正常，但会淹没真正的错误，所以在 mini 侧也关掉。
+       * （H5 侧在 h5.miniCssExtractPluginOption 已设同样的 ignoreOrder）
+       */
+      miniCssExtractPluginOption: { ignoreOrder: true },
     },
     h5: {
       publicPath: '/',

@@ -7,6 +7,8 @@ import { ARTICLE_TYPE_LABELS, CONTENT_TYPE_LABELS, STYLE_COLORS } from '@wfb/sha
 import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
+import Badge from '@/components/Badge';
+import CommentItem from '@/components/CommentItem';
 import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
 import { kindLabel, meetupRange, meetupStatus, seatText } from '@/pages/meetup/meetup-utils';
@@ -194,7 +196,10 @@ export default function InfoDetail() {
             <View className="ad-sub">
               <Image className="ad-sub__avatar" src={article.author.avatarUrl} mode="aspectFill" />
               <View className="flex-1">
-                <Text className="ad-sub__name">{article.author.nickname}</Text>
+                <View className="row">
+                  <Text className="ad-sub__name">{article.author.nickname}</Text>
+                  {article.author ? <Badge user={article.author} size="xs" max={2} /> : null}
+                </View>
                 <Text className="ad-sub__meta">
                   {ARTICLE_TYPE_LABELS[article.type] ?? '资讯'} · {timeAgo(article.createdAt)} · {compactNumber(article.viewCount)}阅读
                 </Text>
@@ -406,29 +411,14 @@ export default function InfoDetail() {
           onRetry={() => comments.refetch()}
         />
 
+        {/* 评论统一用 CommentItem：昵称旁带身份标识（认证店主 / 付费厂家 / 讲师…），二级回复内联 */}
         {list.map((c) => (
-          <View key={c.id} className="ac-item">
-            <Image className="ac-item__avatar" src={c.user?.avatarUrl} mode="aspectFill" />
-            <View className="ac-item__body">
-              <Text className="ac-item__name">{c.user?.nickname ?? '匿名用户'}</Text>
-              <Text className="ac-item__content">{c.content}</Text>
-              {c.replies?.length
-                ? c.replies.map((r) => (
-                    <View key={r.id} className="ac-reply">
-                      <Text className="ac-reply__text">
-                        {r.user?.nickname ?? '匿名'}：{r.content}
-                      </Text>
-                    </View>
-                  ))
-                : null}
-              <View className="ac-item__meta">
-                <Text className="ac-item__time">{timeAgo(c.createdAt)}</Text>
-                <Text className="ac-item__del" onClick={() => setReplyTo(c)}>
-                  回复
-                </Text>
-              </View>
-            </View>
-          </View>
+          <CommentItem
+            key={c.id}
+            comment={c}
+            onReply={(item) => setReplyTo(item)}
+            onUserClick={(uid) => uid && go(`/pages/profile/index?userId=${uid}`)}
+          />
         ))}
 
         <LoadMore

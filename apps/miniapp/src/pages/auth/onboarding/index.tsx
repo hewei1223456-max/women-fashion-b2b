@@ -322,8 +322,9 @@ export default function Onboarding() {
         role,
         companyName: shopName.trim(),
         licenseUrl,
-        legalName: legalName.trim() || undefined,
         sourcingCities: city ? [city] : undefined,
+        /* 注意：后端规则是「legalName 必须与 idCardFrontUrl 同时提交」（法人身份证那一步），
+           本引导只做营业执照，所以姓名只用于界面确认，不在这里提交，避免伪造身份证材料。 */
       };
       const res = await api.auth.certify(dto);
       setCertResult(res);
@@ -489,6 +490,7 @@ export default function Onboarding() {
           </Text>
           <Text className="f-xs t3 ob__note">
             Demo 环境未接入对象存储：本地选图后提交给后端的是平台占位图地址，营业执照真伪不做校验；OCR 结果由后端返回，前端不编造。
+            姓名会随后续「法人身份证」核验一起提交，本次引导只提交营业执照。
           </Text>
 
           {licenseLocal ? (

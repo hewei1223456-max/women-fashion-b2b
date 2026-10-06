@@ -71,6 +71,16 @@ export interface CertifyDto {
   licenseUrl: string;
   /** OCR 识别结果（可由前端或后端填充） */
   ocrData?: Record<string, unknown>;
+  /**
+   * 经营者 / 店主姓名（登录引导第一步填写的「名字」）。
+   * 注意与 legalName 的区别：legalName 是**法人身份证**上的姓名，
+   * 必须与 idCardFrontUrl 同时提交；ownerName 只做身份确认与展示，可单独提交。
+   */
+  ownerName?: string;
+  /** 开店城市（登录引导填写，用于「同城」推荐与附近厂家） */
+  city?: string;
+  /** 店名（登录引导填写，与 companyName 同义时优先取本字段） */
+  shopName?: string;
   legalName?: string;
   idCardFrontUrl?: string;
   idCardBackUrl?: string;
@@ -133,7 +143,23 @@ export interface FeedQuery extends PageQuery {
   styleTags?: string;
   topic?: string;
   city?: string;
-  type?: 'all' | 'article' | 'video' | 'product' | 'sourcing_shot' | 'outfit';
+  /**
+   * 按 contentType 过滤。
+   * all | article | video 是聚合语义；其余为精确匹配的 contentType
+   * （sourcing_shot / outfit / meetup / rant / review 都是具体内容类型）。
+   */
+  type?:
+    | 'all'
+    | 'article'
+    | 'video'
+    | 'product'
+    | 'sourcing_shot'
+    | 'outfit'
+    | 'meetup'
+    | 'rant'
+    | 'review'
+    | 'image_text'
+    | 'long_article';
   keyword?: string;
 }
 
@@ -181,6 +207,17 @@ export interface PublishContentDto {
   attachments?: { name: string; url: string }[];
   /** 发布归属：article（资讯/图文） | product（货源款卡片） */
   publishAs?: 'article' | 'product';
+
+  /* ---------------- 拿货实评（contentType=review）专属 ---------------- */
+  /** 评分 1-5 星 */
+  rating?: number;
+  /** 是否愿意再拿 */
+  wouldRebuy?: boolean;
+  /**
+   * 组局（contentType=meetup）**不走本接口**：
+   * 组局必须带齐时间/地点/集合点/报名方式/报名条件等线下要素，
+   * 请使用专门接口 `POST /api/meetup/create`（它也会自动往资讯流写一条内容）。
+   */
 }
 
 export interface UpdateContentDto {

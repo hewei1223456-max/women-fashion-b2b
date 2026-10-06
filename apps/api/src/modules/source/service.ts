@@ -190,9 +190,17 @@ const LEVEL_RANK: Record<string, number> = { free: 0, elite: 1, shark: 2, tour: 
 export function articleDetail(store: Store, id: number, viewer?: User) {
   const a = store.articles.get(id);
   if (!a || a.deleted) throw Errors.notFound('内容不存在或已删除');
-  if (a.auditStatus !== 'approved' && viewer?.role !== 'admin') throw Errors.forbidden('内容尚未通过审核');
+  /**
+   * 待审内容的可见性：
+   *   - 作者本人可见（否则「发布成功后立刻点进去看」会 403，体验割裂）
+   *   - 运营可见（复审需要）
+   *   - 其他人不可见
+   */
+  const isAuthor = viewer?.id === a.authorId;
+  const isAdmin = viewer?.role === 'admin';
+  if (a.auditStatus !== 'approved' && !isAuthor && !isAdmin) throw Errors.forbidden('内容尚未通过审核');
   const need = a.visibility === 'elite' ? 1 : a.visibility === 'shark' ? 2 : a.visibility === 'landmark' ? 3 : 0;
-  if (need > 0 && viewer?.role !== 'admin' && (LEVEL_RANK[viewer?.memberLevel ?? 'free'] ?? 0) < need) {
+  if (need > 0 && !isAdmin && !isAuthor && (LEVEL_RANK[viewer?.memberLevel ?? 'free'] ?? 0) < need) {
     throw Errors.forbidden(`该内容仅「${a.visibility}」及以上会员可见`);
   }
 

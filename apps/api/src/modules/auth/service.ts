@@ -63,6 +63,11 @@ export interface CertRecord {
   bank?: { amount: number; accountTail: string; matched: boolean; verifiedAt: string };
   role?: string;
   submittedAt?: string;
+  /**
+   * 登录引导填写的信息（名字 / 开店城市 / 店名）。
+   * 与 legalId 分离：legalId 是法人实名（需身份证材料），onboarding 只是身份确认与展示。
+   */
+  onboarding?: { ownerName?: string; city?: string; shopName?: string; at?: string };
 }
 
 /* ------------------------------ 演示账号 ------------------------------ */
@@ -224,6 +229,26 @@ export function applyCertify(store: Store, user: User, dto: CertifyDto): Certify
   user.certLicenseUrl = licenseUrl;
   user.certOcrData = record as Record<string, unknown>;
   user.role = role;
+  /* 登录引导填写的信息（名字 / 开店城市 / 店名）—— 独立于法人实名，可单独提交 */
+  if (dto.shopName) user.companyName = String(dto.shopName).trim().slice(0, 60);
+  /**
+   * 登录引导填写的「名字 / 开店城市」：
+   * 店主姓名用于身份确认与展示，城市用于「同城」推荐与附近厂家。
+   * 只在这里落库，不需要身份证材料（与法人实名是两个不同强度的校验）。
+   */
+  if (dto.ownerName || dto.city || dto.shopName) {
+    const onboarding = ((record.onboarding as Record<string, unknown> | undefined) ?? {}) as Record<string, unknown>;
+    if (dto.ownerName) onboarding.ownerName = String(dto.ownerName).trim();
+    if (dto.city) onboarding.city = String(dto.city).trim();
+    if (dto.shopName) onboarding.shopName = String(dto.shopName).trim();
+    onboarding.at = nowIso();
+    record.onboarding = onboarding;
+    if (dto.city) {
+      const cities = new Set(user.sourcingCities ?? []);
+      cities.add(String(dto.city).trim());
+      user.sourcingCities = [...cities].slice(0, 8);
+    }
+  }
   const styleTags = (dto.styleTags ?? []).filter((t) => (STYLE_TAGS as readonly string[]).includes(t));
   if (styleTags.length) user.styleTags = styleTags as StyleTag[];
   if (dto.priceBand) user.priceBand = String(dto.priceBand);

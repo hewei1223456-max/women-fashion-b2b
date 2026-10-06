@@ -253,6 +253,11 @@ export function publishContent(store: Store, user: User, dto: PublishContentDto)
     productId,
     priceRange: dto.priceRange ? String(dto.priceRange) : undefined,
     moq: dto.moq ? Number(dto.moq) : undefined,
+    // 拿货实评专属：评分与是否愿意再拿（1-5 星，非法值忽略而不是报错）
+    rating: contentType === 'review' && Number.isFinite(Number(dto.rating))
+      ? Math.min(5, Math.max(1, Math.round(Number(dto.rating))))
+      : undefined,
+    wouldRebuy: contentType === 'review' && typeof dto.wouldRebuy === 'boolean' ? dto.wouldRebuy : undefined,
     viewCount: 0,
     likeCount: 0,
     collectCount: 0,

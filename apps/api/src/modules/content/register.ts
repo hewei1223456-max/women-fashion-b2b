@@ -28,18 +28,37 @@ function has(ctx: Ctx, key: string): boolean {
   );
 }
 
-/** PublishContentDto：显式走 ctx 读取，body 与 query 两种传参都能用；未传字段不下发默认值 */
+/**
+ * PublishContentDto：显式走 ctx 读取，body 与 query 两种传参都能用；未传字段不下发默认值。
+ *
+ * ⚠️ 这是一个**字段白名单**：契约里新增的发布字段必须同时加到这里，
+ * 否则会被静默丢弃（曾经 rating / wouldRebuy 就是这样丢的 —— 落库代码写了但读不到值）。
+ */
 function dtoOf(ctx: Ctx): PublishContentDto {
   const dto: Record<string, unknown> = {};
-  for (const key of ['contentType', 'board', 'title', 'content', 'videoUrl', 'coverUrl', 'visibility', 'priceRange', 'location', 'scheduledAt', 'publishAs']) {
+  for (const key of [
+    'contentType',
+    'board',
+    'title',
+    'content',
+    'videoUrl',
+    'coverUrl',
+    'visibility',
+    'priceRange',
+    'location',
+    'scheduledAt',
+    'publishAs',
+  ]) {
     if (has(ctx, key)) dto[key] = ctx.str(key);
   }
   for (const key of ['images', 'styleTags', 'topics']) {
     if (has(ctx, key)) dto[key] = ctx.arr<string>(key);
   }
-  for (const key of ['productId', 'moq', 'period']) {
+  for (const key of ['productId', 'moq', 'period', 'rating']) {
     if (has(ctx, key)) dto[key] = ctx.num(key);
   }
+  /* 布尔字段要按 bool 读，不能走 num/str，否则 false 会被当成空值丢掉 */
+  if (has(ctx, 'wouldRebuy')) dto.wouldRebuy = ctx.bool('wouldRebuy');
   if (has(ctx, 'attachments')) {
     const rawAttachments = (ctx.body ?? {}).attachments;
     dto.attachments = Array.isArray(rawAttachments)

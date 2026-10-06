@@ -1,7 +1,7 @@
 {
-  "base": "https://tel-strongly-lottery-catalogs.trycloudflare.com",
+  "base": "http://localhost:8099",
   "api": "http://localhost:3100",
-  "at": "2026-10-06T00:39:42.752Z",
+  "at": "2026-10-06T02:13:12.181Z",
   "passed": 23,
   "total": 23,
   "jsErr": 0,
@@ -19,8 +19,8 @@
         "功能"
       ],
       "ok": true,
-      "ms": 6116,
-      "textLen": 1588,
+      "ms": 4130,
+      "textLen": 2197,
       "note": "命中[女装,资讯,货源,功能]",
       "errors": [],
       "apiFails": []
@@ -34,8 +34,8 @@
         "收藏"
       ],
       "ok": true,
-      "ms": 4703,
-      "textLen": 728,
+      "ms": 3589,
+      "textLen": 752,
       "note": "命中[评论]",
       "errors": [],
       "apiFails": []
@@ -48,7 +48,7 @@
         "期"
       ],
       "ok": true,
-      "ms": 4765,
+      "ms": 3465,
       "textLen": 386,
       "note": "命中[游学,期]",
       "errors": [],
@@ -62,7 +62,7 @@
         "讲师"
       ],
       "ok": true,
-      "ms": 4395,
+      "ms": 3383,
       "textLen": 337,
       "note": "命中[课程,讲师]",
       "errors": [],
@@ -77,8 +77,8 @@
         "货源"
       ],
       "ok": true,
-      "ms": 4424,
-      "textLen": 930,
+      "ms": 3461,
+      "textLen": 2359,
       "note": "命中[加微信,起订,货源]",
       "errors": [],
       "apiFails": []
@@ -92,8 +92,8 @@
         "厂家"
       ],
       "ok": true,
-      "ms": 4363,
-      "textLen": 680,
+      "ms": 3468,
+      "textLen": 1721,
       "note": "命中[加微信,起订,厂家]",
       "errors": [],
       "apiFails": []
@@ -106,7 +106,7 @@
         "成团"
       ],
       "ok": true,
-      "ms": 4335,
+      "ms": 3301,
       "textLen": 590,
       "note": "命中[拼单,成团]",
       "errors": [],
@@ -120,7 +120,7 @@
         "报名"
       ],
       "ok": true,
-      "ms": 4573,
+      "ms": 3443,
       "textLen": 480,
       "note": "命中[订货会,报名]",
       "errors": [],
@@ -135,7 +135,7 @@
         "额度"
       ],
       "ok": true,
-      "ms": 4352,
+      "ms": 3439,
       "textLen": 402,
       "note": "命中[文案改写,去水印,额度]",
       "errors": [],
@@ -150,7 +150,7 @@
         "免费"
       ],
       "ok": true,
-      "ms": 4387,
+      "ms": 3362,
       "textLen": 151,
       "note": "命中[改写,风格,免费]",
       "errors": [],
@@ -164,7 +164,7 @@
         "风格"
       ],
       "ok": true,
-      "ms": 4500,
+      "ms": 3173,
       "textLen": 116,
       "note": "命中[选题,风格]",
       "errors": [],
@@ -178,7 +178,7 @@
         "语速"
       ],
       "ok": true,
-      "ms": 4277,
+      "ms": 3039,
       "textLen": 76,
       "note": "命中[提词]",
       "errors": [],
@@ -193,7 +193,7 @@
         "私信"
       ],
       "ok": true,
-      "ms": 4205,
+      "ms": 3000,
       "textLen": 59,
       "note": "命中[通知,私信]",
       "errors": [],
@@ -207,8 +207,8 @@
         "热度"
       ],
       "ok": true,
-      "ms": 4757,
-      "textLen": 578,
+      "ms": 3221,
+      "textLen": 712,
       "note": "命中[话题,热度]",
       "errors": [],
       "apiFails": []
@@ -221,7 +221,7 @@
         "营收"
       ],
       "ok": true,
-      "ms": 4853,
+      "ms": 3459,
       "textLen": 640,
       "note": "命中[大店,营收]",
       "errors": [],
@@ -236,8 +236,8 @@
         "转化"
       ],
       "ok": true,
-      "ms": 4277,
-      "textLen": 321,
+      "ms": 3403,
+      "textLen": 344,
       "note": "命中[曝光,加微,转化]",
       "errors": [],
       "apiFails": [
@@ -253,8 +253,8 @@
         "内容"
       ],
       "ok": true,
-      "ms": 4350,
-      "textLen": 278,
+      "ms": 3279,
+      "textLen": 768,
       "note": "命中[我的,收藏,内容]",
       "errors": [],
       "apiFails": []
@@ -266,8 +266,8 @@
         "收藏"
       ],
       "ok": true,
-      "ms": 4694,
-      "textLen": 772,
+      "ms": 3385,
+      "textLen": 441,
       "note": "命中[收藏]",
       "errors": [],
       "apiFails": []
@@ -281,7 +281,7 @@
         "标签"
       ],
       "ok": true,
-      "ms": 4252,
+      "ms": 3343,
       "textLen": 175,
       "note": "命中[发布,标签]",
       "errors": [],
@@ -296,8 +296,8 @@
         "来源"
       ],
       "ok": true,
-      "ms": 4570,
-      "textLen": 76,
+      "ms": 3224,
+      "textLen": 207,
       "note": "命中[浏览,数据,来源]",
       "errors": [],
       "apiFails": []
@@ -311,8 +311,8 @@
         "发布"
       ],
       "ok": true,
-      "ms": 4649,
-      "textLen": 153,
+      "ms": 3383,
+      "textLen": 503,
       "note": "命中[全部,浏览,发布]",
       "errors": [],
       "apiFails": []
@@ -326,8 +326,8 @@
         "账号"
       ],
       "ok": true,
-      "ms": 4358,
-      "textLen": 682,
+      "ms": 3308,
+      "textLen": 809,
       "note": "命中[登录,演示,账号]",
       "errors": [],
       "apiFails": []
@@ -340,7 +340,7 @@
         "营业执照"
       ],
       "ok": true,
-      "ms": 4411,
+      "ms": 3378,
       "textLen": 606,
       "note": "命中[认证,营业执照]",
       "errors": [],

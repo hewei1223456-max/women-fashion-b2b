@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import type { LoginDto, User, UserRole } from '@wfb/shared-types';
 import { api, TARO_ENV } from '@/services/request';
 import { useAppStore } from '@/store/app';
+import { UserBadges } from '@/components/Badge';
 import './index.scss';
 
 const ROLE_META: Record<UserRole, { label: string; desc: string; icon: string }> = {
@@ -103,6 +104,8 @@ export default function Login() {
                 <Text className="lg-role__name">
                   {u.nickname} · {meta?.label ?? u.role}
                 </Text>
+                {/* 演示账号是 User 实体（无 badges），组件按 role/certStatus/memberLevel 兜底推断 */}
+                <UserBadges user={u} max={2} size="xs" />
                 <Text className="lg-role__desc">{meta?.desc ?? '体验账号'}</Text>
               </View>
               <Text className={`lg-role__btn ${login.isPending ? 'btn-disabled' : ''}`} onClick={() => login.mutate({ demoUserId: u.id })}>

@@ -1,6 +1,7 @@
 import { View, Text, Image } from '@tarojs/components';
 import type { Meetup } from '@wfb/shared-types';
 import { clsx, timeAgo } from '@wfb/shared-utils';
+import Badge from '@/components/Badge';
 import { kindLabel, meetupRange, meetupStatus, seatText } from './meetup-utils';
 import './MeetupCard.scss';
 
@@ -82,9 +83,10 @@ export default function MeetupCard({ meetup, onClick, showAllFacts = true, class
       </View>
 
       <View className="meetup-card__foot row-between">
-        <View className="row meetup-card__author">
+        <View className="row flex-1 meetup-card__author">
           <Image className="meetup-card__avatar" src={meetup.initiator?.avatarUrl} mode="aspectFill" />
           <Text className="meetup-card__name f-xs t2 ellipsis">{meetup.initiator?.nickname ?? '匿名同行'}</Text>
+          {meetup.initiator ? <Badge user={meetup.initiator} size="xs" max={2} /> : null}
         </View>
         <Text className={clsx('meetup-card__cta', meetup.joined && 'is-joined')}>{meetup.joined ? '已报名 ›' : '去报名 ›'}</Text>
       </View>

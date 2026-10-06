@@ -12,6 +12,7 @@ import ArticleCard from '@/components/ArticleCard';
 import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
 import { errMsg } from '@/components/utils';
+import Badge from '@/components/Badge';
 import { kindLabel, meetupDateTime, meetupRange, meetupStatus, seatText } from '@/pages/meetup/meetup-utils';
 import './index.scss';
 
@@ -37,9 +38,6 @@ const FEED_TABS: { key: FeedTabKey; label: string }[] = [
   { key: 'rant', label: '吐槽' },
   { key: 'review', label: '实评' },
 ];
-
-/** 资讯流卡片：后端在摘要行上顺带下发的 UGC 字段（契约里 ratin/wouldRebuy 在详情上），有则渲染 */
-type FeedRow = ArticleSummary & { rating?: number; wouldRebuy?: boolean };
 
 /**
  * FeedQuery 的 type 目前只收录了 article/video/product 等旧值。
@@ -95,9 +93,10 @@ function MeetupFeedCard({ meetup, onClick }: { meetup: Meetup; onClick: () => vo
         {meetup.fee ? <Text className="info-meetup__line">💰 费用：{meetup.fee}</Text> : null}
       </View>
       <View className="row-between info-meetup__foot">
-        <View className="row">
+        <View className="row flex-1">
           <Image className="info-meetup__avatar" src={meetup.initiator?.avatarUrl} mode="aspectFill" />
           <Text className="f-xs t2 ellipsis info-meetup__name">{meetup.initiator?.nickname ?? '匿名同行'} 发起</Text>
+          {meetup.initiator ? <Badge user={meetup.initiator} size="xs" max={2} /> : null}
         </View>
         <Text className="info-meetup__cta">{meetup.joined ? '已报名 ›' : '去报名 ›'}</Text>
       </View>
@@ -108,7 +107,7 @@ function MeetupFeedCard({ meetup, onClick }: { meetup: Meetup; onClick: () => vo
 export default function Index() {
   const [tab, setTab] = useState<FeedTabKey>('recommend');
   const [page, setPage] = useState(1);
-  const [list, setList] = useState<FeedRow[]>([]);
+  const [list, setList] = useState<ArticleSummary[]>([]);
 
   const user = useAppStore((s) => s.user);
   const unreadTotal = useAppStore((s) => s.unread.total);
@@ -126,7 +125,8 @@ export default function Index() {
     retry: 1,
   });
 
-  /* ⑤ 信息流：推荐 / 关注 / 同城 / 吐槽 / 实评 走 /api/info/feed，组局 tab 走组局接口 */
+  /* ⑤ 信息流：六个 Tab 统一走 /api/info/feed；组局/吐槽/实评按 contentType 过滤
+   *    （后端已在摘要行上下发 rating / wouldRebuy / meetup，卡片可直接渲染） */
   const feed = useQuery({
     queryKey: ['info-feed', tab, city, page],
     queryFn: () =>
@@ -135,11 +135,10 @@ export default function Index() {
           page,
           pageSize: 10,
           tab: tab === 'city' ? 'city' : tab === 'follow' ? 'follow' : 'recommend',
-          type: tab === 'rant' || tab === 'review' ? tab : 'all',
+          type: tab === 'meetup' || tab === 'rant' || tab === 'review' ? tab : 'all',
           city: tab === 'city' ? city : undefined,
         }),
       ),
-    enabled: tab !== 'meetup',
   });
 
   const unread = useQuery({ queryKey: ['unread-count'], queryFn: () => api.notification.unreadCount() });
@@ -150,7 +149,7 @@ export default function Index() {
 
   useEffect(() => {
     if (!feed.data) return;
-    const rows = (feed.data.list ?? []) as FeedRow[];
+    const rows = feed.data.list ?? [];
     setList((prev) => (page <= 1 ? rows : [...prev, ...rows]));
   }, [feed.data, page]);
 
@@ -164,14 +163,12 @@ export default function Index() {
   };
 
   useReachBottom(() => {
-    if (tab === 'meetup') return;
     if (feed.isFetching || !feed.data?.hasMore) return;
     setPage((p) => p + 1);
   });
 
   const morningNews = (news.data?.list ?? []).find((a) => a.type === 'news') ?? news.data?.list?.[0];
   const strategy = feed.data?.strategy;
-  const isMeetupTab = tab === 'meetup';
 
   return (
     <View className="page-safe info-home">
@@ -277,91 +274,91 @@ export default function Index() {
         </View>
       </ScrollView>
 
-      {strategy && !isMeetupTab ? (
+      {strategy ? (
         <Text className="info-strategy ellipsis-2">
           推荐策略：{strategy}
           {feed.data?.visitCount ? `（第 ${feed.data.visitCount} 次访问）` : ''}
         </Text>
       ) : null}
 
-      {/* ⑤ 信息流卡片 */}
-      {isMeetupTab ? (
-        <View>
-          <ListEmpty
-            loading={meetups.isLoading && meetupRows.length === 0}
-            error={meetups.isError ? errMsg(meetups.error, '组局加载失败') : null}
-            empty={!meetups.isLoading && !meetups.isError && meetupRows.length === 0}
-            emptyIcon="🗓️"
-            emptyText="还没有人发起组局"
-            emptyDesc="点右上角「+ 发起」，约同行一起去拿货 / 一起做货"
-            onRetry={() => meetups.refetch()}
-          />
-          {meetupRows.map((m) => (
-            <MeetupFeedCard key={m.id} meetup={m} onClick={() => go(`/pages/meetup/detail?id=${m.id}`)} />
-          ))}
-        </View>
-      ) : (
-        <View>
-          <ListEmpty
-            loading={feed.isLoading && list.length === 0}
-            error={feed.isError && list.length === 0 ? `内容加载失败：${errMsg(feed.error, '网络异常')}` : null}
-            empty={!feed.isLoading && !feed.isError && list.length === 0}
-            emptyText={
-              tab === 'follow'
-                ? '还没有关注的人发布内容'
-                : tab === 'city'
-                  ? `同城（${city}）暂时没有内容`
+      {/* ⑤ 信息流卡片：组局走整宽的线下要素卡，吐槽/实评用普通卡片 + UGC 补充信息 */}
+      <View>
+        <ListEmpty
+          loading={feed.isLoading && list.length === 0}
+          error={feed.isError && list.length === 0 ? `内容加载失败：${errMsg(feed.error, '网络异常')}` : null}
+          empty={!feed.isLoading && !feed.isError && list.length === 0}
+          emptyText={
+            tab === 'follow'
+              ? '还没有关注的人发布内容'
+              : tab === 'city'
+                ? `同城（${city}）暂时没有内容`
+                : tab === 'meetup'
+                  ? '还没有人发起组局'
                   : tab === 'rant'
                     ? '还没有人吐槽'
                     : tab === 'review'
                       ? '还没有拿货实评'
                       : '暂无推荐内容'
-            }
-            emptyDesc={tab === 'follow' ? '去资讯流关注几个同行，这里就会热闹起来' : '换个标签或稍后再试'}
-            onRetry={() => feed.refetch()}
-          />
+          }
+          emptyDesc={
+            tab === 'meetup'
+              ? '点右上角「+ 发起」，约同行一起去拿货 / 一起做货'
+              : tab === 'follow'
+                ? '去资讯流关注几个同行，这里就会热闹起来'
+                : '换个标签或稍后再试'
+          }
+          onRetry={() => feed.refetch()}
+        />
 
-          {list.map((item) => {
-            const typeLabel = CONTENT_TYPE_LABELS[item.contentType] ?? '内容';
-            const isReview = item.contentType === 'review';
+        {list.map((item) => {
+          const typeLabel = CONTENT_TYPE_LABELS[item.contentType] ?? '内容';
+          const isReview = item.contentType === 'review';
+          if (item.contentType === 'meetup' && item.meetup) {
             return (
-              <View key={item.id} className="info-row">
-                <ArticleCard
-                  article={item}
-                  showReason
-                  onClick={() => go(`/pages/info/detail?id=${item.id}`)}
-                  onUserClick={(uid) => uid && go(`/pages/profile/index?userId=${uid}`)}
-                  footer={
-                    item.contentType === 'rant' || isReview ? (
-                      <View className="info-row__ugc">
-                        <View className="tag tag-outline">
-                          <Text>#{typeLabel}</Text>
-                        </View>
-                        {isReview ? <Stars rating={item.rating} /> : null}
-                        {isReview && item.wouldRebuy !== undefined ? (
-                          <View className={`tag ${item.wouldRebuy ? 'tag-success' : 'tag-gray'}`}>
-                            <Text>{item.wouldRebuy ? '会再拿' : '不会复拿'}</Text>
-                          </View>
-                        ) : null}
-                      </View>
-                    ) : null
-                  }
-                />
-              </View>
+              <MeetupFeedCard
+                key={item.id}
+                meetup={item.meetup}
+                onClick={() => go(`/pages/meetup/detail?id=${item.meetup?.id ?? 0}`)}
+              />
             );
-          })}
+          }
+          return (
+            <View key={item.id} className="info-row">
+              <ArticleCard
+                article={item}
+                showReason
+                onClick={() => go(`/pages/info/detail?id=${item.id}`)}
+                onUserClick={(uid) => uid && go(`/pages/profile/index?userId=${uid}`)}
+                footer={
+                  item.contentType === 'rant' || isReview || item.contentType === 'meetup' ? (
+                    <View className="info-row__ugc">
+                      <View className="tag tag-outline">
+                        <Text>#{typeLabel}</Text>
+                      </View>
+                      {isReview ? <Stars rating={item.rating} /> : null}
+                      {isReview && item.wouldRebuy !== undefined ? (
+                        <View className={`tag ${item.wouldRebuy ? 'tag-success' : 'tag-gray'}`}>
+                          <Text>{item.wouldRebuy ? '会再拿' : '不会复拿'}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  ) : null
+                }
+              />
+            </View>
+          );
+        })}
 
-          <LoadMore
-            loading={feed.isFetching && list.length > 0}
-            hasMore={feed.data?.hasMore}
-            count={list.length}
-            onLoadMore={() => {
-              if (feed.isFetching || !feed.data?.hasMore) return;
-              setPage((p) => p + 1);
-            }}
-          />
-        </View>
-      )}
+        <LoadMore
+          loading={feed.isFetching && list.length > 0}
+          hasMore={feed.data?.hasMore}
+          count={list.length}
+          onLoadMore={() => {
+            if (feed.isFetching || !feed.data?.hasMore) return;
+            setPage((p) => p + 1);
+          }}
+        />
+      </View>
 
       {/* ⑥ 底部轻量工具入口（工具归属「功能」Tab，首页不再放大区块） */}
       <View className="info-tools" onClick={() => go('/pages/tools/index', true)}>

@@ -6,6 +6,7 @@ import { timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
 import Card from '@/components/Card';
+import Badge from '@/components/Badge';
 import ListEmpty from '@/components/ListEmpty';
 import { errMsg } from '@/components/utils';
 import { kindLabel, meetupRange, meetupStatus, remainingSeats, seatText } from '../meetup-utils';
@@ -143,7 +144,10 @@ export default function MeetupDetail() {
             <View className="row mt-detail__author">
               <Image className="mt-detail__avatar" src={m.initiator?.avatarUrl} mode="aspectFill" />
               <View className="col flex-1">
-                <Text className="f-sm bold t1">{m.initiator?.nickname ?? '匿名同行'}</Text>
+                <View className="row">
+                  <Text className="f-sm bold t1">{m.initiator?.nickname ?? '匿名同行'}</Text>
+                  {m.initiator ? <Badge user={m.initiator} size="xs" max={2} /> : null}
+                </View>
                 <Text className="f-xs t3">
                   发起人 · {timeAgo(m.createdAt)}发起 · {m.initiator?.companyName ?? '女装同行'}
                 </Text>

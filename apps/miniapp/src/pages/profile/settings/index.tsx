@@ -6,6 +6,7 @@ import type { ReceivePreference, StyleTag } from '@wfb/shared-types';
 import { PRICE_BANDS, STYLE_TAGS } from '@wfb/shared-types';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
+import { UserBadges } from '@/components/Badge';
 import './index.scss';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -152,6 +153,8 @@ export default function ProfileSettings() {
           <Image className="st-user__avatar" src={user.avatarUrl} mode="aspectFill" />
           <View className="flex-1">
             <Text className="st-user__name">{user.nickname}</Text>
+            {/* User 实体没有 badges 字段，组件按 role/certStatus/memberLevel 兜底推断 */}
+            <UserBadges user={user} max={3} size="xs" />
             <Text className="st-user__meta">
               {ROLE_LABELS[user.role] ?? user.role} · {CERT_LABELS[user.certStatus] ?? user.certStatus}
             </Text>

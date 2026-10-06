@@ -175,11 +175,11 @@ export function toUserBrief(u: User | undefined | null, extra: Record<string, un
   };
 }
 
-/** 完整用户信息仅返回给本人（登录 / /auth/me） */
+/** 完整用户信息仅返回给本人（登录 / /auth/me）：剔除敏感字段，但补上身份标识 */
 export function stripPrivate(u: User, isSelf: boolean): User {
-  if (isSelf) return u;
+  if (isSelf) return { ...u, badges: buildBadges(u) };
   const { phone, wxOpenid, dyOpenid, aliOpenid, certLicenseUrl, certOcrData, ...rest } = u;
-  return rest as User;
+  return { ...rest, badges: buildBadges(u) } as User;
 }
 
 export function deviceIdOf(header: string | undefined): string {

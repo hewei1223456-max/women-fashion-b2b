@@ -15,6 +15,8 @@ export default defineAppConfig({
     'pages/profile/index',
     'pages/auth/login',
     'pages/auth/certify',
+    // 登录后引导：基础信息 → 营业执照 → 滑块验证 → 偏好四选（任务 task-7 提供页面）
+    'pages/auth/onboarding',
     'pages/profile/edit',
     'pages/profile/settings',
     'pages/profile/collection',

@@ -7,6 +7,7 @@ import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
+import { UserBadges } from '@/components/Badge';
 import './index.scss';
 
 type SortKey = 'hot' | 'time';
@@ -144,9 +145,12 @@ export default function CommentManage() {
             <View key={c.id} className="cm-item">
               <Image className="cm-item__avatar" src={c.user?.avatarUrl} mode="aspectFill" />
               <View className="cm-item__body">
-                <Text className="cm-item__name">
-                  {c.user?.nickname ?? '匿名用户'} · {c.status === 'pending' ? '待审核' : ''}
-                </Text>
+                <View className="row">
+                  <Text className="cm-item__name">
+                    {c.user?.nickname ?? '匿名用户'} · {c.status === 'pending' ? '待审核' : ''}
+                  </Text>
+                  {c.user ? <UserBadges user={c.user} max={1} size="xs" /> : null}
+                </View>
                 <Text className="cm-item__content">{c.content}</Text>
                 {c.replies?.length
                   ? c.replies.map((r) => (

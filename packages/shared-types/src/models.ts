@@ -41,6 +41,12 @@ export interface User {
   memberExpireAt?: string;
   /** 接收主动私信的偏好 */
   pushEnabled: boolean;
+  /**
+   * 身份标识（游客 / 认证店主 / 付费店主 / 认证厂家 / 付费厂家 / 地标大店 / 讲师 / 官方）。
+   * 由后端 buildBadges() 统一计算后填充，前端只渲染。
+   * 与 UserBrief.badges 同源，保证「我的」页与列表页口径一致。
+   */
+  badges?: UserBadge[];
   createdAt: string;
   updatedAt: string;
 }

@@ -46,12 +46,19 @@ export function registerAuthModule(router: Router, store: Store) {
         loginCode: ctx.str('loginCode'),
         nickname: ctx.str('nickname'),
       };
-      return login(store, dto);
+      const result = login(store, dto);
+      /**
+       * 登录返回的 user 也要走 stripPrivate：
+       * 它返回的是 User 实体，直接下发会把手机号 / openid / 营业执照带给前端。
+       * 本人视角（isSelf=true）保留这些字段供「我的」页使用，同时补上身份标识 badges。
+       */
+      return { ...result, user: stripPrivate(result.user, true) };
     },
     { auth: false, summary: '登录（demoUserId / phone+code / platform+loginCode 三通道）' },
   );
 
-  router.get('/api/auth/me', (ctx) => ctx.auth(), { summary: '当前登录用户（本人完整信息）' });
+  /** 当前登录用户（本人完整信息 + 身份标识） */
+  router.get('/api/auth/me', (ctx) => stripPrivate(ctx.auth(), true), { summary: '当前登录用户（本人完整信息）' });
 
   router.post('/api/auth/logout', () => ({ ok: true, loggedOutAt: new Date().toISOString() }), { summary: '退出登录' });
 
@@ -66,6 +73,10 @@ export function registerAuthModule(router: Router, store: Store) {
         role: ctx.str('role', { required: true }) as CertifyDto['role'],
         companyName: ctx.str('companyName', { required: true, max: 60 }),
         licenseUrl: ctx.str('licenseUrl', { required: true, max: 500 }),
+        /* 登录引导填写的信息：名字/城市/店名，独立于法人身份证，可单独提交 */
+        ownerName: ctx.str('ownerName', { max: 30 }) || undefined,
+        city: ctx.str('city', { max: 30 }) || undefined,
+        shopName: ctx.str('shopName', { max: 60 }) || undefined,
         legalName: ctx.str('legalName'),
         idCardFrontUrl: ctx.str('idCardFrontUrl'),
         idCardBackUrl: ctx.str('idCardBackUrl'),

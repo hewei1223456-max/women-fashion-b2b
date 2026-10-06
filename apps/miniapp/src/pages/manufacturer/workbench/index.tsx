@@ -58,11 +58,31 @@ export default function ManufacturerWorkbench() {
   const isManufacturer = viewOfRole(user?.role) === 'manufacturer';
 
   /* 版本配额：已发布款数来自「我的款」 */
-  const products = useQuery({ queryKey: ['my-products'], queryFn: () => api.product.my({ page: 1, pageSize: 50 }), retry: 0 });
+  const products = useQuery({
+    queryKey: ['my-products'],
+    queryFn: () => api.product.my({ page: 1, pageSize: 50 }),
+    retry: 0,
+    enabled: isManufacturer,
+  });
   /* 待办：待复审内容 / 未读私信 / 今日加微 */
-  const myContent = useQuery({ queryKey: ['mfr-my-content'], queryFn: () => api.content.my({ page: 1, pageSize: 50 }), retry: 0 });
-  const conversations = useQuery({ queryKey: ['mfr-conversations'], queryFn: () => api.message.conversations(), retry: 0 });
-  const dashboard = useQuery({ queryKey: ['mfr-dashboard'], queryFn: () => api.contact.dashboard(), retry: 0 });
+  const myContent = useQuery({
+    queryKey: ['mfr-my-content'],
+    queryFn: () => api.content.my({ page: 1, pageSize: 50 }),
+    retry: 0,
+    enabled: isManufacturer,
+  });
+  const conversations = useQuery({
+    queryKey: ['mfr-conversations'],
+    queryFn: () => api.message.conversations(),
+    retry: 0,
+    enabled: isManufacturer,
+  });
+  const dashboard = useQuery({
+    queryKey: ['mfr-dashboard'],
+    queryFn: () => api.contact.dashboard(),
+    retry: 0,
+    enabled: isManufacturer,
+  });
 
   usePullDownRefresh(() => {
     Promise.all([products.refetch(), myContent.refetch(), conversations.refetch(), dashboard.refetch()]).finally(() =>
@@ -133,6 +153,9 @@ export default function ManufacturerWorkbench() {
         </Card>
       ) : null}
 
+      {/* 以下板块只在厂家视角渲染：店主视角下这些接口会 403，没必要发请求 */}
+      {isManufacturer ? (
+        <View>
       {/* 版本卡片：当前版本 + 已发布 / 上限 */}
       <Card title="我的版本" subtitle={`${plan.label}${plan.price ? ` · 年费 ¥${plan.price}` : ' · 免费'}`} extraText="查看我的款" onExtra={() => go('/pages/manufacturer/publish')}>
         <View className="wb-quota row-between">
@@ -236,6 +259,8 @@ export default function ManufacturerWorkbench() {
           </View>
         ) : null}
       </Card>
+        </View>
+      ) : null}
 
       <View className="wb-foot" onClick={() => Taro.navigateTo({ url: '/pages/profile/index' })}>
         <Text className="f-sm t3">返回「我的」（设置 / 认证 / 退出登录）›</Text>
