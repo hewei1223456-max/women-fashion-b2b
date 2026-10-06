@@ -27,31 +27,48 @@ const apiIdx = args.indexOf('--api');
 const API = (apiIdx >= 0 ? args[apiIdx + 1] : process.env.DEMO_API || 'http://localhost:3100').replace(/\/$/, '');
 const SHOT_DIR = path.join(ROOT, 'docs', 'screenshots');
 const PAGE_BUDGET_MS = Number(process.env.PAGE_BUDGET_MS || 30000);
+/**
+ * 页面打开后等多久再取文本（等 React Query 拿完接口渲染）。
+ * 本地 2s 足够；经 Cloudflare 隧道访问公网时首屏要 5-10s，
+ * 这时必须调大，否则会把「还没来得及渲染」误判成「页面全空」：
+ *   PAGE_WAIT_MS=15000 node scripts/verify-pages.mjs https://xxx.trycloudflare.com
+ */
+const PAGE_WAIT_MS = Number(process.env.PAGE_WAIT_MS || 2000);
+
+/**
+ * 预期内的 403（用店主 token 访问厂家专属接口）——见下方响应拦截处的说明。
+ * 这些接口的正确行为就是拒绝非厂家，所以不算失败。
+ */
+const EXPECTED_403 = ['/api/manufacturer/'];
 
 const PAGES = [
-  { name: '01-首页', url: '/pages/index/index', expect: ['女装', '资讯', '货源', '功能'] },
+  { name: '01-资讯首页', url: '/pages/index/index', expect: ['资讯', '货源', '功能', '组局'] },
   { name: '02-资讯详情', url: '/pages/info/detail?id=1', expect: ['评论', '点赞', '收藏'] },
   { name: '03-游学资料库', url: '/pages/info/distillation', expect: ['游学', '期'] },
   { name: '04-课程列表', url: '/pages/info/course', expect: ['课程', '讲师'] },
-  { name: '05-货源首页', url: '/pages/source/index', expect: ['加微信', '起订', '货源'] },
-  { name: '06-款详情', url: '/pages/source/detail?id=1', expect: ['加微信', '起订', '厂家'] },
+  { name: '05-货源首页', url: '/pages/source/index', expect: ['拿货价', '拿货地', '加微信'] },
+  { name: '06-款详情', url: '/pages/source/detail?id=1', expect: ['拿货价', '起提量价', '加微信'] },
   { name: '07-拼单广场', url: '/pages/source/groupbuy', expect: ['拼单', '成团'] },
   { name: '08-订货会', url: '/pages/source/ordering-fair', expect: ['订货会', '报名'] },
-  { name: '09-工具首页', url: '/pages/tools/index', expect: ['文案改写', '去水印', '额度'] },
-  { name: '10-文案改写', url: '/pages/tools/rewrite', expect: ['改写', '风格', '免费'] },
-  { name: '11-爆款选题', url: '/pages/tools/trending', expect: ['选题', '风格'] },
-  { name: '12-提词器', url: '/pages/tools/teleprompter', expect: ['提词', '语速'] },
-  { name: '13-消息中心', url: '/pages/interaction/message-center', expect: ['消息', '通知', '私信'] },
-  { name: '14-话题榜', url: '/pages/topic/index', expect: ['话题', '热度'] },
-  { name: '15-大店列表', url: '/pages/landmark/list', expect: ['大店', '营收'] },
-  { name: '16-厂家看板', url: '/pages/manufacturer/admin', expect: ['曝光', '加微', '转化'] },
-  { name: '17-我的', url: '/pages/profile/index', expect: ['我的', '收藏', '内容'] },
-  { name: '18-我的收藏', url: '/pages/profile/collection', expect: ['收藏'] },
-  { name: '19-内容发布', url: '/pages/content/publish', expect: ['发布', '标题', '标签'] },
-  { name: '20-内容看板', url: '/pages/content/content-analytics', expect: ['浏览', '数据', '来源'] },
-  { name: '21-我的内容', url: '/pages/content/my-content', expect: ['全部', '浏览', '发布'] },
-  { name: '22-登录页', url: '/pages/auth/login', expect: ['登录', '演示', '账号'] },
-  { name: '23-认证页', url: '/pages/auth/certify', expect: ['认证', '营业执照'] },
+  { name: '09-组局广场', url: '/pages/meetup/list', expect: ['组局', '集合'] },
+  { name: '10-组局详情', url: '/pages/meetup/detail?id=1', expect: ['集合点', '报名条件'] },
+  { name: '11-工具首页', url: '/pages/tools/index', expect: ['文案改写', '去水印', '额度'] },
+  { name: '12-文案改写', url: '/pages/tools/rewrite', expect: ['改写', '风格', '免费'] },
+  { name: '13-爆款选题', url: '/pages/tools/trending', expect: ['选题', '风格'] },
+  { name: '14-提词器', url: '/pages/tools/teleprompter', expect: ['提词', '语速'] },
+  { name: '15-消息中心', url: '/pages/interaction/message-center', expect: ['通知', '私信'] },
+  { name: '16-话题榜', url: '/pages/topic/index', expect: ['话题', '热度'] },
+  { name: '17-大店列表', url: '/pages/landmark/list', expect: ['大店', '营收'] },
+  { name: '18-厂家看板', url: '/pages/manufacturer/admin', expect: ['曝光', '加微', '转化'] },
+  { name: '19-厂家工作台', url: '/pages/manufacturer/workbench', expect: ['工作台', '发布'] },
+  { name: '20-我的', url: '/pages/profile/index', expect: ['我的', '收藏', '视角'] },
+  { name: '21-我的收藏', url: '/pages/profile/collection', expect: ['收藏'] },
+  { name: '22-内容发布', url: '/pages/content/publish', expect: ['发布', '标签'] },
+  { name: '23-内容看板', url: '/pages/content/content-analytics', expect: ['浏览', '数据', '来源'] },
+  { name: '24-我的内容', url: '/pages/content/my-content', expect: ['全部', '浏览', '发布'] },
+  { name: '25-登录页', url: '/pages/auth/login', expect: ['登录', '演示', '账号'] },
+  { name: '26-认证页', url: '/pages/auth/certify', expect: ['认证', '营业执照'] },
+  { name: '27-登录引导', url: '/pages/auth/onboarding', expect: ['营业执照', '店名'] },
 ];
 
 const c = {
@@ -123,12 +140,19 @@ async function main() {
         if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 200));
       });
       page.on('response', (r) => {
-        if (r.url().includes('/api/') && r.status() >= 400) apiFails.push(`${r.status()} ${r.url().replace(BASE, '')}`);
+        if (!r.url().includes('/api/') || r.status() < 400) return;
+        const path = r.url().replace(BASE, '');
+        /**
+         * 厂家专属接口用**店主** token 访问必然 403 —— 这是正确的权限拦截，不是缺陷。
+         * 逐页校验固定用 shop_owner 登录（只有它能覆盖绝大多数页面），
+         * 所以这里显式登记这类「预期内的 403」，避免每次验收都被它污染结论。
+         */
+        if (r.status() === 403 && EXPECTED_403.some((p) => path.startsWith(p))) return;
+        apiFails.push(`${r.status()} ${path}`);
       });
-
       // Taro H5 是 hash 路由：/#/pages/xxx/yyy（直接请求 /pages/xxx/yyy 只会拿到壳）
       await withTimeout(page.goto(`${BASE}/#${spec.url}`, { waitUntil: 'domcontentloaded', timeout: PAGE_BUDGET_MS - 8000 }), PAGE_BUDGET_MS - 5000, 'goto');
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(PAGE_WAIT_MS);
       text = (await page.locator('body').innerText().catch(() => '')) || '';
       const hit = spec.expect.filter((k) => text.includes(k));
       ok = hit.length > 0;
