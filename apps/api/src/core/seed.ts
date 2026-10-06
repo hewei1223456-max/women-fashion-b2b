@@ -319,22 +319,47 @@ export function seedStore(store: Store): void {
     /* ---------------- 真实的批发交易信息 ----------------
      * 店主真正关心的不是「价格带 199-219」，而是：
      *   拿货价（单件起拿）→ 起提量价（阶梯）→ 可否拼单 → 档口形态 → 拿货地
-     * 按女装批发市场的真实逻辑生成：拿货价是工厂出货价，阶梯价拿得越多越便宜，
-     * 代发价明显高于拿货价（单件操作成本高）。
+     *
+     * 价格必须落在**女装批发市场的真实区间**（工厂出货价）：
+     *   T 恤/背心 十几到三十几，衬衫/卫衣 三十到六十几，连衣裙 五十到九十几，
+     *   西装/风衣 八十几到一百五，羊毛大衣/羽绒 两百到四百。
+     * 早期版本按 22~358 均匀取档位，出现「西装裤拿货价 ¥172」「衬衫 ¥364」这种
+     * 明显不真实的数（店主一眼就会觉得假），所以这里按**品类**定基准价。
      */
-    const costTiers = [22, 28, 36, 45, 68, 92, 128, 168, 238, 358];
-    const wholesalePrice = costTiers[idx % costTiers.length] + Math.round(rand() * 6);
+    const basePriceOf = (t: string): number => {
+      if (/T恤|背心|吊带/.test(t)) return 18;
+      if (/卫衣|针织|毛衫|羊绒|开衫/.test(t)) return 42;
+      if (/衬衫|上衣|马甲|半身裙|百褶/.test(t)) return 38;
+      if (/裤|牛仔|工装|卫裤|短裤/.test(t)) return 48;
+      if (/连衣裙|裙|旗袍|马面/.test(t)) return 62;
+      if (/西服|西装|风衣|夹克|皮衣|皮裙|外套/.test(t)) return 95;
+      if (/大衣|羽绒|双面呢|羊毛/.test(t)) return 215;
+      if (/丝巾|配饰/.test(t)) return 15;
+      return 55;
+    };
+    // 同品类内再做 ±12% 浮动，避免所有同品类款价格一样（真实市场也有价差）
+    const wholesalePrice = Math.max(12, Math.round(basePriceOf(title) * (0.88 + rand() * 0.24)));
     const moq = [5, 10, 20, 30, 50][idx % 5];
     const step = moq <= 10 ? 15 : moq <= 30 ? 30 : 50;
-    const tierPrices = [
-      { minQty: moq, price: wholesalePrice, label: `${moq} 件起` },
-      { minQty: moq + step, price: Math.round(wholesalePrice * 0.94), label: `${moq + step} 件起` },
-      { minQty: moq + step * 2, price: Math.round(wholesalePrice * 0.88), label: `${moq + step * 2} 件起` },
-    ];
     const supportsDropship = idx % 3 !== 0;
     const dropshipPrice = supportsDropship ? Math.round(wholesalePrice * 1.45) : undefined;
     const supportsGroupBuy = idx % 4 !== 3;
-    const groupBuyMinQty = supportsGroupBuy ? Math.max(10, moq * 2) : undefined;
+    /**
+     * 拼单成团数必须**小于起提量**才成立：
+     * 拼单是「一个人够不到起批量，几个人凑一下」，所以门槛只会更低、不会更高。
+     * 早期写成 max(10, moq*2)，出现「50件起订 / 100件成团」这种自相矛盾的展示。
+     */
+    const groupBuyMinQty = supportsGroupBuy ? Math.max(3, Math.min(10, Math.round(wholesalePrice > 120 ? 10 : moq / 2))) : undefined;
+    /**
+     * 阶梯价的第一档就是拼单档：比拿货价略高（凑单也要走一遍分拣打包，成本更高），
+     * 这样价格阶梯在数学上严格递减，店主不会看到「5件¥17 / 3件¥15」这种倒挂。
+     */
+    const tierPrices = [
+      ...(groupBuyMinQty ? [{ minQty: groupBuyMinQty, price: Math.round(wholesalePrice * 1.08) }] : []),
+      { minQty: moq, price: wholesalePrice },
+      { minQty: moq + step, price: Math.round(wholesalePrice * 0.94) },
+      { minQty: moq + step * 2, price: Math.round(wholesalePrice * 0.88) },
+    ];
 
     /** 档口形态与厂家类型对应：原创设计=工厂+档口，针织厂=纯工厂，南油=有档口，十三行=纯展厅 */
     const stallTypeByMf: Record<number, string> = {
