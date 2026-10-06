@@ -19,12 +19,17 @@
 | 抖音小程序编译 | `build:tt` | ✅ Compiled successfully |
 | 支付宝小程序编译 | `build:alipay` | ✅ Compiled successfully |
 | H5 / PC Web 编译 | `build:h5` | ✅ Compiled successfully（含 index.html） |
-| 产物 JS 语法合法性 | `pnpm check:bundles` | ✅ 110 个文件全部合法 |
+| 产物 JS 语法合法性 | `pnpm check:bundles` | ✅ 122 个文件全部合法 |
 | H5 逐页运行时校验 | `pnpm verify:pages`（Playwright + 真实 API） | ✅ **23 / 23 页面通过，0 jsError** |
 | 运营后台构建 | `pnpm --filter @wfb/admin run build` | ✅ 8 条路由 |
 | 运营后台运行时 | `pnpm verify:admin` | ✅ **8 / 8 页面通过** |
 
-**接口规模**：`GET /api/routes` 共 **116 条**路由，覆盖三大模块 + UGC 互动 + 私信通知 + 推荐搜索 + 审核 + 管理后台。
+**接口规模**：`GET /api/routes` 共 **125 条**路由，覆盖三大模块 + UGC 互动 + 组局 + 私信通知 + 推荐搜索 + 审核 + 管理后台。
+
+> **2026-10-06 改版 v2**：按用户试用反馈重构了信息架构与内容形态
+> （首页改资讯流、货源卡片改批发信息层级、新增组局/吐槽/实评三类 UGC、身份标识体系、
+> 厂家视角切换、登录认证引导）。规格与验收口径见 [`docs/REDESIGN-V2.md`](REDESIGN-V2.md)。
+> 改版后验收仍然全绿：**11 项全通过 · 冒烟 67/67 · 产物 122 个文件合法 · H5 逐页 23/23**。
 **产物体积**：微信小程序主包 622.9 KB + 6 个分包共 199.6 KB（主包远低于 2 MB 限制）。
 **截图存档**：`docs/screenshots/` 共 32 张（H5 主链路 23 张 + PC Web 1 张 + 后台 8 张）。
 
