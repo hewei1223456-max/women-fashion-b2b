@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+# 说明：CI 只跑「不需要浏览器的」检查，保证稳定。
+# 浏览器逐页运行时校验（scripts/verify-pages.mjs）依赖本机 Chrome 与运行中的服务，
+# 请在本地跑 pnpm verify，不要在 CI 里跑（会因缺浏览器失败）。
+
+jobs:
+  verify:
+    name: 编译 / 类型 / 冒烟 / 产物语法
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 编译契约包（apps 依赖其 dist）
+        run: pnpm --filter "./packages/*" run build
+
+      - name: 后端编译
+        run: pnpm --filter @wfb/api run build
+
+      - name: 前端类型检查
+        run: pnpm --filter @wfb/miniapp run typecheck
+
+      - name: 编译四端（微信 / 抖音 / 支付宝 / H5）
+        run: |
+          pnpm --filter @wfb/miniapp run build:weapp
+          pnpm --filter @wfb/miniapp run build:tt
+          pnpm --filter @wfb/miniapp run build:alipay
+          pnpm --filter @wfb/miniapp run build:h5
+
+      - name: 产物 JS 语法校验
+        # 防「编译成功但产物非法」：Terser quote_keys 曾把类私有字段压成 #"name"
+        run: node scripts/check-bundles.mjs
+
+      - name: 后端全链路冒烟（干净实例）
+        # 冒烟会真实写入数据，重复跑会命中「置顶上限 3 条」「工具每日额度」等正确业务规则，
+        # 所以在独立端口起一个全新实例再跑。
+        run: |
+          (cd apps/api && PORT=3170 API_LOG=off node dist/main.js &)
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3170/api/health >/dev/null && break
+            sleep 1
+          done
+          node scripts/smoke-api.mjs http://localhost:3170
+
+      - name: 运营后台构建
+        run: pnpm --filter @wfb/admin run build
