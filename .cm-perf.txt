@@ -1,0 +1,28 @@
+perf: 首屏与切页优化 —— Tab 预取、构建后自动重启演示服务器
+
+用户反馈「电脑版和手机版打开都很卡，要等很久才能跳转到下一个界面」。
+先做了归因（新增 scripts/perf-audit.mjs 与 perf-nav.mjs）：不是后端问题 ——
+本地接口 1-2ms、切页 150ms。真正的瓶颈是产物结构与传输：
+
+  1) 每个 Tab 的页面代码是独立 chunk（330-366KB），**点了才下载**，
+     经公网隧道就是 1.5-3s 白等 → 这是用户说的「跳转要等很久」
+  2) 服务器完全不压缩，app.js 395KB 原始传输
+
+本轮改动：
+- 新增 scripts/build-prefetch-map.mjs：从构建产物解析 webpack 路由表
+  （path:"pages/xxx" 与紧随的 .e(chunkId)），生成 dist/h5/.prefetch.json
+- serve-demo 把各 Tab 的 chunk 以 <link rel="prefetch"> 注入 index.html，
+  浏览器在首屏空闲时后台拉取；点 Tab 时文件已在缓存
+- 实测（公网隧道）：切「货源」1485ms → 209ms，切「功能」3155ms → 681ms
+- 演示服务器与 API 都加 gzip（文本资源与 ≥1KB 的 JSON），app.js 395KB → 127KB；
+  大 JSON 实测省 82%（用原始 socket 验证，fetch 会自动解压看不出差异）
+- 静态资源加 ETag，命中的重复请求走 304
+
+同时修掉一个验收陷阱：
+- `build:h5` 会清空重写 dist/h5，而演示服务器若在此之前启动，会缓存上一轮的
+  预取映射（指向已不存在的 chunk → 404）→ 表现为「全站 0 页通过」，极易误判成代码坏了。
+  新增 scripts/demo-restart.mjs，verify-all 在浏览器校验前自动重启演示服务器
+- 预取映射生成接入 verify-all（第 5 步之后），避免 chunk 改名后预取打到旧文件
+
+验收：pnpm verify 13 项全绿 · 冒烟 67/67 · 产物 130 个文件合法 ·
+H5 逐页 27/27 · 店主端 4 Tab / 厂家端 5 Tab 双视角通过 · jsError 0

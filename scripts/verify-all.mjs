@@ -176,6 +176,15 @@ async function main() {
     const okLine = /产物语法校验通过/.test(chk.out);
     const summary = (chk.out.match(/产物语法校验[^\n]*/) ?? [''])[0].replace(/\x1b\[[0-9;]*m/g, '');
     record('H5 / 微信小程序 JS 语法合法性', okLine, summary);
+
+    /**
+     * 生成「页面 → chunk」预取映射。
+     * 必须紧跟 build:h5 之后跑：h5 构建会重写 dist/h5，映射里的 chunk 文件名每次都会变，
+     * 不重新生成的话 8099 会去预取上一轮的旧文件（404），预取就白做了。
+     */
+    const pmap = run('node', [path.join(ROOT, 'scripts/build-prefetch-map.mjs')]);
+    const pmapLine = (pmap.out.match(/预取合计[^\n]*/) ?? [''])[0].replace(/\x1b\[[0-9;]*m/g, '');
+    record('生成 Tab 预取映射（点 Tab 秒开）', pmap.code === 0 && /预取合计\s*\d+KB/.test(pmap.out), pmapLine || '未生成');
   }
 
   /* ---------- 6. 浏览器运行时校验 ---------- */
@@ -191,6 +200,27 @@ async function main() {
     if (!apiUp) {
       record('浏览器逐页校验', false, 'http://localhost:3100 未运行，跳过');
     } else {
+      /**
+       * ⚠️ 必须重启演示服务器。
+       *
+       * 第 4 步的 `build:h5` 会**清空并重写 dist/h5**（chunk 文件名每次都变），
+       * 而演示服务器若在此前启动，就会：① 缓存了上一轮的预取映射 → 去拉 404；
+       * ② 静态文件句柄指向已删除的 inode。两者都表现为「全站 0 页通过」。
+       * 所以这里先探活 8099，是本地地址就重启一次。
+       */
+      const demoUp = await (async () => {
+        try {
+          return (await fetch('http://localhost:8099/')).ok;
+        } catch {
+          return false;
+        }
+      })();
+      if (demoUp && !process.env.SKIP_DEMO_RESTART) {
+        console.log(`${c.gray('  重启演示服务器以加载新产物…')}`);
+        const stop = run('node', [path.join(ROOT, 'scripts', 'demo-restart.mjs')], { timeout: 60000 });
+        if (stop.code !== 0) console.log(`${c.yellow('  重启失败，继续尝试校验：')} ${stop.out.slice(-200)}`);
+      }
+
       const pages = run('node', [path.join(ROOT, 'scripts/verify-pages.mjs'), 'http://localhost:8099'], { timeout: 900000 });
       const m = /通过\s*(\d+)\/(\d+)/.exec(pages.out.replace(/\x1b\[[0-9;]*m/g, ''));
       record('H5 逐页运行时校验', m ? m[1] === m[2] : false, m ? `通过 ${m[1]}/${m[2]}` : '未解析到结果');

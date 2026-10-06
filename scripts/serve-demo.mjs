@@ -80,6 +80,40 @@ function isCompressible(ext) {
   return ['.js', '.mjs', '.css', '.html', '.json', '.svg', '.txt', '.map'].includes(ext);
 }
 
+/**
+ * 把各 Tab 的 chunk 以 <link rel="prefetch"> 注入 index.html。
+ *
+ * 为什么需要：Taro 没做 vendor 拆分，每个 Tab 的页面代码是独立 chunk（约 330-366KB），
+ * **点了才下载** —— 经公网隧道就是 1.5-3s 白等，用户感受就是「点一下要等很久才跳转」。
+ * 加 prefetch 后浏览器会在首屏空闲时后台拉取，用户点 Tab 时文件已在缓存里。
+ *
+ * 映射由 scripts/build-prefetch-map.mjs 从构建产物里解析出来（dist/h5/.prefetch.json）。
+ */
+function readPrefetchLinks() {
+  try {
+    const raw = fs.readFileSync(path.join(H5_DIR, '.prefetch.json'), 'utf8');
+    const groups = JSON.parse(raw);
+    const seen = new Set();
+    const links = [];
+    for (const g of groups) {
+      for (const f of g.files ?? []) {
+        if (seen.has(f)) continue;
+        seen.add(f);
+        links.push(`<link rel="prefetch" href="${f}" as="${f.endsWith('.css') ? 'style' : 'script'}">`);
+      }
+    }
+    return links.join('');
+  } catch {
+    return '';
+  }
+}
+
+let prefetchLinksCache = null;
+function getPrefetchLinks() {
+  if (prefetchLinksCache === null) prefetchLinksCache = readPrefetchLinks();
+  return prefetchLinksCache;
+}
+
 function sendFile(req, res, file) {
   if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -90,6 +124,36 @@ function sendFile(req, res, file) {
   const headers = { 'Content-Type': MIME[ext] ?? 'application/octet-stream' };
   if (ext === '.js' || ext === '.css' || ext === '.woff2') headers['Cache-Control'] = 'public, max-age=31536000, immutable';
   else headers['Cache-Control'] = 'no-cache';
+
+  /* index.html 要动态注入预取标签，所以走内存处理（文件很小） */
+  if (ext === '.html') {
+    const links = getPrefetchLinks();
+    if (links) {
+      const html = fs
+        .readFileSync(file, 'utf8')
+        .replace('</head>', `${links}</head>`);
+      const buf = Buffer.from(html, 'utf8');
+      const etag = `W/"html-${Buffer.byteLength(html).toString(16)}"`;
+      headers.ETag = etag;
+      if (req.headers['if-none-match'] === etag) {
+        res.writeHead(304, headers);
+        res.end();
+        return;
+      }
+      if (acceptsGzip(req)) {
+        headers['Content-Encoding'] = 'gzip';
+        headers.Vary = 'Accept-Encoding';
+        res.writeHead(200, headers);
+        res.end(zlib.gzipSync(buf, { level: 6 }));
+        return;
+      }
+      headers['Content-Length'] = String(buf.length);
+      res.writeHead(200, headers);
+      res.end(buf);
+      return;
+    }
+  }
+
   /** 内容变了 URL 就该变；这里给 ETag 让 304 生效（HTML 走 no-cache + ETag 最省） */
   const stat = fs.statSync(file);
   const etag = `W/"${stat.size.toString(16)}-${Math.floor(stat.mtimeMs).toString(16)}"`;
