@@ -370,6 +370,24 @@ export function publishProduct(store: Store, mf: User, dto: PublishProductDto) {
   const styleTag = (dto?.styleTag ?? '韩系') as StyleTag;
   const shipFrom = String(dto?.shipFrom ?? '').trim() || '广州';
 
+  /**
+   * 批发交易字段（用户核心诉求）：
+   * 店主只看四件事 —— 拿货价 / 起提量价 / 能否拼单 / 有没有档口。
+   * 发布款时不强制填这些，缺省由价格带推导，保证货源卡片永远不出现空值。
+   */
+  const wholesalePrice = Number(dto?.wholesalePrice ?? priceMin) || priceMin;
+  const tierPrices =
+    Array.isArray(dto?.tierPrices) && dto.tierPrices.length
+      ? dto.tierPrices
+      : [
+          { minQty: moq, price: wholesalePrice, label: `${moq} 件起` },
+          { minQty: moq * 2, price: Math.round(wholesalePrice * 0.94), label: `${moq * 2} 件起` },
+        ];
+  const supportsGroupBuy = dto?.supportsGroupBuy ?? true;
+  const supportsDropship = dto?.supportsDropship ?? false;
+  const stallType = (dto?.stallType ?? 'factory') as never;
+  const capabilities = (Array.isArray(dto?.capabilities) ? dto.capabilities : []) as never;
+
   // 同步文本审核（与内容发布同一套敏感词库）
   const audit = precheckText(`${title} ${description}`);
   const id = nextId(store, 'products');
@@ -385,6 +403,20 @@ export function publishProduct(store: Store, mf: User, dto: PublishProductDto) {
     moq,
     styleTag,
     shipFrom,
+    wholesalePrice,
+    tierPrices,
+    supportsGroupBuy,
+    groupBuyMinQty: supportsGroupBuy ? Math.max(10, moq * 2) : undefined,
+    supportsDropship,
+    dropshipPrice: supportsDropship ? Math.round(wholesalePrice * 1.45) : undefined,
+    stallType,
+    stallAddress: dto?.stallAddress,
+    capabilities,
+    market: String(dto?.market ?? ''),
+    fabric: dto?.fabric,
+    sizes: dto?.sizes,
+    colorCount: dto?.colorCount,
+    listedAt: now,
     description,
     status: audit.pass ? 'approved' : 'pending',
     viewCount: 0,

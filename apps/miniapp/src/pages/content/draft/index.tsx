@@ -1,22 +1,18 @@
 import { View, Text, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ContentType } from '@wfb/shared-types';
+import { CONTENT_TYPE_LABELS } from '@wfb/shared-types';
 import { timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import ListEmpty from '@/components/ListEmpty';
 import './index.scss';
 
-const TYPE_LABELS: Record<ContentType, string> = {
-  image_text: '图文',
-  video: '视频',
-  long_article: '长文',
-  product_card: '款卡片',
-  sourcing_shot: '实拍',
-  outfit: '穿搭',
-  groupbuy_recruit: '拼单招募',
-  fair_info: '订货会',
-};
+/**
+ * 内容类型文案统一走契约里的 CONTENT_TYPE_LABELS。
+ * 之前这里手写了一张局部表，契约新增 meetup/rant/review 后漏了三种（typecheck 会报缺 key），
+ * 所以改为直接引用契约，避免以后再漂移。
+ */
+const TYPE_LABELS = CONTENT_TYPE_LABELS;
 
 export default function DraftBox() {
   const queryClient = useQueryClient();

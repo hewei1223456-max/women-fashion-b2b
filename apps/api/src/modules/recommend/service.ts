@@ -1,4 +1,4 @@
-import type { ArticleSummary, Product, StyleTag, UserBrief, Visibility } from '@wfb/shared-types';
+import type { ArticleSummary, Meetup, Product, StyleTag, UserBrief, Visibility } from '@wfb/shared-types';
 import {
   bandOf,
   calcCesScore,
@@ -217,8 +217,22 @@ function round(n: number, digits = 2): number {
 
 /* ============================== 资讯流 ============================== */
 
-function toArticleSummary(store: Store, row: ArticleRow, reason?: string): ArticleSummary {
+/**
+ * 组局内容在资讯流里要带上完整的线下要素（时间/地点/集合点/报名方式/报名条件）。
+ * Article 表只存了内容本身，组局细节在 meetups 表，通过 articleId 反查补上。
+ * 用一次性的反向索引避免逐条 O(n) 扫描（列表页每页 10-20 条，n 为组局总数）。
+ */
+function buildMeetupIndex(store: Store): Map<number, Meetup> {
+  const idx = new Map<number, Meetup>();
+  for (const m of store.meetups.values()) {
+    if (m.articleId && !m.deleted) idx.set(m.articleId, m);
+  }
+  return idx;
+}
+
+function toArticleSummary(store: Store, row: ArticleRow, reason?: string, meetupIndex?: Map<number, Meetup>): ArticleSummary {
   const author: UserBrief = toUserBrief(store.users.get(row.authorId));
+  const meetup = row.meetup ?? (row.contentType === 'meetup' ? meetupIndex?.get(row.id) : undefined);
   return {
     id: row.id,
     title: row.title,
@@ -230,6 +244,11 @@ function toArticleSummary(store: Store, row: ArticleRow, reason?: string): Artic
     topics: row.topics ?? [],
     images: row.images ?? [],
     videoUrl: row.videoUrl,
+    // 拿货实评与组局的专属字段，列表卡片要直接展示星级 / 线下要素
+    rating: row.rating,
+    wouldRebuy: row.wouldRebuy,
+    meetup,
+    productId: row.productId,
     viewCount: row.viewCount,
     likeCount: row.likeCount,
     collectCount: row.collectCount,
@@ -331,12 +350,14 @@ export function buildInfoFeed(store: Store, q: RecommendQuery): RecommendFeedRes
     score: round(r.score),
   }));
 
+  const meetupIndex = buildMeetupIndex(store);
   return {
     list: pageItems.map((r) =>
       toArticleSummary(
         store,
         r.row,
         `${hotChannel ? '热门' : `风格匹配${round(r.style).toFixed(2)}`} · CES ${round(r.ces).toFixed(1)} · 新鲜度 ${round(r.fresh).toFixed(2)}`,
+        meetupIndex,
       ),
     ),
     page: q.page,

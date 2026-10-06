@@ -19,6 +19,122 @@
   line-height: 1.4;
 }
 
+/* ---------- 批发交易信息（拿货价 / 起提量价 / 拼单 / 档口 / 拿货地 / 实力标签） ---------- */
+.detail__price-row {
+  margin-top: $gap-xs;
+  align-items: baseline;
+}
+
+.detail__price-label {
+  font-size: 20px;
+  color: $text-3;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.detail__price-value {
+  font-size: 52px;
+  color: $accent;
+  line-height: 1.2;
+}
+
+.detail__price-suffix {
+  font-size: 22px;
+  color: $accent;
+  margin-left: 2px;
+}
+
+.detail__moq {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.detail__spec-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-top: $gap-xs;
+}
+
+.detail__spec-line {
+  display: block;
+  line-height: 1.6;
+}
+
+.detail__tier {
+  background: #fff1ea;
+  border-radius: $radius-sm;
+  padding: 4px 14px;
+  margin-right: $gap-xs;
+  margin-bottom: 6px;
+}
+
+.detail__tier--plain {
+  background: $brand-light;
+}
+
+.detail__tier-text {
+  font-size: 22px;
+  color: #c2410c;
+}
+
+.detail__tier--plain .detail__tier-text {
+  color: $brand;
+}
+
+.detail__chip {
+  border-radius: $radius-pill;
+  padding: 4px 16px;
+  margin-right: $gap-xs;
+  background: #f2f4f8;
+  border: 1px solid #e3e8ef;
+}
+
+.detail__chip-text {
+  font-size: 22px;
+  color: #6b7280;
+}
+
+.detail__chip--ok {
+  background: #e7f8ef;
+  border-color: #b7ecd0;
+}
+
+.detail__chip--ok .detail__chip-text {
+  color: #0b8a51;
+}
+
+.detail__chip--brand {
+  background: $brand-light;
+  border-color: #c7d2fe;
+}
+
+.detail__chip--brand .detail__chip-text {
+  color: $brand;
+}
+
+.detail__addr {
+  line-height: 1.8;
+}
+
+.detail__cap {
+  background: #f2f4f8;
+  border-radius: $radius-sm;
+  padding: 4px 14px;
+  margin-right: $gap-xs;
+  margin-bottom: 6px;
+}
+
+.detail__cap-text {
+  font-size: 22px;
+  color: $text-2;
+}
+
+.detail__tbd {
+  font-size: 22px;
+  color: $text-4;
+}
+
 .detail__tags {
   margin-top: $gap-xs;
 }

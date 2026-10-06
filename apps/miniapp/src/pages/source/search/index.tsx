@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 import { View, Text } from '@tarojs/components';
 import Taro, { useReachBottom } from '@tarojs/taro';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { MARKETS, PRICE_BANDS, STYLE_TAGS } from '@wfb/shared-types';
+import { MARKETS, PRICE_BANDS, STALL_TYPES, STALL_TYPE_LABELS, STYLE_TAGS } from '@wfb/shared-types';
 import { api } from '@/services/request';
-import type { Product, ArticleSummary, UserBrief } from '@wfb/shared-types';
+import type { Product, ArticleSummary, UserBrief, SearchQuery } from '@wfb/shared-types';
 import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
+import type { FilterGroup } from '@/components/FilterBar';
 import Tabs from '@/components/Tabs';
 import ProductCard from '@/components/ProductCard';
 import ArticleCard from '@/components/ArticleCard';
@@ -23,11 +24,32 @@ function pageCount(p: { products?: Product[]; articles?: ArticleSummary[]; manuf
   return products + (p.articles?.length ?? 0) + (p.manufacturers?.length ?? 0);
 }
 
+/** 价格带 → 拿货价区间（wholesalePriceMin / Max 口径） */
+function priceBandRange(band: string): { min?: number; max?: number } {
+  if (!band) return {};
+  const [lo, hi] = band.split('-');
+  const min = Number(String(lo).replace('+', ''));
+  const max = hi === undefined || hi === '' ? undefined : Number(String(hi).replace('+', ''));
+  return {
+    min: Number.isFinite(min) ? min : undefined,
+    max: max !== undefined && Number.isFinite(max) ? max : undefined,
+  };
+}
+
 const RESULT_TABS = [
   { key: 'all', label: '全部' },
   { key: 'source', label: '货源' },
   { key: 'info', label: '资讯' },
   { key: 'manufacturer', label: '厂家' },
+];
+
+/** 筛选栏：拿货地按产业带口径，价格带按拿货价口径，另加档口形态与拼单 */
+const FILTER_GROUPS: FilterGroup[] = [
+  { key: 'style', label: '风格', options: STYLE_TAGS.map((t) => ({ value: t, label: t })) },
+  { key: 'market', label: '拿货地', options: MARKETS.map((m) => ({ value: m, label: m })) },
+  { key: 'priceBand', label: '拿货价', options: PRICE_BANDS.map((b) => ({ value: b, label: `¥${b}` })) },
+  { key: 'stallType', label: '档口', options: STALL_TYPES.map((s) => ({ value: s, label: STALL_TYPE_LABELS[s] })) },
+  { key: 'groupBuy', label: '拼单', options: [{ value: 'yes', label: '支持拼单' }] },
 ];
 
 export default function SourceSearch() {
@@ -37,24 +59,36 @@ export default function SourceSearch() {
   const [filters, setFilters] = useState<Record<string, string | string[] | undefined>>({});
   const style = (filters.style as string) || '';
   const priceBand = (filters.priceBand as string) || '';
-  const shipFrom = (filters.shipFrom as string) || '';
+  /* 「发货地」→「拿货地」（产业带） */
+  const market = (filters.market as string) || (filters.shipFrom as string) || '';
+  const stallType = (filters.stallType as string) || '';
+  const groupBuy = (filters.groupBuy as string) === 'yes';
+  const range = priceBandRange(priceBand);
 
   const hot = useQuery({ queryKey: ['hot-keywords'], queryFn: () => api.search.hotKeywords(), enabled: !submitted });
 
   const result = useInfiniteQuery({
-    queryKey: ['source-search', submitted, style, priceBand, shipFrom],
+    queryKey: ['source-search', submitted, style, priceBand, market, stallType, groupBuy],
     initialPageParam: 1,
     enabled: !!submitted,
-    queryFn: ({ pageParam }) =>
-      api.search.all({
+    queryFn: ({ pageParam }) => {
+      const params = {
         keyword: submitted,
         board: 'all',
         style: style || undefined,
+        /* 老参数继续下发，新契约字段后端灰度期间可能还没实现 */
         priceBand: priceBand || undefined,
-        shipFrom: shipFrom || undefined,
+        shipFrom: market || undefined,
+        market: market || undefined,
+        stallType: stallType || undefined,
+        supportsGroupBuy: groupBuy ? true : undefined,
+        wholesalePriceMin: range.min,
+        wholesalePriceMax: range.max,
         page: Number(pageParam),
         pageSize: 10,
-      }),
+      };
+      return api.search.all(params as SearchQuery);
+    },
     getNextPageParam: (last, allPages) => {
       // SearchResult 无分页字段：用 total 与已加载条数推导
       const loaded = allPages.reduce((n, p) => n + pageCount(p), 0);
@@ -105,15 +139,7 @@ export default function SourceSearch() {
         </Card>
       ) : (
         <View>
-          <FilterBar
-            groups={[
-              { key: 'style', label: '风格', options: STYLE_TAGS.map((t) => ({ value: t, label: t })) },
-              { key: 'priceBand', label: '价格带', options: PRICE_BANDS.map((b) => ({ value: b, label: `¥${b}` })) },
-              { key: 'shipFrom', label: '发货地', options: MARKETS.map((m) => ({ value: m, label: m })) },
-            ]}
-            value={filters}
-            onChange={(key, next) => setFilters((prev) => ({ ...prev, [key]: next }))}
-          />
+          <FilterBar groups={FILTER_GROUPS} value={filters} onChange={(key, next) => setFilters((prev) => ({ ...prev, [key]: next }))} />
 
           <Tabs items={RESULT_TABS} current={board} onChange={setBoard} scroll />
 
@@ -121,7 +147,7 @@ export default function SourceSearch() {
             <Text className="f-xs t3">
               「{submitted}」共 {total} 条结果
             </Text>
-            {style || priceBand || shipFrom ? (
+            {style || priceBand || market || stallType || groupBuy ? (
               <Text
                 className="f-xs brand"
                 onClick={() => {

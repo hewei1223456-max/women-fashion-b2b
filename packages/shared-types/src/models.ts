@@ -3,8 +3,11 @@ import type {
   CertStatus,
   ContentType,
   GroupBuyStatus,
+  MeetupKind,
   MemberLevel,
   NotificationType,
+  ProductCapability,
+  StallType,
   StyleTag,
   TargetType,
   UserRole,
@@ -55,7 +58,117 @@ export interface UserBrief {
   styleTags: StyleTag[];
   followerCount?: number;
   contentCount?: number;
+  /** 身份标识（游客 / 认证店主 / 付费店主 / 免费厂家 / 付费厂家 / 大店 / 讲师 / 官方） */
+  badges: UserBadge[];
+  /** 认证店主 / 厂家的展示名（如「杭州·小满家」） */
+  displayName?: string;
+  /** 所在城市 */
+  city?: string;
+  /** 店铺名 */
+  shopName?: string;
 }
+
+/**
+ * 身份标识 —— 列表和详情里都要显式展示，
+ * 让用户一眼分清「谁是认证店主、谁付了费、谁只是游客」。
+ */
+export interface UserBadge {
+  /** 稳定的机器标识，前端按它选图标与配色 */
+  key:
+    | 'guest'
+    | 'certified_owner'
+    | 'paid_owner'
+    | 'certified_manufacturer'
+    | 'paid_manufacturer'
+    | 'landmark'
+    | 'lecturer'
+    | 'official';
+  label: string;
+  /** 视觉等级：gold 付费 / blue 认证 / gray 普通 / orange 官方 */
+  tone: 'gold' | 'blue' | 'gray' | 'orange' | 'purple';
+}
+
+export const BADGE_TONES: Record<UserBadge['key'], UserBadge['tone']> = {
+  guest: 'gray',
+  certified_owner: 'blue',
+  paid_owner: 'gold',
+  certified_manufacturer: 'blue',
+  paid_manufacturer: 'gold',
+  landmark: 'purple',
+  lecturer: 'purple',
+  official: 'orange',
+};
+
+export const BADGE_LABELS: Record<UserBadge['key'], string> = {
+  guest: '游客',
+  certified_owner: '认证店主',
+  paid_owner: '付费店主',
+  certified_manufacturer: '认证厂家',
+  paid_manufacturer: '付费厂家',
+  landmark: '地标大店',
+  lecturer: '内容讲师',
+  official: '官方',
+};
+
+/**
+ * 新用户偏好（登录引导最后一步收集）。
+ * 用途：① 冷启动推荐画像 ② 厂家主动私信的匹配依据 ③ 首页内容与货源的初始排序。
+ */
+export interface BuyerPreference {
+  /** 想跟什么样的人学习 */
+  learnFrom: LearnTarget[];
+  /** 想看什么内容 */
+  contentInterests: ContentInterest[];
+  /** 想要什么货源 */
+  sourcingNeeds: SourcingNeed[];
+  /** 想要什么类型的厂家 */
+  manufacturerNeeds: ManufacturerNeed[];
+}
+
+export const LEARN_TARGETS = ['landmark_shop', 'top_owner', 'lecturer', 'manufacturer', 'peer_owner'] as const;
+export type LearnTarget = (typeof LEARN_TARGETS)[number];
+export const LEARN_TARGET_LABELS: Record<LearnTarget, string> = {
+  landmark_shop: '地标大店老板',
+  top_owner: '同城头部店主',
+  lecturer: '行业讲师',
+  manufacturer: '源头厂家老板',
+  peer_owner: '同频新手店主',
+};
+
+export const CONTENT_INTERESTS = ['grouping', 'display', 'pricing', 'video', 'live', 'sourcing_guide', 'case_study', 'news'] as const;
+export type ContentInterest = (typeof CONTENT_INTERESTS)[number];
+export const CONTENT_INTEREST_LABELS: Record<ContentInterest, string> = {
+  grouping: '组货逻辑',
+  display: '陈列方法',
+  pricing: '定价策略',
+  video: '拍视频/剪辑',
+  live: '直播带货',
+  sourcing_guide: '拿货攻略',
+  case_study: '踩坑案例',
+  news: '行业行情',
+};
+
+export const SOURCING_NEEDS = ['spot_goods', 'futures', 'oem', 'dropship', 'group_buy', 'small_batch'] as const;
+export type SourcingNeed = (typeof SOURCING_NEEDS)[number];
+export const SOURCING_NEED_LABELS: Record<SourcingNeed, string> = {
+  spot_goods: '现货现拿',
+  futures: '期货预定',
+  oem: '贴牌定制',
+  dropship: '一件代发',
+  group_buy: '拼单拿货',
+  small_batch: '小批量试单',
+};
+
+export const MANUFACTURER_NEEDS = ['own_pattern_room', 'stall', 'factory', 'showroom', 'fast_return', 'quality_inspect'] as const;
+export type ManufacturerNeed = (typeof MANUFACTURER_NEEDS)[number];
+export const MANUFACTURER_NEED_LABELS: Record<ManufacturerNeed, string> = {
+  own_pattern_room: '有自有版房',
+  stall: '有档口可看货',
+  factory: '纯工厂直供',
+  showroom: '有展厅',
+  fast_return: '返单快',
+  quality_inspect: '支持验货',
+};
 
 export interface LandmarkShop {
   id: number;
@@ -97,6 +210,45 @@ export interface Product {
   score?: number;
   createdAt: string;
   manufacturer?: UserBrief;
+
+  /* ==================== 批发交易信息（店主最关心的四件事） ==================== */
+
+  /** ① 拿货价：单件起拿的单价（元）。比 priceMin 更直白，店主第一眼看这个 */
+  wholesalePrice: number;
+  /** ② 起提量价：阶梯价，拿得越多越便宜。没填阶梯价时后端会由按 moq 计算补一条 */
+  tierPrices: TierPrice[];
+  /** ③ 是否支持拼单拿货 / 拼单做货 */
+  supportsGroupBuy: boolean;
+  /** 支持拼单时的最小成团件数 */
+  groupBuyMinQty?: number;
+  /** 是否支持一件代发（代发价通常高于拿货价） */
+  supportsDropship: boolean;
+  /** 代发价（支持代发时有值） */
+  dropshipPrice?: number;
+  /** ④ 档口形态：纯工厂 / 纯展厅 / 有档口 / 工厂+档口 */
+  stallType: StallType;
+  /** 档口或工厂的具体位置描述，例如「十三行 6 楼 B12」「濮院工厂 3 号车间」 */
+  stallAddress?: string;
+  /** 实力标签：现货 / 期货 / 自有版房 / 可贴牌 / 支持打样 等 */
+  capabilities: ProductCapability[];
+  /** 拿货地（产业带），例如 十三行 / 南油 / 意法 / 濮院 */
+  market?: string;
+  /** 上新时间（店主判断是否当季新款） */
+  listedAt?: string;
+  /** 面料成分，例如「醋酸混纺 68% + 涤纶 32%」 */
+  fabric?: string;
+  /** 尺码范围 */
+  sizes?: string[];
+  /** 颜色数 */
+  colorCount?: number;
+}
+
+/** 阶梯价：达到 minQty 件时单价为 price */
+export interface TierPrice {
+  minQty: number;
+  price: number;
+  /** 展示用说明，例如「20 件起」「100 件起」 */
+  label?: string;
 }
 
 export interface Article {
@@ -121,6 +273,11 @@ export interface Article {
   location?: string;
   /** 关联款（货源板块 UGC 必填） */
   productId?: number;
+  /** 组局详情（contentType = meetup 时存在） */
+  meetup?: Meetup;
+  /** 拿货实评：评分 1-5 与是否值得再拿 */
+  rating?: number;
+  wouldRebuy?: boolean;
   priceRange?: string;
   moq?: number;
   viewCount: number;
@@ -150,6 +307,14 @@ export interface ArticleSummary {
   topics: string[];
   images: string[];
   videoUrl?: string;
+  /** 拿货实评：1-5 星（contentType=review 时有值） */
+  rating?: number;
+  /** 拿货实评：是否愿意再拿 */
+  wouldRebuy?: boolean;
+  /** 组局：线下要素（contentType=meetup 时有值，见 Meetup 模型） */
+  meetup?: Meetup;
+  /** 关联款 id（货源 UGC 用） */
+  productId?: number;
   viewCount: number;
   likeCount: number;
   collectCount: number;
@@ -199,6 +364,57 @@ export interface GroupBuy {
   initiator: UserBrief;
   product?: Product;
   joined?: boolean;
+}
+
+/**
+ * 组局（参考「闪动」的活动形态）
+ *
+ * 与拼单的区别：拼单只解决「凑量压价」，组局解决「一起去拿货 / 一起做货 / 一起交流」，
+ * 因此必须带**时间、地点、集合点、报名方式、报名条件**这些线下要素。
+ */
+export interface Meetup {
+  id: number;
+  /** 发起人 */
+  initiatorId: number;
+  /** 组局类型 */
+  kind: MeetupKind;
+  title: string;
+  description: string;
+  coverUrl: string;
+  /** 活动城市 */
+  city: string;
+  /** 活动地点（市场/园区/门店） */
+  venue: string;
+  /** 集合点（细化到具体位置，例如「十三行 6 楼 B12 档口门口」） */
+  gatheringPoint: string;
+  /** 集合时间 */
+  startAt: string;
+  /** 结束时间 */
+  endAt: string;
+  /** 报名方式（留微信号 / 扫码 / 站内报名） */
+  signupMethod: string;
+  /** 报名条件（例如「认证店主，有实体店」「需自带样品」） */
+  signupRequirement: string;
+  /** 人数上限，0 表示不限 */
+  capacity: number;
+  /** 已报名人数 */
+  joinedCount: number;
+  /** 费用说明 */
+  fee?: string;
+  /** 关联的款（一起拿货时用） */
+  productId?: number;
+  /** 关联的拿货市场 */
+  market?: string;
+  styleTags: StyleTag[];
+  /** 参与者画像：期望同行的人 */
+  targetAudience?: string;
+  status: 'recruiting' | 'full' | 'ended' | 'cancelled';
+  createdAt: string;
+  initiator: UserBrief;
+  /** 当前用户是否已报名 */
+  joined?: boolean;
+  /** 报名者（列表页只取前几个头像） */
+  attendees?: UserBrief[];
 }
 
 export interface OrderingFair {

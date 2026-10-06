@@ -3,12 +3,13 @@ import { View, Text, Image, Input, RichText, ScrollView } from '@tarojs/componen
 import Taro, { useRouter } from '@tarojs/taro';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Comment } from '@wfb/shared-types';
-import { ARTICLE_TYPE_LABELS, STYLE_COLORS } from '@wfb/shared-types';
+import { ARTICLE_TYPE_LABELS, CONTENT_TYPE_LABELS, STYLE_COLORS } from '@wfb/shared-types';
 import { compactNumber, timeAgo } from '@wfb/shared-utils';
 import { api } from '@/services/request';
 import { useAppStore } from '@/store/app';
 import ListEmpty from '@/components/ListEmpty';
 import LoadMore from '@/components/LoadMore';
+import { kindLabel, meetupRange, meetupStatus, seatText } from '@/pages/meetup/meetup-utils';
 import './index.scss';
 
 type MdKind = 'h1' | 'h2' | 'h3' | 'p' | 'li' | 'ol' | 'quote' | 'tr';
@@ -220,6 +221,80 @@ export default function InfoDetail() {
           </View>
 
           {article.coverUrl ? <Image className="ad-cover" src={article.coverUrl} mode="aspectFill" /> : null}
+
+          {/* UGC ①组局（meetup）：线下要素要能直接看到，并能跳去报名 */}
+          {article.contentType === 'meetup' && article.meetup ? (
+            <View className="card ad-meetup" onClick={() => go(`/pages/meetup/detail?id=${article.meetup?.id}`)}>
+              <View className="row-between">
+                <View className="row">
+                  <View className="tag ad-meetup__kind">
+                    <Text>{kindLabel(article.meetup.kind)}</Text>
+                  </View>
+                  <View className={`tag ${meetupStatus(article.meetup).tone === 'accent' ? 'tag-accent' : 'tag-gray'}`}>
+                    <Text>{meetupStatus(article.meetup).text}</Text>
+                  </View>
+                </View>
+                <Text className="f-xs t3">{seatText(article.meetup)}</Text>
+              </View>
+              <Text className="f-md bold t1 ad-meetup__title">{article.meetup.title}</Text>
+              <View className="ad-meetup__facts">
+                <Text className="ad-meetup__line">🕐 时间：{meetupRange(article.meetup.startAt, article.meetup.endAt)}</Text>
+                <Text className="ad-meetup__line">
+                  📍 地点：{[article.meetup.city, article.meetup.venue].filter(Boolean).join(' · ')}
+                </Text>
+                <Text className="ad-meetup__line">🚩 集合点：{article.meetup.gatheringPoint}</Text>
+                <Text className="ad-meetup__line">✍️ 报名方式：{article.meetup.signupMethod}</Text>
+                <Text className="ad-meetup__line">✅ 报名条件：{article.meetup.signupRequirement}</Text>
+                {article.meetup.fee ? <Text className="ad-meetup__line">💰 费用：{article.meetup.fee}</Text> : null}
+              </View>
+              <View className="row-between ad-meetup__foot">
+                <Text className="f-xs t3">{article.meetup.market ? `拿货地：${article.meetup.market}` : '线下自发活动，请自行核实行程'}</Text>
+                <Text className="ad-meetup__cta">{article.meetup.joined ? '已报名 ›' : '去报名 ›'}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {/* UGC ②拿货实评（review）：评分 1-5 星 + 是否值得再拿 */}
+          {article.contentType === 'review' ? (
+            <View className="card ad-review">
+              <View className="row-between">
+                <Text className="f-md bold t1">拿货实评</Text>
+                <View className="row">
+                  <Text className="ad-review__stars">
+                    {'★'.repeat(Math.max(0, Math.min(5, Math.round(article.rating ?? 0))))}
+                    {'☆'.repeat(5 - Math.max(0, Math.min(5, Math.round(article.rating ?? 0))))}
+                  </Text>
+                  <Text className="ad-review__score">{article.rating ?? '—'} 分</Text>
+                </View>
+              </View>
+              <View className="row wrap ad-review__tags">
+                {article.wouldRebuy !== undefined ? (
+                  <View className={`tag ${article.wouldRebuy ? 'tag-success' : 'tag-gray'}`}>
+                    <Text>{article.wouldRebuy ? '会再拿' : '不会复拿'}</Text>
+                  </View>
+                ) : null}
+                {article.priceRange ? (
+                  <View className="tag">
+                    <Text>拿货价 {article.priceRange}</Text>
+                  </View>
+                ) : null}
+                {article.moq ? (
+                  <View className="tag tag-outline">
+                    <Text>起订 {article.moq} 件</Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
+
+          {/* UGC ③行业吐槽（rant）：普通卡片，仅补一个内容类型标签 */}
+          {article.contentType === 'rant' || article.contentType === 'meetup' || article.contentType === 'review' ? (
+            <View className="row wrap ad-ugc-type">
+              <View className="tag tag-outline">
+                <Text>#{CONTENT_TYPE_LABELS[article.contentType]}</Text>
+              </View>
+            </View>
+          ) : null}
 
           {isHtml ? (
             <RichText className="ad-rich" nodes={article.content} />

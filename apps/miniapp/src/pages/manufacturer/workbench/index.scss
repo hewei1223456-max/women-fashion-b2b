@@ -1,0 +1,179 @@
+@import '../../../styles/variables.scss';
+
+.wb {
+  padding-bottom: 200px;
+}
+
+/* ---------- 头部：身份 + 视角切换 ---------- */
+.wb-head {
+  background: linear-gradient(135deg, #23273a 0%, #3b4266 100%);
+  border-radius: $radius;
+  padding: $gap;
+  margin-bottom: $gap-sm;
+}
+.wb-head__avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  margin-right: $gap-sm;
+  flex-shrink: 0;
+}
+.wb-head__name {
+  color: #fff;
+  font-size: $fs-lg;
+  max-width: 320px;
+}
+.wb-head__tag {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  margin-left: $gap-xs;
+}
+.wb-head__sub {
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 6px;
+}
+.wb-switch {
+  margin-top: $gap-sm;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: $radius-pill;
+  padding: 6px;
+}
+.wb-switch__item {
+  flex: 1;
+  height: 68px;
+  border-radius: $radius-pill;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wb-switch__item.is-active {
+  background: #fff;
+}
+.wb-switch__text {
+  font-size: $fs-sm;
+  color: rgba(255, 255, 255, 0.85);
+}
+.wb-switch__item.is-active .wb-switch__text {
+  color: #23273a;
+  font-weight: 600;
+}
+.wb-head__hint {
+  display: block;
+  margin-top: $gap-xs;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+/* ---------- 版本配额 ---------- */
+.wb-quota {
+  margin-top: $gap-xs;
+}
+.wb-quota__num {
+  font-size: 64px;
+  color: $brand;
+  line-height: 1.1;
+}
+.wb-quota__unit {
+  font-size: $fs-lg;
+  color: $text-3;
+  margin-left: 8px;
+}
+.wb-quota__right {
+  align-items: flex-end;
+}
+.wb-quota__left {
+  font-size: $fs-xl;
+  color: $accent;
+}
+.wb-quota__track {
+  height: 12px;
+  border-radius: 6px;
+  background: #eef0f5;
+  margin: $gap-xs 0;
+  overflow: hidden;
+}
+.wb-quota__bar {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+}
+.wb-quota__rights {
+  margin-top: 6px;
+}
+.wb-quota__note {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+/* ---------- 快捷入口 ---------- */
+.wb-entries {
+  margin-top: $gap-xs;
+}
+.wb-entry {
+  width: 33.33%;
+  padding: $gap-sm 0;
+}
+.wb-entry__icon {
+  font-size: 52px;
+  line-height: 1.2;
+}
+.wb-entry__name {
+  font-size: $fs-sm;
+  color: $text-1;
+  margin-top: 8px;
+}
+.wb-entry__desc {
+  font-size: 18px;
+  color: $text-4;
+  margin-top: 4px;
+  max-width: 200px;
+}
+
+/* ---------- 待办 ---------- */
+.wb-todo {
+  height: 96px;
+  border-bottom: 1px solid $line;
+}
+.wb-todo:last-child {
+  border-bottom: none;
+}
+.wb-todo__icon {
+  font-size: 36px;
+  margin-right: $gap-xs;
+}
+.wb-todo__arrow {
+  font-size: $fs-xl;
+  color: $text-4;
+  margin-left: $gap-xs;
+}
+.wb-todo__note {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.6;
+}
+
+/* ---------- 加微概览 ---------- */
+.wb-kpis {
+  margin-top: $gap-xs;
+}
+.wb-kpi {
+  width: 33.33%;
+  padding: $gap-xs 0;
+}
+.wb-kpi__value {
+  font-size: $fs-xl;
+  color: $text-1;
+}
+
+.wb-foot {
+  margin: $gap 0 $gap-lg;
+  height: 88px;
+  border-radius: $radius-pill;
+  background: $bg-card;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

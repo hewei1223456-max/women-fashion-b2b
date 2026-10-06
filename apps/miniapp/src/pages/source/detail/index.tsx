@@ -2,14 +2,24 @@ import { useEffect, useState } from 'react';
 import { View, Text, Image, Swiper, SwiperItem } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CAPABILITY_LABELS, STALL_TYPE_LABELS } from '@wfb/shared-types';
 import { api } from '@/services/request';
 import Card from '@/components/Card';
 import Tag from '@/components/Tag';
-import PriceTag from '@/components/PriceTag';
 import StatBar from '@/components/StatBar';
 import UserRow from '@/components/UserRow';
 import ListEmpty from '@/components/ListEmpty';
-import ProductCard from '@/components/ProductCard';
+import ProductCard, {
+  capabilitiesOf,
+  dropshipPriceOf,
+  groupBuyMinQtyOf,
+  groupBuyOf,
+  marketOf,
+  stallAddressOf,
+  stallTypeOf,
+  tierPricesOf,
+  wholesalePriceOf,
+} from '@/components/ProductCard';
 import ActionSheet from '@/components/ActionSheet';
 import ContactButton from '@/components/ContactButton';
 import SectionTitle from '@/components/SectionTitle';
@@ -23,6 +33,17 @@ const SHARE_CHANNELS = [
   { key: 'group', label: '微信群' },
   { key: 'link', label: '复制链接' },
 ];
+
+/** 新字段缺失时的统一占位 */
+const TBD = '待完善';
+
+/** 上新时间：只展示到日，避免时区歧义 */
+function listedText(iso?: string): string {
+  if (!iso) return TBD;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return TBD;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export default function SourceDetail() {
   const router = useRouter();
@@ -47,6 +68,21 @@ export default function SourceDetail() {
   }, [detail.data]);
 
   const product = detail.data;
+  const rawProduct = (product ?? {}) as unknown as Record<string, unknown>;
+  const wholesale = product ? wholesalePriceOf(product) : undefined;
+  const tiers = product ? tierPricesOf(product) : [];
+  const groupBuy = product ? groupBuyOf(product) : undefined;
+  const groupBuyMinQty = product ? groupBuyMinQtyOf(product) : undefined;
+  const stallType = product ? stallTypeOf(product) : undefined;
+  const stallAddress = product ? stallAddressOf(product) : '';
+  const market = product ? marketOf(product) : '';
+  const capabilities = product ? capabilitiesOf(product) : [];
+  const dropshipPrice = product ? dropshipPriceOf(product) : undefined;
+  const supportsDropship = rawProduct.supportsDropship === true;
+  const fabric = typeof rawProduct.fabric === 'string' ? rawProduct.fabric : '';
+  const sizes = Array.isArray(rawProduct.sizes) ? (rawProduct.sizes as string[]) : [];
+  const colorCount = Number(rawProduct.colorCount) > 0 ? Number(rawProduct.colorCount) : undefined;
+  const listedAt = typeof rawProduct.listedAt === 'string' ? rawProduct.listedAt : '';
 
   const toggleLike = async () => {
     if (!product) return;
@@ -130,17 +166,113 @@ export default function SourceDetail() {
             ))}
           </Swiper>
 
+          {/* 批发交易信息：① 拿货价 ② 起提量价 ③ 是否支持拼单 ④ 档口形态 ⑤ 拿货地 ⑥ 实力标签 */}
           <Card>
-            <View className="row-between">
-              <PriceTag range={product.priceRange} size="lg" />
-              <Text className="f-xs t3">{product.moq} 件起订</Text>
-            </View>
             <Text className="detail__title f-lg bold t1">{product.title}</Text>
+
+            <View className="detail__price-row row">
+              <Text className="detail__price-label">拿货价</Text>
+              {wholesale !== undefined ? (
+                <View className="row detail__price">
+                  <Text className="detail__price-value bold">¥{wholesale}</Text>
+                  <Text className="detail__price-suffix">起</Text>
+                </View>
+              ) : (
+                <Text className="detail__tbd">{TBD}</Text>
+              )}
+              <Text className="f-xs t3 detail__moq">{product.moq} 件起订</Text>
+            </View>
+
+            <View className="detail__spec-row">
+              <Text className="detail__price-label">起提量价</Text>
+              <View className="row wrap flex-1">
+                {tiers.length ? (
+                  tiers.map((t) => (
+                    <View key={`${t.minQty}-${t.price}`} className="detail__tier">
+                      <Text className="detail__tier-text">
+                        {t.label ? `${t.label} ` : ''}
+                        {t.minQty}件起订 ¥{t.price}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="detail__tbd">{TBD}</Text>
+                )}
+                {supportsDropship && dropshipPrice !== undefined ? (
+                  <View className="detail__tier detail__tier--plain">
+                    <Text className="detail__tier-text">一件代发 ¥{dropshipPrice}</Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+
+            <View className="detail__spec-row">
+              <Text className="detail__price-label">拼单拿货</Text>
+              <View className="row flex-1">
+                {groupBuy === true ? (
+                  <View className="detail__chip detail__chip--ok">
+                    <Text className="detail__chip-text">可拼单{groupBuyMinQty !== undefined ? ` · ${groupBuyMinQty}件成团` : ''}</Text>
+                  </View>
+                ) : (
+                  <View className="detail__chip">
+                    <Text className="detail__chip-text">{groupBuy === false ? '不支持拼单' : TBD}</Text>
+                  </View>
+                )}
+                {groupBuy === true ? (
+                  <Text className="f-xs brand" onClick={() => Taro.navigateTo({ url: '/pages/source/groupbuy' })}>
+                    去拼单广场 ›
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+
+            <View className="detail__spec-row">
+              <Text className="detail__price-label">档口形态</Text>
+              <View className="row flex-1 wrap">
+                {stallType ? (
+                  <View className="detail__chip detail__chip--brand">
+                    <Text className="detail__chip-text">{STALL_TYPE_LABELS[stallType]}</Text>
+                  </View>
+                ) : (
+                  <Text className="detail__tbd">{TBD}</Text>
+                )}
+                {stallAddress ? <Text className="f-xs t3 detail__addr">{stallAddress}</Text> : null}
+              </View>
+            </View>
+
+            <View className="detail__spec-row">
+              <Text className="detail__price-label">拿货地</Text>
+              <Text className="f-sm t2 flex-1">{market ? `📍${market}（产业带）` : TBD}</Text>
+            </View>
+
+            <View className="detail__spec-row">
+              <Text className="detail__price-label">实力标签</Text>
+              <View className="row wrap flex-1">
+                {capabilities.length ? (
+                  capabilities.map((c) => (
+                    <View key={c} className="detail__cap">
+                      <Text className="detail__cap-text">{CAPABILITY_LABELS[c]}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="detail__tbd">{TBD}</Text>
+                )}
+              </View>
+            </View>
+
+            <View className="detail__spec-row">
+              <Text className="detail__price-label">款信息</Text>
+              <View className="col flex-1">
+                <Text className="f-xs t3 detail__spec-line">面料：{fabric || TBD}</Text>
+                <Text className="f-xs t3 detail__spec-line">尺码：{sizes.length ? sizes.join(' / ') : TBD}</Text>
+                <Text className="f-xs t3 detail__spec-line">
+                  颜色数：{colorCount !== undefined ? `${colorCount} 色` : TBD} · 上新：{listedText(listedAt)}
+                </Text>
+              </View>
+            </View>
+
             <View className="row wrap detail__tags">
               <Tag styleTag={product.styleTag} size="md" />
-              <View className="tag tag-gray">
-                <Text>📍 {product.shipFrom}</Text>
-              </View>
               {product.manufacturer?.certStatus === 'approved' ? (
                 <View className="tag tag-success">
                   <Text>厂家已认证</Text>
@@ -159,7 +291,7 @@ export default function SourceDetail() {
                 followed={followed}
                 onFollow={toggleFollow}
                 onClick={() => Taro.navigateTo({ url: `/pages/source/manufacturer?id=${product.manufacturerId}` })}
-                desc={`${product.manufacturer.companyName ?? '厂家'} · 加微转化率 ${(product.contactRate * 100).toFixed(1)}%`}
+                desc={`${product.manufacturer.companyName ?? '厂家'} · 加微转化率 ${(Number(product.contactRate || 0) * 100).toFixed(1)}%`}
               />
               <View className="row detail__mfr-actions">
                 <Text className="f-xs t3">浏览 {count(product.viewCount)} · 已有 {count(product.contactCount)} 位店主加微</Text>

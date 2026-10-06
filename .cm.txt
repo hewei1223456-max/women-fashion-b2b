@@ -1,0 +1,28 @@
+feat(api): 后端支撑改版 v2 —— 批发交易字段/身份标识/组局UGC/偏好画像/视角切换
+
+契约（packages/shared-types）
+- Product 新增批发交易字段：wholesalePrice / tierPrices / supportsGroupBuy / groupBuyMinQty /
+  supportsDropship / dropshipPrice / stallType / stallAddress / capabilities / market / fabric /
+  sizes / colorCount / listedAt；新增 STALL_TYPES / PRODUCT_CAPABILITIES 与其标签字典
+- UserBrief 新增 badges（身份标识），新增 UserBadge / BADGE_LABELS / BADGE_TONES
+- 新增 Meetup 模型（组局）：gatheringPoint / signupMethod / signupRequirement / capacity 等线下要素
+- ContentType 新增 meetup / rant / review，并加 CONTENT_TYPE_LABELS
+- ArticleSummary 新增 rating / wouldRebuy / meetup / productId（列表卡片直接展示星级与线下要素）
+- 新增 BuyerPreference 与四组偏好字典（想跟谁学/想看什么/想要什么货源/想要什么厂家）
+
+后端
+- core/security：buildBadges() 统一计算身份标识（认证与付费是两个独立维度，可叠加）
+- core/images：把演示图生成从 seed 抽出，避免业务模块反向依赖播种脚本
+- modules/meetup：完整组局模块（list/detail/create/join/quit/mine），
+  发布组局时同步往资讯流写一条内容，让组局能被首页推荐到
+- modules/auth：新增 /api/auth/preference（读写偏好画像）与 /api/auth/switch（Demo 视角切换）
+- modules/recommend：资讯流按 articleId 反查组局详情并下发，卡片无需二次请求
+
+演示数据
+- 款 24 → 60 条，每条 3-6 张图；价格改为真实批发结构（拿货价 + 三档阶梯价 + 代发价）
+- 新增 4 条行业吐槽、3 条拿货实评（带评分与是否复购）、4 场组局（含集合点/报名方式/报名条件）
+- 档口形态、实力标签、拿货地均与厂家所在地自洽
+
+文档
+- docs/REDESIGN-V2.md：本次改版的完整规格与验收口径
+- docs/API.md：补组局、身份标识、偏好画像三节

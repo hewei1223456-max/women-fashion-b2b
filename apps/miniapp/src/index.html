@@ -14,6 +14,33 @@
       缺失该文件会表现为「Compiled successfully 但 dist/h5 没有 index.html」。
     -->
     <title>女装B2B行业平台</title>
+    <!--
+      ⚠️ 根字号（rem 基准）必须自己设，否则整个 H5 会「缩小 2.4 倍」。
+
+      原因：Taro 的 pxtransform 把设计稿 px 转成 rem（designWidth 750 时 1rem = 40px 设计稿）。
+      小程序端由框架在运行时设置根字号，但 **H5 端的缩放脚本不会自动注入**，
+      根字号会停在浏览器默认的 16px。结果：
+        max-width: 750px  →  编译成 18.75rem  →  实际只有 300px
+        font-size: 28px   →  编译成 0.7rem    →  实际只有 11.2px
+      表现就是「内容挤在左边一条窄柱里、字特别小」。
+
+      这里按 Taro 的换算关系设置根字号，并把宽度上限锁在 750px，
+      使 PC 端呈现为居中的手机宽度（桌面浏览器的合理形态），移动端则按比例缩放。
+    -->
+    <script>
+      (function () {
+        var DESIGN_WIDTH = 750; // 与 config/index.ts 的 designWidth 保持一致
+        var BASE = 40; // 1rem = 40px 设计稿
+        var MAX_WIDTH = 750; // PC 端最大内容宽度
+        function setRootFontSize() {
+          var w = Math.min(document.documentElement.clientWidth || window.innerWidth || DESIGN_WIDTH, MAX_WIDTH);
+          document.documentElement.style.fontSize = (w / DESIGN_WIDTH) * BASE + 'px';
+        }
+        setRootFontSize();
+        window.addEventListener('resize', setRootFontSize);
+        window.addEventListener('orientationchange', setRootFontSize);
+      })();
+    </script>
     <style>
       html,
       body,

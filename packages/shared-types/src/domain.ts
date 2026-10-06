@@ -37,8 +37,76 @@ export const CONTENT_TYPES = [
   'outfit',
   'groupbuy_recruit',
   'fair_info',
+  /** 组局：约人一起拿货 / 一起做货 / 一起交流（参考闪动，带时间地点与报名条件） */
+  'meetup',
+  /** 行业吐槽：踩坑、吐槽、行业黑话 */
+  'rant',
+  /** 拿货实评：下单后的真实评价（好/坏都记） */
+  'review',
 ] as const;
 export type ContentType = (typeof CONTENT_TYPES)[number];
+
+/** 内容类型中文名（发布页与列表标签共用，避免各端文案不一致） */
+export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
+  image_text: '图文',
+  video: '视频',
+  long_article: '长文',
+  product_card: '款卡片',
+  sourcing_shot: '拿货实拍',
+  outfit: '穿搭展示',
+  groupbuy_recruit: '拼单招募',
+  fair_info: '订货会信息',
+  meetup: '组局',
+  rant: '行业吐槽',
+  review: '拿货实评',
+};
+
+/** 发布页可选的板块类型（按资讯/货源两个板块分组） */
+export const INFO_CONTENT_TYPES: ContentType[] = ['image_text', 'video', 'long_article', 'rant', 'review'];
+export const SOURCE_CONTENT_TYPES: ContentType[] = ['product_card', 'sourcing_shot', 'outfit', 'groupbuy_recruit', 'fair_info', 'meetup'];
+
+/** 组局（参考闪动）的活动形态 */
+export const MEETUP_KINDS = ['sourcing', 'production', 'study', 'exchange'] as const;
+export type MeetupKind = (typeof MEETUP_KINDS)[number];
+export const MEETUP_KIND_LABELS: Record<MeetupKind, string> = {
+  sourcing: '一起去拿货',
+  production: '一起做货/拼单下单',
+  study: '一起学习交流',
+  exchange: '同业交流局',
+};
+
+/** 档口形态 —— 店主判断「能不能实地看货」的关键信息 */
+export const STALL_TYPES = ['factory', 'showroom', 'stall', 'factory_stall'] as const;
+export type StallType = (typeof STALL_TYPES)[number];
+export const STALL_TYPE_LABELS: Record<StallType, string> = {
+  factory: '纯工厂',
+  showroom: '纯展厅',
+  stall: '有档口',
+  factory_stall: '工厂+档口',
+};
+
+/** 厂家实力标签 */
+export const PRODUCT_CAPABILITIES = [
+  'spot_goods', // 现货
+  'futures', // 期货
+  'own_pattern_room', // 自有版房
+  'oem', // 可贴牌
+  'sample_support', // 支持打样
+  'small_batch', // 小批量可做
+  'fast_return', // 快速返单
+  'quality_inspect', // 支持验货
+] as const;
+export type ProductCapability = (typeof PRODUCT_CAPABILITIES)[number];
+export const CAPABILITY_LABELS: Record<ProductCapability, string> = {
+  spot_goods: '现货',
+  futures: '期货',
+  own_pattern_room: '自有版房',
+  oem: '可贴牌',
+  sample_support: '支持打样',
+  small_batch: '小批量',
+  fast_return: '快速返单',
+  quality_inspect: '支持验货',
+};
 
 export const ARTICLE_TYPES = ['distillation', 'methodology', 'news', 'course', 'guide', 'ugc'] as const;
 export type ArticleType = (typeof ARTICLE_TYPES)[number];

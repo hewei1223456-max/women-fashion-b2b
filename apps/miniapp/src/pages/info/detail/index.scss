@@ -60,6 +60,58 @@
   margin-bottom: $gap-sm;
 }
 
+/* ---------- UGC：组局 / 实评 / 吐槽 ---------- */
+.ad-meetup__kind {
+  background: $brand-light;
+  color: $brand;
+  font-weight: 600;
+}
+.ad-meetup__title {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.4;
+}
+.ad-meetup__facts {
+  margin-top: $gap-xs;
+  background: #fafbfd;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+.ad-meetup__line {
+  display: block;
+  font-size: $fs-xs;
+  color: $text-2;
+  line-height: 1.8;
+}
+.ad-meetup__foot {
+  margin-top: $gap-xs;
+}
+.ad-meetup__cta {
+  font-size: $fs-xs;
+  color: #fff;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius-pill;
+  padding: 6px 20px;
+}
+
+.ad-review__stars {
+  font-size: $fs-md;
+  color: #f7b500;
+  letter-spacing: 2px;
+}
+.ad-review__score {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-left: $gap-xs;
+}
+.ad-review__tags {
+  margin-top: $gap-xs;
+}
+
+.ad-ugc-type {
+  margin-bottom: $gap-xs;
+}
+
 .ad-content {
   font-size: $fs-md;
   line-height: 1.8;

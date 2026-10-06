@@ -1,6 +1,6 @@
 export default defineAppConfig({
   /**
-   * 主包：首页 + 4 个 tab 页 + 登录
+   * 主包：资讯首页 + 4 个 tab 页 + 登录
    * 其余页面尽量下沉到分包；源码目录必须与分包 root 一致（Taro 按 `src/<root>/<page>` 解析）。
    *
    * 注意：微信规定「主包页面不能位于分包 root 目录内」，
@@ -66,17 +66,22 @@ export default defineAppConfig({
       pages: ['list', 'detail'],
     },
     {
+      root: 'pages/meetup',
+      name: 'meetup',
+      pages: ['list', 'detail', 'create'],
+    },
+    {
       root: 'pages/manufacturer',
       name: 'manufacturer',
-      pages: ['admin', 'publish', 'contact-list', 'sub-account'],
+      pages: ['admin', 'publish', 'contact-list', 'sub-account', 'workbench'],
     },
   ],
 
-  /** 进入首页后预下载资讯分包，减少点击「资讯」时的等待 */
+  /** 进入资讯首页后预下载资讯 / 组局分包，减少点击「资讯」「组局」时的等待 */
   preloadRule: {
     'pages/index/index': {
       network: 'all',
-      packages: ['pages/info'],
+      packages: ['pages/info', 'pages/meetup'],
     },
   },
 

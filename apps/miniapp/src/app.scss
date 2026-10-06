@@ -11,23 +11,42 @@ body,
   background: $bg-page;
 }
 
-/* PC Web（宽屏）下限制内容宽度并居中，避免大屏拉伸 */
+/* PC Web（宽屏）适配
+ *
+ * 两个坑都要注意：
+ * 1) 根字号由 src/index.html 的脚本设置（1rem = 40px 设计稿，宽度上限 750px），
+ *    所以这里写 750px / 28px 会被 pxtransform 转成 rem、再按设计稿比例还原；
+ * 2) Taro 的基础样式（`.taro_page { width:100%; margin:0 }`）是**运行时注入**的，
+ *    注入顺序在我们的样式之后，普通声明会被它覆盖 → 必须 !important，
+ *    否则 PC 端内容是贴在左上角的窄条，而不是居中。
+ */
 @media (min-width: 768px) {
   .taro_page {
-    max-width: 750px;
-    margin: 0 auto;
+    max-width: 750px !important;
+    /*
+     * 关键：Taro 的 .taro_page 是 position:absolute（为路由切换动画服务），
+     * 而**绝对定位元素靠 margin:auto 不会水平居中** —— 必须同时给 left/right 约束，
+     * 让格式化宽度由这组值决定，auto margin 才会平分剩余空间。
+     * 只写 margin:0 auto 的话，元素会一直贴在左上角（PC 端就是这样）。
+     */
+    left: 0;
+    right: 0;
+    margin-left: auto !important;
+    margin-right: auto !important;
     background: $bg-page;
     box-shadow: 0 0 40px rgba(23, 25, 35, 0.06);
     min-height: 100vh;
   }
   .tabbar {
-    max-width: 750px;
-    left: 50%;
+    max-width: 750px !important;
+    left: 50% !important;
+    right: auto !important;
     transform: translateX(-50%);
   }
   .fixed-bottom {
-    max-width: 750px;
-    left: 50%;
+    max-width: 750px !important;
+    left: 50% !important;
+    right: auto !important;
     transform: translateX(-50%);
   }
 }

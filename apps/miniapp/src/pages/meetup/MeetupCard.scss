@@ -1,0 +1,103 @@
+@import '../../styles/variables.scss';
+
+.meetup-card {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+
+.meetup-card__head {
+  margin-bottom: $gap-xs;
+}
+
+.meetup-card__kind {
+  background: $brand-light;
+  color: $brand;
+  font-weight: 600;
+}
+
+.meetup-card__title {
+  display: block;
+  font-size: $fs-lg;
+  line-height: 1.4;
+}
+
+.meetup-card__desc {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.meetup-card__facts {
+  margin-top: $gap-xs;
+  background: #fafbfd;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+
+.meetup-card__fact {
+  padding: 6px 0;
+  align-items: flex-start;
+}
+
+.meetup-card__fact-icon {
+  font-size: $fs-sm;
+  width: 34px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.meetup-card__fact-label {
+  font-size: $fs-xs;
+  color: $text-3;
+  width: 108px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.meetup-card__fact-value {
+  font-size: $fs-xs;
+  color: $text-2;
+  line-height: 1.5;
+}
+
+.meetup-card__fact-value.is-strong {
+  color: $text-1;
+  font-weight: 600;
+  font-size: $fs-sm;
+}
+
+.meetup-card__inline {
+  max-width: 420px;
+}
+
+.meetup-card__foot {
+  margin-top: $gap-xs;
+}
+
+.meetup-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: 10px;
+}
+
+.meetup-card__name {
+  max-width: 320px;
+}
+
+.meetup-card__cta {
+  font-size: $fs-sm;
+  color: #fff;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius-pill;
+  padding: 8px 22px;
+}
+
+.meetup-card__cta.is-joined {
+  background: #f0f2f7;
+  color: $text-3;
+}

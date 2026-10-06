@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
-import type { User } from '@wfb/shared-types';
+import type { User, UserBadge } from '@wfb/shared-types';
+import { BADGE_LABELS, BADGE_TONES } from '@wfb/shared-types';
 
 /* =========================================================================
  * 零依赖 JWT（HS256）+ 密码哈希 + 用户脱敏
@@ -85,6 +86,61 @@ export function verifyPassword(password: string, stored: string): boolean {
 
 /* ------------------------------ 用户脱敏 ------------------------------ */
 
+/** 付费店主等级 */
+const PAID_OWNER_LEVELS = new Set(['elite', 'shark', 'tour']);
+/** 付费厂家等级 */
+const PAID_MANUFACTURER_LEVELS = new Set(['manufacturer_basic', 'manufacturer_pro', 'manufacturer_enterprise']);
+
+/**
+ * 计算用户身份标识。
+ *
+ * 用户明确要求「认证店主/付费店主/付费厂家/免费厂家/游客都要有各自的标识」，
+ * 所以这里把「认证」与「付费」拆成两个独立维度：
+ *   认证 = certStatus === 'approved'，付费 = memberLevel 命中付费等级。
+ * 两者可叠加（蓝 + 金），前端按 BADGE_TONES 上色。
+ */
+export function buildBadges(u: Pick<User, 'role' | 'certStatus' | 'memberLevel'>): UserBadge[] {
+  const badges: UserBadge[] = [];
+  const push = (key: UserBadge['key']) => {
+    badges.push({ key, label: BADGE_LABELS[key], tone: BADGE_TONES[key] });
+  };
+
+  if (u.role === 'admin') {
+    push('official');
+    return badges;
+  }
+  if (u.role === 'landmark') {
+    push('landmark');
+    if (u.certStatus === 'approved') push('certified_owner');
+    return badges;
+  }
+  if (u.role === 'lecturer') {
+    push('lecturer');
+    return badges;
+  }
+
+  const certified = u.certStatus === 'approved';
+  if (u.role === 'manufacturer') {
+    if (certified) push('certified_manufacturer');
+    if (PAID_MANUFACTURER_LEVELS.has(u.memberLevel)) push('paid_manufacturer');
+    // 免费版厂家：已认证但未付费 → 只显示「认证厂家」；两者都没有才算游客
+  } else {
+    if (certified) push('certified_owner');
+    if (PAID_OWNER_LEVELS.has(u.memberLevel)) push('paid_owner');
+  }
+
+  if (badges.length === 0) push('guest');
+  return badges;
+}
+
+/** 从昵称里尽量抽出展示名与城市（种子数据形如「杭州·小满家（主理人）」） */
+export function parseDisplayName(u: Pick<User, 'nickname' | 'role' | 'companyName'>): { displayName?: string; city?: string } {
+  const raw = u.nickname.replace(/（.*?）|\(.*?\)/g, '').trim();
+  const parts = raw.split(/[·・]/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length >= 2) return { displayName: raw, city: parts[0] };
+  return { displayName: u.companyName ?? raw, city: undefined };
+}
+
 /** 对外暴露的用户信息：剔除手机号、openid、营业执照、身份证等敏感字段 */
 export function toUserBrief(u: User | undefined | null, extra: Record<string, unknown> = {}) {
   if (!u) {
@@ -96,9 +152,11 @@ export function toUserBrief(u: User | undefined | null, extra: Record<string, un
       certStatus: 'none' as const,
       memberLevel: 'free' as const,
       styleTags: [],
+      badges: buildBadges({ role: 'shop_owner', certStatus: 'none', memberLevel: 'free' }),
       ...extra,
     };
   }
+  const { displayName, city } = parseDisplayName(u);
   return {
     id: u.id,
     nickname: u.nickname,
@@ -109,6 +167,10 @@ export function toUserBrief(u: User | undefined | null, extra: Record<string, un
     companyName: u.companyName,
     bio: u.bio,
     styleTags: u.styleTags ?? [],
+    badges: buildBadges(u),
+    displayName,
+    city,
+    shopName: u.companyName,
     ...extra,
   };
 }

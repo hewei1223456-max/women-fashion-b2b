@@ -16,6 +16,7 @@ import LoadMore from '@/components/LoadMore';
 import ArticleCard from '@/components/ArticleCard';
 import { toast, toastError, toastSuccess } from '@/components/Toast';
 import { certBadge, count, errMsg, asList } from '@/components/utils';
+import { VIEW_LABELS, useViewSwitch } from '@/pages/manufacturer/workbench/view-switch';
 import './index.scss';
 
 const CONTENT_TABS = [
@@ -34,6 +35,8 @@ export default function Profile() {
   const userId = user?.id ?? 0;
   const plan = planOf(user?.memberLevel ?? 'free');
   const isManufacturer = user?.role === 'manufacturer';
+  /** 视角切换：店主端 / 厂家端（演示用，一键换身份） */
+  const { current: view, switching, switchTo } = useViewSwitch();
 
   const detail = useQuery({ queryKey: ['profile-detail', userId], queryFn: () => api.profile.detail(userId), enabled: !!userId });
   const unread = useQuery({ queryKey: ['unread-count'], queryFn: () => api.notification.unreadCount(), enabled: !!userId });
@@ -112,6 +115,25 @@ export default function Profile() {
 
   return (
     <View className="page-safe profile">
+      {/* 视角切换：店主端 / 厂家端（用户要求「单独一个厂家端后台，可以切换视角」） */}
+      <Card title="当前视角" subtitle={isManufacturer ? '厂家端 · 发布款 / 加微看板' : '店主端 · 拿货 / 内容 / 组局'}>
+        <View className="row profile__view-switch">
+          {(['shop_owner', 'manufacturer'] as const).map((v) => (
+            <View
+              key={v}
+              className={`flex-1 btn btn-sm ${view === v ? 'btn-primary' : 'btn-plain'}`}
+              onClick={() => {
+                if (v === view || switching) return;
+                void switchTo(v);
+              }}
+            >
+              <Text>{switching === v ? '切换中…' : VIEW_LABELS[v]}</Text>
+            </View>
+          ))}
+        </View>
+        <Text className="f-xs t4 profile__view-hint">演示用：一键切换身份，底部导航与菜单随视角变化</Text>
+      </Card>
+
       {/* 头部 */}
       <View className="profile__header">
         <View className="row">
@@ -206,26 +228,15 @@ export default function Profile() {
         </View>
       </Card>
 
-      {/* 厂家专属入口 */}
+      {/* 厂家视角专属入口：厂家工作台（店主视角不显示） */}
       {isManufacturer ? (
-        <Card title="厂家工作台" subtitle={`${plan.label} · 数据看板 ${plan.dashboard}`}>
-          <View className="row wrap profile__grid">
-            <View className="profile__grid-cell col-center" onClick={() => go('/pages/manufacturer/admin')}>
-              <Text className="profile__grid-icon">📊</Text>
-              <Text className="f-xs t2">数据看板</Text>
+        <Card title="厂家工作台" subtitle={`${plan.label} · 数据看板 ${plan.dashboard}`} extraText="进入 ›" onExtra={() => go('/pages/manufacturer/workbench')}>
+          <View className="profile__mfr-entry row-between" onClick={() => go('/pages/manufacturer/workbench')}>
+            <View className="col flex-1">
+              <Text className="f-sm t1">版本配额 · 发布款 · 主动私信 · 子账号 · 加微看板 · 待办</Text>
+              <Text className="f-xs t3 profile__mfr-entry-desc">厂家端后台：查看可发布款数上限并直接跳转对应能力</Text>
             </View>
-            <View className="profile__grid-cell col-center" onClick={() => go('/pages/manufacturer/publish')}>
-              <Text className="profile__grid-icon">🧵</Text>
-              <Text className="f-xs t2">发布款</Text>
-            </View>
-            <View className="profile__grid-cell col-center" onClick={() => go('/pages/manufacturer/contact-list')}>
-              <Text className="profile__grid-icon">📨</Text>
-              <Text className="f-xs t2">主动私信</Text>
-            </View>
-            <View className="profile__grid-cell col-center" onClick={() => go('/pages/manufacturer/sub-account')}>
-              <Text className="profile__grid-icon">👥</Text>
-              <Text className="f-xs t2">子账号</Text>
-            </View>
+            <Text className="profile__arrow f-sm t3">›</Text>
           </View>
         </Card>
       ) : null}

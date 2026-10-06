@@ -1,12 +1,14 @@
 import type {
   Article,
   AuditLog,
+  BuyerPreference,
   Comment,
   Conversation,
   Course,
   Draft,
   GroupBuy,
   LandmarkShop,
+  Meetup,
   Message,
   Notification,
   OrderingFair,
@@ -37,6 +39,14 @@ export interface Organization {
 /** 转发记录 */
 export type ShareRow = Share;
 
+/** 新用户偏好画像（登录引导最后一步收集） */
+export type BuyerPreferenceRow = BuyerPreference & {
+  /** 与 userId 同值：Store 的自增序列助手要求行有 id 字段 */
+  id: number;
+  userId: number;
+  updatedAt: string;
+};
+
 /** 订货会报名 */
 export interface FairSignup {
   id: number;
@@ -44,6 +54,23 @@ export interface FairSignup {
   userId: number;
   createdAt: string;
 }
+
+/** 组局报名记录 */
+export interface MeetupSignup {
+  id: number;
+  meetupId: number;
+  userId: number;
+  /** 报名留言（例如「我带样品」） */
+  note?: string;
+  createdAt: string;
+}
+
+/** 组局（对外模型 + 内部字段） */
+export type MeetupRow = Meetup & {
+  /** 发布组局时同步创建的资讯流内容 id */
+  articleId?: number;
+  deleted?: boolean;
+};
 
 /** 拼单成员 */
 export interface GroupBuyMember {
@@ -189,10 +216,17 @@ export interface Store {
   groupBuyMembers: Map<number, GroupBuyMember>;
   fairs: Map<number, OrderingFair>;
   fairSignups: Map<number, FairSignup>;
+  /** 组局（一起去拿货 / 一起做货 / 交流局），参考闪动 */
+  meetups: Map<number, MeetupRow>;
+  /** 组局报名 */
+  meetupSignups: Map<number, MeetupSignup>;
   drafts: Map<number, DraftRow>;
   contactLogs: Map<number, WechatContactLog>;
   contactMessages: Map<number, ContactMessageRow>;
+  /** 店主接收偏好（厂家主动私信） */
   preferences: Map<number, ReceivePreferenceRow>;
+  /** 新用户偏好画像（登录引导收集，key = userId） */
+  buyerPreferences: Map<number, BuyerPreferenceRow>;
   subAccounts: Map<number, SubAccountRow>;
   auditLogs: Map<number, AuditLogRow>;
   behaviors: Map<number, BehaviorRow>;
@@ -223,10 +257,13 @@ export function createStore(driver: 'memory' | 'mysql' = 'memory'): Store {
     groupBuyMembers: new Map(),
     fairs: new Map(),
     fairSignups: new Map(),
+    meetups: new Map(),
+    meetupSignups: new Map(),
     drafts: new Map(),
     contactLogs: new Map(),
     contactMessages: new Map(),
     preferences: new Map(),
+    buyerPreferences: new Map(),
     subAccounts: new Map(),
     auditLogs: new Map(),
     behaviors: new Map(),
@@ -265,10 +302,13 @@ export function syncSequences(store: Store) {
     groupBuyMembers: maxId(store.groupBuyMembers),
     fairs: maxId(store.fairs),
     fairSignups: maxId(store.fairSignups),
+    meetups: maxId(store.meetups),
+    meetupSignups: maxId(store.meetupSignups),
     drafts: maxId(store.drafts),
     contactLogs: maxId(store.contactLogs),
     contactMessages: maxId(store.contactMessages),
     preferences: maxId(store.preferences),
+    buyerPreferences: maxId(store.buyerPreferences),
     subAccounts: maxId(store.subAccounts),
     auditLogs: maxId(store.auditLogs),
     behaviors: maxId(store.behaviors),

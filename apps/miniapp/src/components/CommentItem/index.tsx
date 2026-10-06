@@ -2,6 +2,7 @@ import { View, Text, Image } from '@tarojs/components';
 import type { Comment } from '@wfb/shared-types';
 import { clsx, timeAgo } from '@wfb/shared-utils';
 import MediaGrid from '../MediaGrid';
+import Badge from '../Badge';
 import './index.scss';
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   isReply?: boolean;
   /** 当前用户可删除 */
   canDelete?: boolean;
+  /** 身份标识最多展示几个 */
+  maxBadges?: number;
   onLike?: (comment: Comment) => void;
   onReply?: (comment: Comment) => void;
   onDelete?: (comment: Comment) => void;
@@ -19,8 +22,19 @@ interface Props {
   className?: string;
 }
 
-/** 评论项：支持二级回复内联展示 */
-export default function CommentItem({ comment, maxReplies = 3, isReply, canDelete, onLike, onReply, onDelete, onUserClick, className }: Props) {
+/** 评论项：头像 + 昵称 + 身份标识 + 内容，支持二级回复内联展示 */
+export default function CommentItem({
+  comment,
+  maxReplies = 3,
+  isReply,
+  canDelete,
+  maxBadges = 2,
+  onLike,
+  onReply,
+  onDelete,
+  onUserClick,
+  className,
+}: Props) {
   const replies = comment.replies ?? [];
   const shown = replies.slice(0, maxReplies);
 
@@ -29,7 +43,10 @@ export default function CommentItem({ comment, maxReplies = 3, isReply, canDelet
       <View className="row flex-1" onClick={() => onUserClick?.(comment.userId)}>
         <Image className={clsx(isReply ? 'avatar avatar-sm' : 'avatar', 'comment-item__avatar')} src={comment.user.avatarUrl} mode="aspectFill" />
         <View className="col">
-          <Text className="comment-item__name f-sm bold t1">{comment.user.nickname}</Text>
+          <View className="row comment-item__name-row">
+            <Text className="comment-item__name f-sm bold t1">{comment.user.nickname}</Text>
+            <Badge user={comment.user} max={maxBadges} size="xs" />
+          </View>
           <Text className="comment-item__time f-xs t3">{timeAgo(comment.createdAt)}</Text>
         </View>
       </View>
@@ -70,6 +87,7 @@ export default function CommentItem({ comment, maxReplies = 3, isReply, canDelet
               comment={r}
               isReply
               canDelete={canDelete}
+              maxBadges={maxBadges}
               onLike={onLike}
               onReply={onReply}
               onDelete={onDelete}

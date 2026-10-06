@@ -1,0 +1,133 @@
+@import '../../../styles/variables.scss';
+
+.mt-detail {
+  padding-bottom: 220px;
+}
+
+.mt-detail__cover {
+  width: 100%;
+  height: 380px;
+  border-radius: $radius;
+  background: $line;
+  margin-bottom: $gap-sm;
+}
+
+.mt-detail__tags {
+  margin-bottom: $gap-xs;
+}
+
+.mt-detail__kind {
+  background: $brand-light;
+  color: $brand;
+  font-weight: 600;
+}
+
+.mt-detail__title {
+  display: block;
+  font-size: $fs-xl;
+  color: $text-1;
+  line-height: 1.4;
+}
+
+.mt-detail__author {
+  margin-top: $gap-sm;
+}
+
+.mt-detail__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: $gap-xs;
+}
+
+.mt-detail__seats {
+  flex-shrink: 0;
+  min-width: 110px;
+}
+
+.mt-detail__seats-num {
+  font-size: $fs-xl;
+  color: $brand;
+}
+
+.mt-detail__facts {
+  background: #fafbfd;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+  margin-top: $gap-xs;
+}
+
+.mt-detail__fact {
+  padding: 10px 0;
+  align-items: flex-start;
+  border-bottom: 1px solid $line;
+}
+.mt-detail__fact:last-child {
+  border-bottom: none;
+}
+
+.mt-detail__fact-icon {
+  font-size: $fs-sm;
+  width: 40px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.mt-detail__fact-label {
+  font-size: $fs-sm;
+  color: $text-3;
+  width: 140px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.mt-detail__fact-value {
+  font-size: $fs-sm;
+  color: $text-2;
+  line-height: 1.5;
+}
+.mt-detail__fact-value.is-strong {
+  color: $text-1;
+  font-weight: 600;
+}
+
+.mt-detail__desc {
+  display: block;
+  font-size: $fs-sm;
+  color: $text-2;
+  line-height: 1.7;
+  margin-top: $gap-xs;
+}
+
+.mt-detail__attendees {
+  white-space: nowrap;
+  margin-top: $gap-xs;
+}
+.mt-detail__attendee {
+  display: inline-flex;
+  width: 120px;
+  margin-right: $gap-xs;
+}
+.mt-detail__attendee-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: $line;
+}
+.mt-detail__attendee-name {
+  max-width: 110px;
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+.mt-detail__bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.mt-detail__join {
+  flex-shrink: 0;
+  margin-left: $gap-sm;
+  padding: 0 $gap-lg;
+}

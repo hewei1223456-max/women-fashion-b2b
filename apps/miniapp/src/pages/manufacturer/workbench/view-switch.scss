@@ -1,0 +1,63 @@
+@import '../../../styles/variables.scss';
+
+/* =========================================================================
+ * 视角切换控件（「我的」页与厂家工作台共用）
+ * 放在 task-8 自己的文件里，避免改动 pages/profile/index.scss 之外的样式文件。
+ * ========================================================================= */
+
+.view-switch {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-sm;
+  box-shadow: $shadow-sm;
+}
+
+.view-switch__row {
+  margin-top: $gap-xs;
+  background: #f2f4f8;
+  border-radius: $radius-pill;
+  padding: 6px;
+}
+
+.view-switch__item {
+  flex: 1;
+  height: 72px;
+  border-radius: $radius-pill;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-switch__item.is-active {
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+}
+
+.view-switch__text {
+  font-size: $fs-sm;
+  color: $text-2;
+}
+
+.view-switch__item.is-active .view-switch__text {
+  color: #fff;
+  font-weight: 600;
+}
+
+.view-switch__hint {
+  display: block;
+  margin-top: $gap-xs;
+  font-size: 20px;
+  color: $text-4;
+  line-height: 1.5;
+}
+
+/* 「我的」页厂家工作台入口行 */
+.profile__mfr-entry {
+  margin-top: $gap-xs;
+  padding: $gap-xs 0;
+}
+
+.profile__mfr-entry-desc {
+  margin-top: 6px;
+  line-height: 1.5;
+}

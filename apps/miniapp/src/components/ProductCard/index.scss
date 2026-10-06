@@ -44,13 +44,137 @@
   font-weight: 500;
 }
 
-.product-card__price {
-  margin-top: $gap-xs;
-  align-items: flex-end;
+/* ---------- 每一层的行标签（拿货价 / 起提量价 / 拼单 / 档口 / 拿货地 / 实力） ---------- */
+.product-card__layer,
+.product-card__price-row,
+.product-card__block {
+  margin-top: 8px;
+  align-items: center;
 }
 
-.product-card__moq {
+.product-card__layer-label {
+  font-size: 18px;
+  color: $text-3;
   flex-shrink: 0;
+  margin-right: 8px;
+  line-height: 1.5;
+}
+
+/* 2. 拿货价：整张卡最醒目的数字 */
+.product-card__price {
+  align-items: baseline;
+}
+
+.product-card__price-value {
+  font-size: 40px;
+  color: $accent;
+  line-height: 1.2;
+}
+
+.product-card__price-suffix {
+  font-size: 18px;
+  color: $accent;
+  margin-left: 2px;
+}
+
+.product-card__dropship {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* 3. 起提量价：阶梯价小胶囊 */
+.product-card__tiers {
+  align-items: center;
+}
+
+.product-card__tier {
+  background: #fff1ea;
+  border-radius: $radius-sm;
+  padding: 2px 8px;
+  margin-right: 6px;
+  margin-bottom: 4px;
+}
+
+.product-card__tier-text {
+  font-size: 18px;
+  color: #c2410c;
+}
+
+/* 4/5. 拼单与档口形态 */
+.product-card__chip {
+  border-radius: $radius-pill;
+  padding: 2px 12px;
+  margin-right: 8px;
+  border: 1px solid transparent;
+}
+
+.product-card__chip-text {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.product-card__chip--group {
+  background: #e7f8ef;
+  border-color: #b7ecd0;
+}
+
+.product-card__chip--group .product-card__chip-text {
+  color: #0b8a51;
+}
+
+.product-card__chip--stall {
+  background: $brand-light;
+  border-color: #c7d2fe;
+}
+
+.product-card__chip--stall .product-card__chip-text {
+  color: $brand;
+}
+
+.product-card__chip--off {
+  background: #f2f4f8;
+  border-color: #e3e8ef;
+}
+
+.product-card__chip--off .product-card__chip-text {
+  color: #6b7280;
+}
+
+.product-card__addr {
+  max-width: 180px;
+}
+
+/* 6. 拿货地 */
+.product-card__market {
+  max-width: 240px;
+}
+
+/* 7. 实力标签 */
+.product-card__caps {
+  align-items: center;
+}
+
+.product-card__cap {
+  background: #f2f4f8;
+  border-radius: $radius-sm;
+  padding: 2px 10px;
+  margin-right: 6px;
+  margin-bottom: 4px;
+}
+
+.product-card__cap-text {
+  font-size: 18px;
+  color: $text-2;
+}
+
+.product-card__cap-more {
+  margin-bottom: 4px;
+}
+
+/* 新字段尚未下发时的占位 */
+.product-card__tbd {
+  font-size: 18px;
+  color: $text-4;
 }
 
 .product-card__meta {
@@ -58,12 +182,21 @@
   align-items: center;
 }
 
-.product-card__ship {
-  margin-bottom: $gap-xs;
+.product-card__author {
+  margin-top: 6px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.product-card__ship-text {
-  color: $text-3;
+.product-card__author-avatar {
+  margin-right: 8px;
+  width: 36px;
+  height: 36px;
+}
+
+.product-card__author-name {
+  max-width: 180px;
+  margin-right: 8px;
 }
 
 .product-card__stats {

@@ -5,6 +5,7 @@ import { ARTICLE_TYPE_LABELS } from '@wfb/shared-types';
 import { clsx, timeAgo } from '@wfb/shared-utils';
 import Tag from '../Tag';
 import StatBar from '../StatBar';
+import Badge from '../Badge';
 import { count } from '../utils';
 import './index.scss';
 
@@ -14,6 +15,8 @@ interface Props {
   layout?: 'row' | 'cover';
   /** 展示推荐理由气泡 */
   showReason?: boolean;
+  /** 作者身份标识最多展示几个 */
+  maxBadges?: number;
   onClick?: () => void;
   onUserClick?: (userId: number) => void;
   /** 右侧/底部自定义操作区 */
@@ -21,8 +24,8 @@ interface Props {
   className?: string;
 }
 
-/** 资讯卡片：封面 + 标题 + 作者 + 互动数 */
-export default function ArticleCard({ article, layout = 'row', showReason, onClick, onUserClick, footer, className }: Props) {
+/** 资讯卡片：封面 + 标题 + 作者（含身份标识）+ 互动数 */
+export default function ArticleCard({ article, layout = 'row', showReason, maxBadges = 2, onClick, onUserClick, footer, className }: Props) {
   const typeLabel = ARTICLE_TYPE_LABELS[article.type] ?? '内容';
   const tags = (article.styleTags ?? []).slice(0, 3);
 
@@ -58,9 +61,10 @@ export default function ArticleCard({ article, layout = 'row', showReason, onCli
             ))}
           </View>
           <View className="article-card__foot row-between">
-            <View className="row flex-1" onClick={() => onUserClick?.(article.author?.id ?? 0)}>
+            <View className="row flex-1 article-card__author-row" onClick={() => onUserClick?.(article.author?.id ?? 0)}>
               <Image className="avatar avatar-sm article-card__avatar" src={article.author?.avatarUrl} mode="aspectFill" />
               <Text className="article-card__author f-xs t2 ellipsis">{article.author?.nickname ?? '匿名'}</Text>
+              {article.author ? <Badge user={article.author} max={maxBadges} size="xs" /> : null}
               <Text className="article-card__dot f-xs t3">·</Text>
               <Text className="article-card__time f-xs t3">{timeAgo(article.createdAt)}</Text>
             </View>

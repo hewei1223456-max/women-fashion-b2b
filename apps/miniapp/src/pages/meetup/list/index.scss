@@ -1,0 +1,69 @@
+@import '../../../styles/variables.scss';
+
+.mt-page {
+  padding-bottom: 200px;
+}
+
+.mt-head {
+  padding: $gap-xs 0 $gap-sm;
+}
+.mt-head__title {
+  font-size: $fs-xl;
+  color: $text-1;
+}
+.mt-head__sub {
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.mt-filters {
+  white-space: nowrap;
+  margin-bottom: $gap-xs;
+}
+.mt-filters--city {
+  margin-bottom: $gap-sm;
+}
+.mt-filters__inner {
+  display: inline-flex;
+}
+
+.mt-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 26px;
+  border-radius: $radius-pill;
+  background: $bg-card;
+  border: 1px solid $line;
+  margin-right: $gap-xs;
+}
+.mt-chip--city {
+  padding: 8px 22px;
+}
+.mt-chip__text {
+  font-size: $fs-sm;
+  color: $text-2;
+}
+.mt-chip.is-active {
+  background: $brand;
+  border-color: $brand;
+}
+.mt-chip.is-active .mt-chip__text {
+  color: #fff;
+  font-weight: 600;
+}
+
+.mt-fab {
+  position: fixed;
+  right: $gap;
+  bottom: 120px;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius-pill;
+  padding: 22px 40px;
+  box-shadow: $shadow;
+  z-index: 50;
+}
+.mt-fab__text {
+  color: #fff;
+  font-size: $fs-md;
+  font-weight: 600;
+}

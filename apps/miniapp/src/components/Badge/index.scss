@@ -1,0 +1,91 @@
+@import '../../styles/variables.scss';
+
+/* 身份标识：小圆角标签，五色由 BADGE_TONES 决定（gold/blue/gray/orange/purple） */
+.badge-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  border-radius: $radius-pill;
+  padding: 0 10px;
+  margin-right: 8px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+.badge__text {
+  line-height: 1.6;
+}
+
+/* ---------- 五色 ---------- */
+
+/* 金：付费店主 / 付费厂家 */
+.badge--gold {
+  background: #fff7e6;
+  border-color: #ffe0a3;
+}
+
+.badge--gold .badge__text {
+  color: #b26a00;
+}
+
+/* 蓝：认证店主 / 认证厂家 */
+.badge--blue {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.badge--blue .badge__text {
+  color: $brand;
+}
+
+/* 灰：游客 */
+.badge--gray {
+  background: #f2f4f8;
+  border-color: #e3e8ef;
+}
+
+.badge--gray .badge__text {
+  color: #6b7280;
+}
+
+/* 橙：官方 */
+.badge--orange {
+  background: #fff1ea;
+  border-color: #ffd5c2;
+}
+
+.badge--orange .badge__text {
+  color: $accent;
+}
+
+/* 紫：地标大店 / 讲师 */
+.badge--purple {
+  background: #f5f0ff;
+  border-color: #e0d3fa;
+}
+
+.badge--purple .badge__text {
+  color: #7a4dd8;
+}
+
+/* ---------- 尺寸 ---------- */
+.badge--xs .badge__text {
+  font-size: 16px;
+}
+
+.badge--sm .badge__text {
+  font-size: 18px;
+}
+
+.badge--md .badge__text {
+  font-size: 22px;
+}
+
+.badge--md {
+  padding: 2px 14px;
+}

@@ -15,8 +15,14 @@
   flex-shrink: 0;
 }
 
+.comment-item__name-row {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .comment-item__name {
   font-size: $fs-sm;
+  margin-right: 6px;
 }
 
 .comment-item__body {

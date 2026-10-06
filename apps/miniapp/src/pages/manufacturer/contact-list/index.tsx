@@ -121,6 +121,8 @@ export default function ContactList() {
                 certStatus: 'none',
                 memberLevel: 'free',
                 styleTags: [],
+                // UserBrief 的 badges 为必填：兜底身份用「游客」标识，与后端 buildBadges 口径一致
+                badges: [{ key: 'guest', label: '游客', tone: 'gray' }],
               }
             }
             showFollow={false}

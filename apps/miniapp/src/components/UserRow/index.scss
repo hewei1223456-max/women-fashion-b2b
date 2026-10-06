@@ -13,21 +13,27 @@
   justify-content: center;
 }
 
+.user-row__head {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .user-row__name {
   font-size: $fs-md;
-  max-width: 320px;
+  max-width: 300px;
+  margin-right: 8px;
 }
 
 .user-row__cert {
-  margin-left: 8px;
+  margin-right: 8px;
   padding: 2px 10px;
   border-radius: $radius-pill;
   background: #fff7e6;
   flex-shrink: 0;
 }
 
-.user-row__cert.is-approved {
-  background: #e7f8ef;
+.user-row__cert.is-rejected {
+  background: #fef3f2;
 }
 
 .user-row__cert-text {
@@ -35,8 +41,8 @@
   color: $warning;
 }
 
-.user-row__cert.is-approved .user-row__cert-text {
-  color: $success;
+.user-row__cert.is-rejected .user-row__cert-text {
+  color: $danger;
 }
 
 .user-row__meta {

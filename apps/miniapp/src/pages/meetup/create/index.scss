@@ -1,0 +1,96 @@
+@import '../../../styles/variables.scss';
+
+.mt-create {
+  padding-bottom: 160px;
+}
+
+.mt-create__chips {
+  margin-top: $gap-xs;
+}
+
+.mt-create__chip {
+  padding: 12px 26px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+}
+.mt-create__chip.is-active {
+  background: $brand;
+}
+.mt-create__chip-text {
+  font-size: $fs-sm;
+  color: $text-2;
+}
+.mt-create__chip.is-active .mt-create__chip-text {
+  color: #fff;
+  font-weight: 600;
+}
+
+.mt-create__pick {
+  height: 80px;
+  background: #f7f8fb;
+  border-radius: $radius-sm;
+  padding: 0 $gap-sm;
+}
+.mt-create__pick--half {
+  width: 300px;
+  margin-right: $gap-xs;
+}
+
+.mt-create__presets {
+  white-space: nowrap;
+  margin-bottom: $gap-xs;
+}
+.mt-create__preset {
+  display: inline-flex;
+  padding: 8px 20px;
+  border-radius: $radius-pill;
+  border: 1px solid $line;
+  margin-right: $gap-xs;
+}
+.mt-create__preset.is-active {
+  border-color: $brand;
+  background: $brand-light;
+}
+.mt-create__preset-text {
+  font-size: $fs-xs;
+  color: $text-2;
+}
+.mt-create__preset.is-active .mt-create__preset-text {
+  color: $brand;
+}
+
+.mt-create__switch {
+  margin-top: $gap-xs;
+  padding: $gap-xs 0;
+}
+
+.mt-create__toggle {
+  flex-shrink: 0;
+  padding: 8px 22px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+}
+.mt-create__toggle.is-on {
+  background: $brand-light;
+}
+.mt-create__toggle-text {
+  font-size: $fs-xs;
+  color: $text-3;
+}
+.mt-create__toggle.is-on .mt-create__toggle-text {
+  color: $brand;
+  font-weight: 600;
+}
+
+.mt-create__submit {
+  margin-top: $gap-sm;
+}
+
+.mt-create__tip {
+  display: block;
+  text-align: center;
+  margin: $gap-xs 0 $gap;
+  line-height: 1.6;
+}

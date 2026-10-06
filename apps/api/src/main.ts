@@ -22,6 +22,7 @@ import { registerTopicModule } from './modules/topic/register';
 import { registerLandmarkModule } from './modules/landmark/register';
 import { registerCourseModule } from './modules/course/register';
 import { registerSourceModule } from './modules/source/register';
+import { registerMeetupModule } from './modules/meetup/register';
 import { registerAdminModule } from './modules/admin/register';
 
 /* =========================================================================
@@ -72,6 +73,8 @@ export const MODULES: ModuleRegistration[] = [
   { name: 'course', register: registerCourseModule },
   // 资讯/货源首页流与详情（复用 recommend 规则引擎，仅做过滤映射）
   { name: 'feed', register: registerSourceModule },
+  // 组局（参考闪动：时间/地点/集合点/报名方式/报名条件）
+  { name: 'meetup', register: registerMeetupModule },
   // 管理后台（KPI 仪表盘 / 用户 / 认证 / 复审 / 重置演示数据）
   { name: 'admin', register: registerAdminModule },
 ];

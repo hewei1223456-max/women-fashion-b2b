@@ -76,6 +76,12 @@
 
 .article-card__foot {
   margin-top: $gap-xs;
+  align-items: center;
+}
+
+.article-card__author-row {
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .article-card__avatar {
@@ -83,7 +89,8 @@
 }
 
 .article-card__author {
-  max-width: 200px;
+  max-width: 180px;
+  margin-right: 6px;
 }
 
 .article-card__dot {

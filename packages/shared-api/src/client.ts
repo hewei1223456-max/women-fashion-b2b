@@ -1,4 +1,5 @@
 import type {
+  AccountAnalysisDto,
   AdminOverview,
   AdminUserQuery,
   AdminUserRow,
@@ -7,6 +8,7 @@ import type {
   AuditCallbackDto,
   AuditLog,
   AuditQueueQuery,
+  BuyerPreference,
   CertifyDto,
   CertifyResult,
   CollectDto,
@@ -17,6 +19,7 @@ import type {
   Course,
   CreateFairDto,
   CreateGroupBuyDto,
+  CreateMeetupDto,
   CreateSubAccountDto,
   DashboardAnalytics,
   Draft,
@@ -30,6 +33,7 @@ import type {
   LikeDto,
   LoginDto,
   LoginResult,
+  Meetup,
   Message,
   Notification,
   NotificationQuery,
@@ -63,7 +67,6 @@ import type {
   UpdateProfileDto,
   User,
   UserBrief,
-  AccountAnalysisDto,
   ContactLogDto,
   ContactLogResult,
   ContactSendDto,
@@ -79,6 +82,15 @@ export interface ApiClient {
     logout(): Promise<{ ok: boolean }>;
     certify(dto: CertifyDto): Promise<CertifyResult>;
     certStatus(): Promise<CertifyResult>;
+    /** 登录引导最后一步：提交偏好画像（冷启动推荐依据） */
+    submitPreference(dto: BuyerPreference): Promise<{ ok: boolean; preference: BuyerPreference }>;
+    /** 读取偏好画像（未填过返回 null） */
+    preference(): Promise<{ preference: BuyerPreference | null }>;
+    /**
+     * 切换演示账号（Demo 专用）：一次拿到新身份的 token 与用户信息。
+     * 用于「店主端 / 厂家端」来回切换视角。
+     */
+    switchDemoAccount(demoUserId: number): Promise<LoginResult>;
   };
   profile: {
     detail(userId: number): Promise<ProfileDetail>;
@@ -174,6 +186,15 @@ export interface ApiClient {
     create(dto: CreateFairDto): Promise<OrderingFair>;
     signup(id: number): Promise<OrderingFair>;
   };
+  /** 组局（一起去拿货 / 一起做货 / 交流局），带时间地点与报名条件 */
+  meetup: {
+    list(q?: { kind?: string; city?: string; status?: string } & Record<string, unknown>): Promise<Paged<Meetup>>;
+    detail(id: number): Promise<Meetup & { article?: ArticleSummary }>;
+    create(dto: CreateMeetupDto): Promise<Meetup>;
+    join(id: number): Promise<Meetup>;
+    quit(id: number): Promise<Meetup>;
+    mine(): Promise<Paged<Meetup>>;
+  };
   topic: {
     list(q?: Record<string, unknown>): Promise<Paged<Topic>>;
     detail(tag: string): Promise<{ topic: Topic; articles: ArticleSummary[]; products: Product[] }>;
@@ -237,6 +258,9 @@ export function createApiClient(req: Requester): ApiClient {
       logout: () => req.post('/api/auth/logout'),
       certify: (dto) => req.post('/api/auth/certify', dto),
       certStatus: () => req.get('/api/auth/certify/status'),
+      submitPreference: (dto) => req.post('/api/auth/preference', dto),
+      preference: () => req.get('/api/auth/preference'),
+      switchDemoAccount: (demoUserId) => req.post('/api/auth/switch', { demoUserId }),
     },
     profile: {
       detail: (userId) => req.get(`/api/profile/${userId}`),
@@ -330,6 +354,14 @@ export function createApiClient(req: Requester): ApiClient {
       detail: (id) => req.get(`/api/ordering-fair/detail/${id}`),
       create: (dto) => req.post('/api/ordering-fair/create', dto),
       signup: (id) => req.post(`/api/ordering-fair/signup/${id}`),
+    },
+    meetup: {
+      list: (p) => req.get('/api/meetup/list', q(p)),
+      detail: (id) => req.get(`/api/meetup/detail/${id}`),
+      create: (dto) => req.post('/api/meetup/create', dto),
+      join: (id) => req.post(`/api/meetup/join/${id}`),
+      quit: (id) => req.post(`/api/meetup/quit/${id}`),
+      mine: () => req.get('/api/meetup/mine'),
     },
     topic: {
       list: (p) => req.get('/api/topic/list', q(p)),

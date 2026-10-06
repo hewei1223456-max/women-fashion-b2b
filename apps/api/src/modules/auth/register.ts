@@ -1,7 +1,14 @@
-import type { CertifyDto, LoginDto } from '@wfb/shared-types';
+import type { BuyerPreference, CertifyDto, LoginDto } from '@wfb/shared-types';
+import {
+  CONTENT_INTERESTS,
+  LEARN_TARGETS,
+  MANUFACTURER_NEEDS,
+  SOURCING_NEEDS,
+} from '@wfb/shared-types';
 import type { Router } from '../../core/server';
 import { Errors } from '../../core/server';
 import type { Store } from '../../core/db';
+import { signToken, stripPrivate } from '../../core/security';
 import { registerProfileModule } from '../profile/register';
 import { applyCertify, buildCertifyResult, demoAccounts, login } from './service';
 
@@ -81,6 +88,59 @@ export function registerAuthModule(router: Router, store: Store) {
   );
 
   router.get('/api/auth/certify/status', (ctx) => buildCertifyResult(ctx.auth()), { summary: '认证进度与步骤' });
+
+  /* ------------------ 偏好画像（登录引导最后一步） ------------------ */
+  /** 提交「想跟谁学 / 想看什么内容 / 想要什么货源 / 想要什么厂家」，作为冷启动推荐画像 */
+  router.post(
+    '/api/auth/preference',
+    (ctx) => {
+      const user = ctx.auth();
+      const pref = {
+        learnFrom: ctx.arr<string>('learnFrom').filter((x) => (LEARN_TARGETS as readonly string[]).includes(x)),
+        contentInterests: ctx.arr<string>('contentInterests').filter((x) => (CONTENT_INTERESTS as readonly string[]).includes(x)),
+        sourcingNeeds: ctx.arr<string>('sourcingNeeds').filter((x) => (SOURCING_NEEDS as readonly string[]).includes(x)),
+        manufacturerNeeds: ctx.arr<string>('manufacturerNeeds').filter((x) =>
+          (MANUFACTURER_NEEDS as readonly string[]).includes(x),
+        ),
+      } as BuyerPreference;
+      const total =
+        pref.learnFrom.length + pref.contentInterests.length + pref.sourcingNeeds.length + pref.manufacturerNeeds.length;
+      if (total === 0) throw Errors.badRequest('请至少选择一项偏好');
+      store.buyerPreferences.set(user.id, { id: user.id, userId: user.id, ...pref, updatedAt: new Date().toISOString() });
+      return { ok: true, preference: pref };
+    },
+    { summary: '提交新用户偏好画像' },
+  );
+
+  router.get(
+    '/api/auth/preference',
+    (ctx) => ({ preference: store.buyerPreferences.get(ctx.auth().id) ?? null }),
+    { summary: '读取当前用户偏好画像' },
+  );
+
+  /* ------------------ 视角切换（Demo 专用） ------------------ */
+  /**
+   * 一键切换演示身份，返回新的 token + user。
+   * 用途：用户明确要求「可以直接在上面切换视角」来对比店主端与厂家端。
+   * 生产环境应删除此接口（正式的多身份切换需要绑定多个主体并做权限校验）。
+   */
+  router.post(
+    '/api/auth/switch',
+    (ctx) => {
+      const targetId = ctx.num('demoUserId', { required: true });
+      const target = store.users.get(targetId);
+      if (!target) throw Errors.notFound('目标账号不存在');
+      if (target.role === 'admin' && ctx.auth().role !== 'admin') {
+        throw Errors.forbidden('普通用户不能切换到运营账号');
+      }
+      return {
+        token: signToken(target),
+        user: stripPrivate(target, true),
+        isNew: false,
+      };
+    },
+    { summary: '切换演示身份（返回新 token 与用户信息）' },
+  );
 
   /* 个人主页路由随本模块挂载 */
   registerProfileModule(router, store);

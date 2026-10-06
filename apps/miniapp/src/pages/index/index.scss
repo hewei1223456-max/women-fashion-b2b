@@ -1,28 +1,26 @@
 @import '../../styles/variables.scss';
 
-.mt-xs {
-  margin-top: 8px;
-}
+/* ============================ 资讯首页 ============================ */
 
-/* ---------- 头部 ---------- */
-.home-head {
+/* ---------- ① 头部问候 + 未读铃铛 ---------- */
+.info-head {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: $gap-xs $gap-xs $gap;
 }
-.home-head__title {
+.info-head__title {
   font-size: $fs-xxl;
   font-weight: 600;
   color: $text-1;
 }
-.home-head__sub {
+.info-head__sub {
   font-size: $fs-sm;
   color: $text-3;
   margin-top: 6px;
 }
-.home-bell {
+.info-bell {
   position: relative;
   width: 80px;
   height: 80px;
@@ -33,11 +31,11 @@
   justify-content: center;
   box-shadow: $shadow-sm;
 }
-.home-bell__icon {
+.info-bell__icon {
   font-size: 40px;
   line-height: 1;
 }
-.home-bell__badge {
+.info-bell__badge {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -52,8 +50,8 @@
   text-align: center;
 }
 
-/* ---------- 早报条 ---------- */
-.home-news {
+/* ---------- ② 行业早报条 ---------- */
+.info-news {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -62,7 +60,7 @@
   padding: $gap-sm $gap;
   margin-bottom: $gap-sm;
 }
-.home-news__label {
+.info-news__label {
   font-size: $fs-xs;
   color: #fff;
   background: rgba(255, 255, 255, 0.22);
@@ -71,7 +69,7 @@
   margin-right: $gap-xs;
   flex-shrink: 0;
 }
-.home-news__title {
+.info-news__title {
   flex: 1;
   min-width: 0;
   font-size: $fs-sm;
@@ -80,106 +78,197 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.home-news__arrow {
+.info-news__arrow {
   font-size: $fs-sm;
   color: #fff;
   margin-left: $gap-xs;
 }
 
-/* ---------- 模块入口 ---------- */
-.home-mods {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: $gap-sm;
-}
-.home-mod {
-  flex: 1;
-  min-width: 0;
-  background: $bg-card;
-  border-radius: $radius;
-  padding: $gap-sm;
-  margin-right: $gap-xs;
-  box-shadow: $shadow-sm;
-}
-.home-mod:last-child {
-  margin-right: 0;
-}
-.home-mod__icon {
-  font-size: 44px;
-  line-height: 1;
-}
-.home-mod__name {
-  font-size: $fs-md;
-  font-weight: 600;
-  color: $text-1;
-  margin-top: $gap-xs;
-}
-.home-mod__desc {
-  font-size: $fs-xs;
-  color: $text-3;
-  margin-top: 4px;
-}
-
-/* ---------- 快捷工具 ---------- */
-.home-tools {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  background: $bg-card;
-  border-radius: $radius;
-  padding: $gap-sm $gap-xs;
-  margin-bottom: $gap-sm;
-  box-shadow: $shadow-sm;
-}
-.home-tool {
-  width: 25%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: $gap-xs 0;
-}
-.home-tool__icon {
-  font-size: 44px;
-  line-height: 1;
-}
-.home-tool__name {
-  font-size: $fs-xs;
-  color: $text-2;
-  margin-top: 8px;
-}
-.home-tool__quota {
-  font-size: 18px;
-  color: $text-4;
-  margin-top: 2px;
-}
-
 /* ---------- 区块标题 ---------- */
-.home-sec {
+.info-sec {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: $gap-xs 0 $gap-xs;
+  padding: $gap-xs 0;
 }
-.home-sec__title {
+.info-sec__title {
   font-size: $fs-lg;
   font-weight: 600;
   color: $text-1;
 }
-.home-sec__more {
-  font-size: $fs-sm;
-  color: $text-3;
-}
-.home-strategy {
+.info-sec__hint {
   font-size: $fs-xs;
-  color: $brand;
-  background: $brand-light;
-  border-radius: $radius-pill;
-  padding: 4px 12px;
+  color: $text-4;
   margin-left: $gap-xs;
+}
+.info-sec__more {
+  font-size: $fs-sm;
+  color: $brand;
+  margin-left: $gap-sm;
+}
+
+/* ---------- ③ 今日组局横滑条 ---------- */
+.info-meetup-strip {
+  white-space: nowrap;
+  margin-bottom: $gap-sm;
+}
+.info-meetup {
+  display: inline-block;
+  width: 420px;
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-right: $gap-xs;
+  vertical-align: top;
+  box-shadow: $shadow-sm;
+  white-space: normal;
+}
+.info-meetup__kind {
+  background: $brand-light;
+  color: $brand;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+.info-meetup__status {
+  font-size: 18px;
+  padding: 2px 12px;
+  border-radius: $radius-pill;
   flex-shrink: 0;
 }
-.home-strategy-full {
+.info-meetup__status--brand {
+  color: $brand;
+  background: $brand-light;
+}
+.info-meetup__status--accent {
+  color: $accent;
+  background: $accent-light;
+}
+.info-meetup__status--gray {
+  color: $text-3;
+  background: #f2f4f8;
+}
+.info-meetup__title {
+  display: block;
+  font-size: $fs-md;
+  color: $text-1;
+  line-height: 1.4;
+  margin-top: $gap-xs;
+  min-height: 78px;
+}
+.info-meetup__line {
+  display: block;
+  font-size: $fs-xs;
+  color: $text-3;
+  line-height: 1.7;
+}
+.info-meetup__foot {
+  margin-top: $gap-xs;
+  border-top: 1px solid $line;
+  padding-top: $gap-xs;
+}
+.info-meetup__seats {
+  font-size: $fs-xs;
+  color: $text-2;
+}
+.info-meetup__cta {
+  font-size: $fs-xs;
+  color: #fff;
+  background: linear-gradient(135deg, $brand 0%, #4a63e8 100%);
+  border-radius: $radius-pill;
+  padding: 6px 18px;
+}
+.info-meetup--more {
+  width: 200px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed $line;
+  box-shadow: none;
+  min-height: 400px;
+}
+.info-meetup__more-icon {
+  font-size: 60px;
+  color: $text-4;
+  line-height: 1;
+  margin-bottom: $gap-xs;
+}
+.info-meetup-skeleton {
+  display: inline-block;
+  width: 420px;
+  height: 400px;
+  border-radius: $radius;
+  background: #eef0f5;
+  margin-right: $gap-xs;
+}
+
+/* 「组局」Tab 的整宽卡片 */
+.info-meetup-full {
+  background: $bg-card;
+  border-radius: $radius;
+  padding: $gap-sm;
+  margin-bottom: $gap-xs;
+  box-shadow: $shadow-sm;
+}
+.info-meetup-full__title {
+  display: block;
+  font-size: $fs-lg;
+  color: $text-1;
+  line-height: 1.4;
+  margin-top: $gap-xs;
+}
+.info-meetup-full__facts {
+  margin-top: $gap-xs;
+  background: #fafbfd;
+  border-radius: $radius-sm;
+  padding: $gap-xs $gap-sm;
+}
+.info-meetup__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $line;
+  margin-right: 10px;
+}
+.info-meetup__name {
+  max-width: 340px;
+}
+
+/* ---------- ④ 内容流 Tabs ---------- */
+.info-tabs {
+  white-space: nowrap;
+  margin-bottom: $gap-xs;
+}
+.info-tabs__inner {
+  display: inline-flex;
+}
+.info-tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: $gap-lg;
+  padding: $gap-xs 0;
+}
+.info-tab__label {
+  font-size: $fs-md;
+  color: $text-3;
+}
+.info-tab.is-active .info-tab__label {
+  color: $text-1;
+  font-weight: 600;
+}
+.info-tab__line {
+  width: 40px;
+  height: 6px;
+  border-radius: 3px;
+  background: transparent;
+  margin-top: 8px;
+}
+.info-tab.is-active .info-tab__line {
+  background: $brand;
+}
+.info-strategy {
   display: block;
   font-size: 20px;
   color: $text-4;
@@ -187,130 +276,66 @@
   margin-bottom: $gap-xs;
 }
 
-/* ---------- 推荐流 ---------- */
-.home-tabs {
-  display: flex;
-  flex-direction: row;
+/* ---------- ⑤ 信息流卡片 ---------- */
+.info-row {
   margin-bottom: $gap-xs;
 }
-.home-tab {
-  font-size: $fs-md;
-  color: $text-3;
-  margin-right: $gap;
-  padding-bottom: 6px;
-}
-.home-tab.is-active {
-  color: $text-1;
-  font-weight: 600;
-  border-bottom: 4px solid $brand;
-}
-
-.hf-item {
+.info-row__ugc {
   display: flex;
   flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: $gap-xs;
+}
+.info-row__stars {
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+}
+.info-row__stars-icon {
+  font-size: $fs-sm;
+  color: #f7b500;
+  letter-spacing: 2px;
+}
+.info-row__stars-text {
+  font-size: $fs-xs;
+  color: $text-3;
+  margin-left: 6px;
+}
+
+/* ---------- ⑥ 底部轻量工具入口 ---------- */
+.info-tools {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   background: $bg-card;
   border-radius: $radius;
   padding: $gap-sm;
-  margin-bottom: $gap-xs;
+  margin-top: $gap-sm;
   box-shadow: $shadow-sm;
 }
-.hf-item__cover {
-  width: 200px;
-  height: 200px;
-  border-radius: $radius-sm;
-  background: $line;
-  flex-shrink: 0;
+.info-tools__icon {
+  font-size: 44px;
+  line-height: 1;
+  margin-right: $gap-sm;
 }
-.hf-item__body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-left: $gap-sm;
-}
-.hf-item__title {
+.info-tools__title {
   font-size: $fs-md;
   font-weight: 600;
   color: $text-1;
-  line-height: 1.4;
 }
-.hf-item__reason {
-  font-size: $fs-xs;
-  color: $accent;
-  margin-top: 6px;
-}
-.hf-item__meta {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: $gap-xs;
-}
-.hf-item__author {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  min-width: 0;
-}
-.hf-item__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: $line;
-  margin-right: 8px;
-}
-.hf-item__name {
-  font-size: $fs-xs;
-  color: $text-2;
-  max-width: 200px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.hf-item__stats {
-  font-size: $fs-xs;
-  color: $text-3;
-}
-
-/* ---------- 热门货源 ---------- */
-.home-products {
-  white-space: nowrap;
-  margin-bottom: $gap-sm;
-}
-.home-product {
-  display: inline-block;
-  width: 260px;
-  background: $bg-card;
-  border-radius: $radius;
-  padding: $gap-xs;
-  margin-right: $gap-xs;
-  vertical-align: top;
-  box-shadow: $shadow-sm;
-}
-.home-product__img {
-  width: 100%;
-  height: 320px;
-  border-radius: $radius-sm;
-  background: $line;
-}
-.home-product__title {
-  font-size: $fs-sm;
-  color: $text-1;
-  margin-top: $gap-xs;
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.home-product__price {
-  font-size: $fs-md;
-  color: $accent;
-  font-weight: 600;
-  margin-top: 4px;
-}
-.home-product__meta {
+.info-tools__desc {
   font-size: $fs-xs;
   color: $text-3;
   margin-top: 4px;
+}
+.info-tools__arrow {
+  font-size: $fs-xl;
+  color: $text-4;
+}
+.info-foot {
+  display: block;
+  text-align: center;
+  font-size: 20px;
+  color: $text-4;
+  margin: $gap-sm 0 $gap;
 }

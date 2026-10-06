@@ -1,30 +1,23 @@
 import type { Store } from './db';
 import { nextId, syncSequences } from './db';
-import { svgPlaceholder, type SvgRatio } from './placeholder';
+import { img } from './images';
 
 /* =========================================================================
  * 演示数据播种（SEED）
  *
  * 目标：让 Demo 一启动就是一个「看起来已经在运营」的平台：
  *   18 个用户（店主 / 厂家 / 地标大店 / 讲师 / 运营 + 厂家子账号）
- *   24 个款、30+ 篇内容、8 家大店、6 门课程、拼单、订货会、评论、私信、通知
+ *   60 个款、60+ 篇内容（含组局/吐槽/实评三类 UGC）、8 家大店、6 门课程、
+ *   拼单、订货会、组局、评论、私信、通知
  *
- * 图片策略：**不使用外链 CDN**。演示图改由后端 `/uploads/demo/*.svg` 托管，
- * 内容是按 seed 确定性生成的渐变占位图（见 core/placeholder.ts）。
+ * 图片策略：**不使用外链 CDN**。演示图由后端 `/uploads/demo/img.svg` 托管，
+ * 按 seed 确定性生成渐变占位图（见 core/images.ts 与 core/placeholder.ts）。
  * 这样离线 / 内网 / CDN 不可达时界面依然完整，不会出现一片灰色空白。
- * 生产环境把下面的 img() 换成 OSS 直链即可。
+ * 生产环境把 core/images.ts 的 img() 换成 OSS 直链即可。
  * ========================================================================= */
 
 const SEED = 20261005;
 const now = Date.now();
-
-/** 生成由 /uploads 托管的演示图地址（支持按内容写文字） */
-const img = (seed: string, w = 600, h = 800, label = ''): string => {
-  const ratio: SvgRatio = w === h ? 'square' : w > h ? (w / h >= 1.6 ? 'wide' : 'landscape') : 'portrait';
-  const q = new URLSearchParams({ seed, ratio, w: String(w), h: String(h) });
-  if (label) q.set('label', label);
-  return `/uploads/demo/img.svg?${q.toString()}`;
-};
 const iso = (minutesAgo: number) => new Date(now - minutesAgo * 60_000).toISOString();
 
 /** 简易稳定伪随机，保证每次播种数据一致 */
@@ -233,6 +226,43 @@ export function seedStore(store: Store): void {
     '轻奢真丝方巾 配饰提升质感',
     '欧美皮衣外套 短款机车风',
     '休闲卫裤 束脚加绒 冬季款',
+    // ---- 扩充到 60 款：让店主在列表/筛选里有足够多的样本 ----
+    '法式茶歇裙 碎花雪纺 收腰显瘦',
+    '韩系西装阔腿裤套装 通勤两件套',
+    '新中式盘扣外套 香云纱质感',
+    '轻奢羊毛混纺大衣 双面呢',
+    '欧美复古牛仔外套 做旧水洗',
+    '休闲宽松卫衣 落肩纯棉 情侣款',
+    '复古灯芯绒衬衫 秋冬加厚',
+    '甜美针织开衫 珍珠扣小外套',
+    '通勤衬衫 醋酸垂感 免烫',
+    '法式泡泡袖连衣裙 度假风长裙',
+    '韩系修身针织衫 高领打底',
+    '新中式马面裙 织金提花',
+    '轻奢西装外套 收腰垫肩',
+    '欧美工装裤 高腰直筒',
+    '休闲运动裤 加绒束脚',
+    '复古格纹西服 学院风',
+    '甜美蕾丝上衣 木耳边',
+    '通勤半身裙 A字显瘦',
+    '法式方领上衣 荷叶边',
+    '韩系阔腿牛仔裤 拖地显高',
+    '新中式对襟上衣 真丝提花',
+    '轻奢羊绒衫 圆领基础款',
+    '欧美风衣 长款过膝',
+    '休闲夹克 棒球领',
+    '复古印花连衣裙 港风',
+    '甜美蝴蝶结衬衫',
+    '通勤马甲 西装配件',
+    '法式条纹针织衫 海魂风',
+    '韩系百褶裙 短款学院',
+    '新中式旗袍改良 日常可穿',
+    '轻奢羽绒服 短款面包服',
+    '欧美皮裙 高腰包臀',
+    '休闲连帽卫衣 抓绒加厚',
+    '复古丝绒连衣裙 年会礼服',
+    '甜美娃娃领衬衫 减龄',
+    '通勤风衣 卡其双排扣',
   ];
   const MF_IDS = [mf1, mf2, mf3, mf4];
   const MF_STYLES: Record<number, string> = { [mf1]: '法式', [mf2]: '韩系', [mf3]: '新中式', [mf4]: '休闲' };
@@ -285,20 +315,84 @@ export function seedStore(store: Store): void {
      */
     const style = STYLE_FROM_TITLE.find((s) => title.includes(s.key))?.tag ?? STYLE_CYCLE[idx % STYLE_CYCLE.length];
     const mfId = MF_BY_STYLE[style] ?? MF_IDS[idx % MF_IDS.length];
-    const priceMin = [39, 59, 89, 129, 199, 259, 329, 459][idx % 8];
-    const priceMax = priceMin + [20, 40, 60, 100][idx % 4];
+
+    /* ---------------- 真实的批发交易信息 ----------------
+     * 店主真正关心的不是「价格带 199-219」，而是：
+     *   拿货价（单件起拿）→ 起提量价（阶梯）→ 可否拼单 → 档口形态 → 拿货地
+     * 按女装批发市场的真实逻辑生成：拿货价是工厂出货价，阶梯价拿得越多越便宜，
+     * 代发价明显高于拿货价（单件操作成本高）。
+     */
+    const costTiers = [22, 28, 36, 45, 68, 92, 128, 168, 238, 358];
+    const wholesalePrice = costTiers[idx % costTiers.length] + Math.round(rand() * 6);
+    const moq = [5, 10, 20, 30, 50][idx % 5];
+    const step = moq <= 10 ? 15 : moq <= 30 ? 30 : 50;
+    const tierPrices = [
+      { minQty: moq, price: wholesalePrice, label: `${moq} 件起` },
+      { minQty: moq + step, price: Math.round(wholesalePrice * 0.94), label: `${moq + step} 件起` },
+      { minQty: moq + step * 2, price: Math.round(wholesalePrice * 0.88), label: `${moq + step * 2} 件起` },
+    ];
+    const supportsDropship = idx % 3 !== 0;
+    const dropshipPrice = supportsDropship ? Math.round(wholesalePrice * 1.45) : undefined;
+    const supportsGroupBuy = idx % 4 !== 3;
+    const groupBuyMinQty = supportsGroupBuy ? Math.max(10, moq * 2) : undefined;
+
+    /** 档口形态与厂家类型对应：原创设计=工厂+档口，针织厂=纯工厂，南油=有档口，十三行=纯展厅 */
+    const stallTypeByMf: Record<number, string> = {
+      [mf1]: 'factory_stall',
+      [mf2]: 'factory',
+      [mf3]: 'stall',
+      [mf4]: 'showroom',
+    };
+    const stallAddressByMf: Record<number, string> = {
+      [mf1]: '意法服饰城 5 楼 B12 / 自有版房在番禺',
+      [mf2]: '桐乡濮院工厂 3 号车间（可预约看厂）',
+      [mf3]: '南油原创设计中心 B 座 2 楼 208',
+      [mf4]: '十三行 6 楼 A 区展厅（仅看样）',
+    };
+    /** 拿货地（产业带）必须与厂家所在地一致 */
+    const marketByMf: Record<number, string> = { [mf1]: '意法', [mf2]: '濮院', [mf3]: '南油', [mf4]: '十三行' };
+
+    const capabilityPool: string[][] = [
+      ['spot_goods', 'fast_return', 'own_pattern_room'],
+      ['futures', 'oem', 'sample_support'],
+      ['spot_goods', 'small_batch', 'quality_inspect'],
+      ['spot_goods', 'oem', 'fast_return', 'quality_inspect'],
+      ['futures', 'own_pattern_room', 'sample_support'],
+    ];
+    const capabilities = capabilityPool[idx % capabilityPool.length];
+
+    const priceMin = wholesalePrice;
+    const priceMax = Math.round(wholesalePrice * 1.18);
     const viewCount = Math.round(320 + rand() * 4200);
     const contactCount = Math.round(viewCount * (0.03 + rand() * 0.12));
+    // 款图 3-6 张（用户反馈「照片数量太少了」）
+    const imageCount = 3 + (idx % 4);
+    const images = Array.from({ length: imageCount }, (_, k) => img(`p-${idx}-${k + 1}`, 600, 800, title));
+
     store.products.set(id, {
       id,
       manufacturerId: mfId,
       title,
-      images: [img(`p-${idx}-1`, 600, 800, title), img(`p-${idx}-2`, 600, 800, title), img(`p-${idx}-3`, 600, 800, title)],
+      images,
       priceRange: `${priceMin}-${priceMax}`,
       priceMin,
-      moq: [10, 20, 30, 50][idx % 4],
+      moq,
       styleTag: style as never,
       shipFrom: MF_CITY[mfId] ?? CITIES[idx % 4],
+      wholesalePrice,
+      tierPrices,
+      supportsGroupBuy,
+      groupBuyMinQty,
+      supportsDropship,
+      dropshipPrice,
+      stallType: stallTypeByMf[mfId] as never,
+      stallAddress: stallAddressByMf[mfId],
+      capabilities: capabilities as never,
+      market: marketByMf[mfId],
+      fabric: ['醋酸混纺 68%+涤纶 32%', '棉麻 55%+天丝 45%', '精梳棉 100%', '真丝混纺 30%+粘纤 70%', '天丝 95%+氨纶 5%'][idx % 5],
+      sizes: [['S', 'M', 'L', 'XL'], ['均码'], ['M', 'L', 'XL', '2XL'], ['S', 'M', 'L']][idx % 4],
+      colorCount: 3 + (idx % 6),
+      listedAt: iso(60 * (idx * 9 + 3)),
       description: `${title}。源头工厂直供，支持一件代发与贴牌。面料：${['醋酸混纺', '棉麻', '天丝', '真丝混纺', '精梳棉'][idx % 5]}；版型：${['修身', '宽松', 'A字', '直筒'][idx % 4]}；现货充足，48 小时内发出。`,
       status: 'approved',
       viewCount,
@@ -938,6 +1032,344 @@ export function seedStore(store: Store): void {
       text: a.text,
       createdAt: iso(a.minsAgo),
     });
+  });
+
+  /* --------------------- 三类新 UGC：槽点 / 拿货实评 / 组局 ---------------------
+   * 用户反馈「资讯里就只剩下游学了，用户要能自己发内容、组局、吐槽、评价」，
+   * 这三类是首页信息流的必要内容 —— 不能只有平台生产的资料。
+   */
+
+  // 1) 行业吐槽（rant）：真实、口语化、带情绪
+  const RANTS: { authorId: number; title: string; content: string; style: string; minsAgo: number }[] = [
+    {
+      authorId: owner4,
+      title: '吐槽：档口报的「现货」，到了说要排单 15 天',
+      content:
+        '上周在南油订了 200 件醋酸衬衫，档口拍着胸脯说现货、第二天就发。\n\n结果第三天告诉我「排单了，15 天」。我的店等着上架，活动都排好了。\n\n**教训**：以后一律要求拍**当天库存视频**，并且写进订单备注。口说无凭。',
+      style: '欧美',
+      minsAgo: 42,
+    },
+    {
+      authorId: owner2,
+      title: '同行恶意压价的都是什么心态',
+      content:
+        '隔壁新开的店，同款我卖 268，他挂 199。三个月后关门了。\n\n低价不是策略，是没算清楚成本。房租、人工、损耗、退换，全都得算进去。\n\n我们这行**拼的是组货能力和复购**，不是谁更能亏。',
+      style: '法式',
+      minsAgo: 180,
+    },
+    {
+      authorId: owner5,
+      title: '开店半年，被「一件代发」坑了三次',
+      content:
+        '第一次：代发的款图和实物色差巨大，客户全退了。\n第二次：代发价比我拿货价还贵，白折腾。\n第三次：发货慢，客户直接给差评。\n\n**结论**：新店可以先用代发测款，但只要开始出单，就一定要自己囤货、自己发货。',
+      style: '甜美',
+      minsAgo: 400,
+    },
+    {
+      authorId: owner1,
+      title: '拿货被「炒货档」加价 40%，怎么识别',
+      content:
+        '问三个问题就能筛掉大部分炒货档：\n\n1. 「这款是你们自己打的版吗？」→ 支支吾吾的多半不是\n2. 「有现货吗？能拍个今天的库存视频吗？」→ 拍不出来的基本是中间商\n3. 「洗标是你们自己的品牌吗？」→ 白标大概率是炒货\n\n我这批被加价 40%，就是因为没问第二句。',
+      style: '韩系',
+      minsAgo: 900,
+    },
+  ];
+  RANTS.forEach((r) =>
+    pushArticle({
+      authorId: r.authorId,
+      type: 'ugc',
+      board: 'info',
+      contentType: 'rant',
+      title: r.title,
+      summary: r.content.slice(0, 40).replace(/\n/g, ' '),
+      content: r.content,
+      styleTags: [r.style],
+      minutesAgo: r.minsAgo,
+      topics: ['行业吐槽', '踩坑'],
+    }),
+  );
+
+  // 2) 拿货实评（review）：带评分与是否愿意复购
+  const REVIEWS: {
+    authorId: number;
+    title: string;
+    content: string;
+    style: string;
+    rating: number;
+    rebuy: boolean;
+    minsAgo: number;
+    productIdx: number;
+  }[] = [
+    {
+      authorId: owner1,
+      title: '实评｜法式碎花裙：色差小，但腰围偏大',
+      content:
+        '拿了 60 件，整体满意。\n\n**好的地方**：面料和样衣一致，没有色差；缝线整齐，没有跳线。\n**问题**：腰围比标注大 2cm，有几个客户反馈偏松。\n\n已经和档口反馈，他们说下一批会调版。整体还是**值得再拿**。',
+      style: '法式',
+      rating: 4,
+      rebuy: true,
+      minsAgo: 120,
+      productIdx: 0,
+    },
+    {
+      authorId: owner3,
+      title: '实评｜濮院毛衫：起球严重，不建议新店上',
+      content:
+        '拿了 80 件，价格确实便宜，但穿两次就起球。\n\n客户退了三件，我只能自己贴钱换。**不建议新店碰这个料子**，会影响评分。\n\n想做毛衫的话，加 15 块换成抗起球纱线那批，我试过没问题。',
+      style: '通勤',
+      rating: 2,
+      rebuy: false,
+      minsAgo: 320,
+      productIdx: 5,
+    },
+    {
+      authorId: owner4,
+      title: '实评｜南油醋酸衬衫：这个价位算天花板了',
+      content:
+        '拿货价 68，我卖 199，毛利率 65%。\n\n垂感好、不皱、不易起球，客户复购率高。**已经返单 3 次**。\n\n唯一的问题：颜色偏少，只有 4 个色。希望厂家多出几个。',
+      style: '轻奢',
+      rating: 5,
+      rebuy: true,
+      minsAgo: 600,
+      productIdx: 3,
+    },
+  ];
+  REVIEWS.forEach((r, i) => {
+    const pid = productIds[r.productIdx % productIds.length];
+    const id = nextId(store, 'articles');
+    articleIds.push(id);
+    const viewCount = Math.round(260 + rand() * 2200);
+    const commentCount = Math.round(viewCount * 0.014);
+    const collectCount = Math.round(viewCount * 0.05);
+    const shareCount = Math.round(collectCount * 0.3);
+    const likeCount = Math.round(viewCount * 0.07);
+    store.articles.set(id, {
+      id,
+      authorId: r.authorId,
+      board: 'info',
+      type: 'ugc',
+      contentType: 'review',
+      title: r.title,
+      content: r.content,
+      summary: r.content.slice(0, 40).replace(/\n/g, ' '),
+      coverUrl: img(`review-${id}`, 800, 600, '拿货实拍'),
+      images: [img(`review-${id}-1`, 800, 600, '实拍'), img(`review-${id}-2`, 800, 600, '细节')],
+      attachments: [],
+      relatedProducts: [pid],
+      productId: pid,
+      rating: r.rating,
+      wouldRebuy: r.rebuy,
+      visibility: 'public',
+      auditStatus: 'approved',
+      styleTags: [r.style] as never,
+      topics: ['拿货实评', '真实反馈'],
+      viewCount,
+      likeCount,
+      collectCount,
+      commentCount,
+      shareCount,
+      contactCount: 0,
+      cesScore: Math.round((commentCount * 0.35 + collectCount * 0.28 + viewCount * 0.18 + shareCount * 0.12 + likeCount * 0.07) * 100) / 100,
+      topped: false,
+      deleted: false,
+      createdAt: iso(r.minsAgo),
+    });
+  });
+
+  // 3) 组局（meetup）：参考闪动，必须带时间/地点/集合点/报名方式/报名条件
+  const MEETUPS: {
+    initiator: number;
+    kind: string;
+    title: string;
+    description: string;
+    city: string;
+    venue: string;
+    gatheringPoint: string;
+    startOffsetDays: number;
+    startHour: number;
+    durationHours: number;
+    signupMethod: string;
+    signupRequirement: string;
+    capacity: number;
+    fee: string;
+    market: string;
+    styleTags: string[];
+    targetAudience: string;
+    attendees: number[];
+    daysAgo: number;
+  }[] = [
+    {
+      initiator: owner1,
+      kind: 'sourcing',
+      title: '周三早市一起去十三行扫款',
+      description:
+        '每周三早市是上新最全的时候。我固定去 6 楼和 7 楼，主要看韩系和法式。\n\n新手可以跟着我走，我教你怎么问起批量、怎么砍价、怎么判断是不是炒货档。',
+      city: '广州',
+      venue: '十三行服装批发商圈',
+      gatheringPoint: '十三行 6 楼 B12 档口门口（扶梯右手第一家）',
+      startOffsetDays: 2,
+      startHour: 7,
+      durationHours: 4,
+      signupMethod: '站内点击报名，报名后我会私信拉你进当日群',
+      signupRequirement: '认证店主即可，能早起。新手优先（每次最多带 3 个新人）',
+      capacity: 8,
+      fee: 'AA 制，各自拿货各自付；车费自理',
+      market: '十三行',
+      styleTags: ['韩系', '法式'],
+      targetAudience: '刚开店、想学怎么在档口拿货的新手店主',
+      attendees: [owner2, owner5],
+      daysAgo: 1,
+    },
+    {
+      initiator: owner3,
+      kind: 'production',
+      title: '凑单一起做新中式提花马甲，50 件起做',
+      description:
+        '这款马甲工厂要求 50 件起做，我一个人吃不下。\n\n我这边要 20 件，还差 30 件。可以各自选颜色，工厂按色分开做。\n\n面料是提花缎，成本 78 一件，做成后我这边零售价 268。',
+      city: '深圳',
+      venue: '南油原创设计中心',
+      gatheringPoint: '南油 B 座 2 楼 208（森岛档口）',
+      startOffsetDays: 4,
+      startHour: 14,
+      durationHours: 3,
+      signupMethod: '站内报名后加微信群，统一收款下单',
+      signupRequirement: '需认证店主，单次起订 10 件以上；能接受 15 天工期',
+      capacity: 6,
+      fee: '按件分摊，每人 10-30 件不等',
+      market: '南油',
+      styleTags: ['新中式'],
+      targetAudience: '做新中式、有稳定客群的店主',
+      attendees: [owner1],
+      daysAgo: 2,
+    },
+    {
+      initiator: lm1,
+      kind: 'study',
+      title: '四季青大店游学局：跟店一天看完整流程',
+      description:
+        '带 5 个人跟我店里一天，从开门理货、陈列调整、接待、到晚上盘数据，全程开放。\n\n重点看三件事：**怎么筛款**、**怎么记数据**、**怎么动陈列**。',
+      city: '杭州',
+      venue: '四季青服装市场',
+      gatheringPoint: '四季青 3 号门集合（门口有红色雨棚）',
+      startOffsetDays: 6,
+      startHour: 8,
+      durationHours: 10,
+      signupMethod: '站内报名，我审核通过后发具体行程',
+      signupRequirement: '认证店主，有实体店铺；需提前说明自己的店型与客单价',
+      capacity: 5,
+      fee: '免费（游学卡会员优先）',
+      market: '四季青',
+      styleTags: ['韩系', '通勤'],
+      targetAudience: '单店年销 300-1000 万、想突破瓶颈的店主',
+      attendees: [owner1, owner2],
+      daysAgo: 3,
+    },
+    {
+      initiator: owner4,
+      kind: 'exchange',
+      title: '南油档口老板交流局：旺季备货怎么排',
+      description:
+        '做秋冬的都在纠结备货节奏。这次找几个做南油、十三行的同行坐下来聊聊：\n\n- 你们什么时候开始压秋冬第一批\n- 压多少比例\n- 卖不动怎么清',
+      city: '广州',
+      venue: '南油商圈茶室',
+      gatheringPoint: '南油大厦 1 楼星巴克门口',
+      startOffsetDays: 8,
+      startHour: 15,
+      durationHours: 3,
+      signupMethod: '站内报名，满 6 人成局',
+      signupRequirement: '有一年以上实体店/档口经验，愿意分享真实数据',
+      capacity: 10,
+      fee: '场地费 AA，人均 60 左右',
+      market: '南油',
+      styleTags: ['欧美', '休闲'],
+      targetAudience: '年销 500 万以上的实体店主与档口老板',
+      attendees: [owner1, owner3, owner5],
+      daysAgo: 0,
+    },
+  ];
+
+  MEETUPS.forEach((m) => {
+    const id = nextId(store, 'meetups');
+    const start = new Date(now + m.startOffsetDays * 86_400_000);
+    start.setHours(m.startHour, 0, 0, 0);
+    const end = new Date(start.getTime() + m.durationHours * 3_600_000);
+    const cover = img(`meetup-${id}`, 800, 500, m.title);
+    store.meetups.set(id, {
+      id,
+      initiatorId: m.initiator,
+      kind: m.kind as never,
+      title: m.title,
+      description: m.description,
+      coverUrl: cover,
+      city: m.city,
+      venue: m.venue,
+      gatheringPoint: m.gatheringPoint,
+      startAt: start.toISOString(),
+      endAt: end.toISOString(),
+      signupMethod: m.signupMethod,
+      signupRequirement: m.signupRequirement,
+      capacity: m.capacity,
+      joinedCount: 0,
+      fee: m.fee,
+      market: m.market,
+      styleTags: m.styleTags as never,
+      targetAudience: m.targetAudience,
+      status: 'recruiting',
+      createdAt: iso(60 * 24 * m.daysAgo + 120),
+      initiator: undefined as never,
+    });
+    // 报名记录（含发起人）
+    [m.initiator, ...m.attendees].forEach((uid) => {
+      const sid = nextId(store, 'meetupSignups');
+      store.meetupSignups.set(sid, {
+        id: sid,
+        meetupId: id,
+        userId: uid,
+        note: uid === m.initiator ? '发起人' : undefined,
+        createdAt: iso(60 * 24 * m.daysAgo + 60),
+      });
+    });
+    // 同步发一条资讯流内容（与 createMeetup 行为一致，这样首页能看到组局）
+    const aid = nextId(store, 'articles');
+    articleIds.push(aid);
+    const kindLabel =
+      ({ sourcing: '一起去拿货', production: '一起做货/拼单下单', study: '一起学习交流', exchange: '同业交流局' } as Record<string, string>)[
+        m.kind
+      ] ?? '组局';
+    const viewCount = Math.round(420 + rand() * 2600);
+    const commentCount = Math.round(viewCount * 0.016);
+    const collectCount = Math.round(viewCount * 0.055);
+    const shareCount = Math.round(collectCount * 0.28);
+    const likeCount = Math.round(viewCount * 0.075);
+    store.articles.set(aid, {
+      id: aid,
+      authorId: m.initiator,
+      board: 'info',
+      type: 'ugc',
+      contentType: 'meetup',
+      title: `${kindLabel}｜${m.title}`,
+      summary: `${m.city} · ${m.venue}`,
+      content: `${m.description}\n\n**集合点**：${m.gatheringPoint}\n**报名方式**：${m.signupMethod}\n**报名条件**：${m.signupRequirement}`,
+      coverUrl: cover,
+      images: [cover],
+      attachments: [],
+      relatedProducts: [],
+      visibility: 'public',
+      auditStatus: 'approved',
+      styleTags: m.styleTags as never,
+      topics: ['组局', m.city, kindLabel],
+      viewCount,
+      likeCount,
+      collectCount,
+      commentCount,
+      shareCount,
+      contactCount: 0,
+      cesScore: Math.round((commentCount * 0.35 + collectCount * 0.28 + viewCount * 0.18 + shareCount * 0.12 + likeCount * 0.07) * 100) / 100,
+      topped: false,
+      deleted: false,
+      createdAt: iso(60 * 24 * m.daysAgo + 120),
+    });
+    store.meetups.get(id)!.articleId = aid;
   });
 
   syncSequences(store);

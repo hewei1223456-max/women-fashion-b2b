@@ -195,6 +195,8 @@ export function publishContent(store: Store, user: User, dto: PublishContentDto)
   if (dto.publishAs === 'product' && !productId) {
     const pid = nextId(store, 'products');
     const priceRange = String(dto.priceRange ?? '面议');
+    const wholesalePrice = Math.round(midpointOfRange(priceRange)) || 0;
+    const moq = dto.moq ?? 1;
     const product: ProductRow = {
       id: pid,
       manufacturerId: user.id,
@@ -202,10 +204,19 @@ export function publishContent(store: Store, user: User, dto: PublishContentDto)
       images: images.length ? images : [coverUrl],
       videoUrl: dto.videoUrl,
       priceRange,
-      priceMin: midpointOfRange(priceRange),
-      moq: dto.moq ?? 1,
+      priceMin: wholesalePrice,
+      moq,
       styleTag: styleTags[0] ?? '休闲',
       shipFrom: String(dto.location ?? user.sourcingCities?.[0] ?? '杭州'),
+      // 批发交易字段：UGC 发布的款没有填阶梯价，按拿货价自动补一档，避免前端出现空值
+      wholesalePrice,
+      tierPrices: wholesalePrice > 0 ? [{ minQty: moq, price: wholesalePrice, label: `${moq} 件起` }] : [],
+      supportsGroupBuy: true,
+      groupBuyMinQty: Math.max(10, moq * 2),
+      supportsDropship: false,
+      stallType: 'factory',
+      capabilities: [],
+      market: String(dto.location ?? ''),
       description: content.slice(0, 300),
       status: outcome.auditStatus,
       viewCount: 0,

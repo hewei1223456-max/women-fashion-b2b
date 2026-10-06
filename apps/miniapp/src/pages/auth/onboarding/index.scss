@@ -1,0 +1,347 @@
+@import '../../../styles/variables.scss';
+
+.ob {
+  padding-bottom: $gap-lg;
+}
+
+/* ---------------- 步骤条 ---------------- */
+.ob__steps {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ob__step {
+  flex: 1;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.ob__step-dot {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-pill;
+  background: #f2f4f8;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.ob__step-dot.is-active {
+  background: $brand;
+}
+
+.ob__step-dot.is-done {
+  background: $success;
+}
+
+.ob__step-dot-text {
+  font-size: 22px;
+  color: $text-3;
+}
+
+.ob__step-dot.is-active .ob__step-dot-text,
+.ob__step-dot.is-done .ob__step-dot-text {
+  color: #fff;
+}
+
+.ob__step-title {
+  font-size: 18px;
+  color: $text-3;
+  margin-top: 4px;
+}
+
+.ob__step.is-active .ob__step-title {
+  color: $brand;
+}
+
+.ob__head {
+  padding: $gap-sm $gap-xs $gap-xs;
+}
+
+.ob__head-title {
+  display: block;
+  font-size: $fs-lg;
+}
+
+.ob__head-desc {
+  display: block;
+  margin-top: 4px;
+}
+
+/* ---------------- 表单 ---------------- */
+.ob__picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: $bg-page;
+  border-radius: $radius-sm;
+  padding: 16px 20px;
+}
+
+.ob__chip {
+  background: #f2f4f8;
+  border-radius: $radius-pill;
+  padding: 10px 24px;
+  margin-right: $gap-xs;
+  margin-bottom: $gap-xs;
+  border: 1px solid #e3e8ef;
+}
+
+.ob__chip-text {
+  font-size: $fs-sm;
+  color: $text-2;
+}
+
+.ob__chip.is-active {
+  background: $brand-light;
+  border-color: $brand;
+}
+
+.ob__chip.is-active .ob__chip-text {
+  color: $brand;
+}
+
+.ob__chips {
+  margin-top: $gap-xs;
+}
+
+.ob__mt {
+  margin-top: $gap;
+}
+
+.ob__note {
+  display: block;
+  margin-top: $gap-xs;
+  line-height: 1.6;
+}
+
+/* ---------------- 营业执照 ---------------- */
+.ob__upload {
+  margin-top: $gap-xs;
+  height: 260px;
+  border: 2px dashed #d7dce5;
+  border-radius: $radius;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  background: $bg-page;
+}
+
+.ob__upload-plus {
+  font-size: 64px;
+  color: $text-4;
+  line-height: 1.1;
+}
+
+.ob__upload-tip {
+  font-size: $fs-sm;
+  color: $text-3;
+  margin-top: $gap-xs;
+}
+
+.ob__license {
+  margin-top: $gap-xs;
+}
+
+.ob__license-img {
+  width: 100%;
+  height: 320px;
+  border-radius: $radius;
+  background: $bg-page;
+}
+
+.ob__license-tip {
+  display: block;
+  margin-top: $gap-xs;
+  color: $brand;
+}
+
+.ob__ocr {
+  margin-top: $gap;
+  padding-top: $gap-xs;
+  border-top: 1px solid $line;
+}
+
+.ob__ocr-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid $line;
+}
+
+.ob__ocr-key {
+  width: 220px;
+  flex-shrink: 0;
+  font-size: $fs-xs;
+  color: $text-3;
+}
+
+.ob__ocr-val {
+  flex: 1;
+  font-size: $fs-sm;
+  color: $text-1;
+}
+
+.ob__actions {
+  margin-top: $gap;
+}
+
+.ob__nav {
+  margin-top: $gap-sm;
+}
+
+.ob__nav-next {
+  margin-left: $gap-xs;
+}
+
+/* ---------------- 滑块验证 ---------------- */
+.ob__slider {
+  margin-top: $gap;
+}
+
+.verify__track {
+  position: relative;
+  height: 96px;
+  border-radius: $radius-pill;
+  background: #eef1f6;
+  overflow: hidden;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+
+.verify__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 96px;
+  background: rgba(18, 183, 106, 0.18);
+  border-radius: $radius-pill;
+}
+
+.verify__fill-text {
+  font-size: 18px;
+  color: #0b8a51;
+  line-height: 96px;
+  padding-left: 20px;
+}
+
+.verify__thumb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 88px;
+  height: 88px;
+  margin: 4px;
+  border-radius: $radius-pill;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(23, 25, 35, 0.16);
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  transition: transform 0.2s ease;
+}
+
+.verify__thumb.is-dragging {
+  transition: none;
+}
+
+.verify__thumb.is-passed {
+  background: $success;
+}
+
+.verify__thumb-text {
+  font-size: 32px;
+  color: $brand;
+}
+
+.verify__thumb.is-passed .verify__thumb-text {
+  color: #fff;
+}
+
+.verify__text {
+  font-size: $fs-sm;
+  color: $text-3;
+  position: relative;
+}
+
+.verify__tip {
+  display: block;
+  margin-top: $gap-xs;
+  font-size: 18px;
+  color: $text-4;
+  line-height: 1.6;
+}
+
+.ob__ok {
+  display: block;
+  margin-top: $gap-xs;
+  color: $success;
+}
+
+.ob__err {
+  display: block;
+  margin-top: $gap-xs;
+  color: $danger;
+}
+
+.ob__skip {
+  display: block;
+  text-align: center;
+  margin-top: $gap-xs;
+}
+
+/* ---------------- 完成页 ---------------- */
+.ob__done {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding-top: $gap-lg;
+}
+
+.ob__done-icon {
+  font-size: 88px;
+  line-height: 1.2;
+}
+
+.ob__done-title {
+  font-size: $fs-xl;
+  margin-top: $gap-xs;
+}
+
+.ob__done-desc {
+  margin-top: $gap-xs;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.ob__badge-preview {
+  width: 100%;
+  margin-top: $gap;
+  background: $bg-page;
+  border-radius: $radius;
+  padding: $gap-sm;
+}
+
+.ob__badge-row {
+  margin-top: $gap-xs;
+  align-items: center;
+}
+
+.ob__badge-name {
+  margin-right: $gap-xs;
+}
+
+.ob__done-meta {
+  margin-top: $gap-xs;
+}
+
+.ob__actions-second {
+  margin-top: $gap-sm;
+}

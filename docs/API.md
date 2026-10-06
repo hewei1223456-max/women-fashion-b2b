@@ -148,6 +148,45 @@
 | GET | `/api/topic/list` | 话题榜 |
 | GET | `/api/topic/detail/:tag` | 话题聚合（资讯 + 货源） |
 
+## 11.5 组局（参考「闪动」）
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/meetup/list` | 组局列表（`?kind=sourcing\|production\|study\|exchange`、`city`、`status`） |
+| GET | `/api/meetup/detail/:id` | 组局详情（含关联的资讯流内容 `article`） |
+| POST | `/api/meetup/create` | 发起组局（**同时发一条资讯流内容**，让组局能被首页推荐到） |
+| POST | `/api/meetup/join/:id` | 报名（校验人数上限与是否已结束；幂等） |
+| POST | `/api/meetup/quit/:id` | 取消报名（发起人不能退，需取消组局） |
+| GET | `/api/meetup/mine` | 我发起的 + 我报名的 |
+
+**组局与拼单的区别**：拼单只凑量压价，组局是**线下一起行动**，因此 `Meetup` 必须带齐：
+`city` / `venue` / `gatheringPoint`（集合点）/ `startAt` / `endAt` / `signupMethod`（报名方式）/
+`signupRequirement`（报名条件）/ `capacity` / `joinedCount` / `fee` / `targetAudience`。
+
+## 11.6 身份标识与偏好画像
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/auth/preference` | 读取当前用户偏好画像（未填过返回 `null`） |
+| POST | `/api/auth/preference` | 提交「想跟谁学 / 想看什么内容 / 想要什么货源 / 想要什么厂家」四组多选 |
+| POST | `/api/auth/switch` | **Demo 专用**：切换身份，返回新的 `{token, user}`（普通用户不可切到 admin） |
+
+**身份标识**：`UserBrief.badges` 由后端 `buildBadges()` 统一计算，前端只负责渲染。
+「认证」与「付费」是两个独立维度，可以叠加（蓝 + 金）：
+
+| 标识 | 触发条件 | 颜色 |
+|---|---|---|
+| 游客 guest | 未认证且未付费 | 灰 |
+| 认证店主 certified_owner | `role=shop_owner` 且 `certStatus=approved` | 蓝 |
+| 付费店主 paid_owner | 且 `memberLevel ∈ {elite, shark, tour}` | 金 |
+| 认证厂家 certified_manufacturer | `role=manufacturer` 且已认证 | 蓝 |
+| 付费厂家 paid_manufacturer | 且 `memberLevel` 命中厂家付费版本 | 金 |
+| 地标大店 landmark / 内容讲师 lecturer | `role` 命中 | 紫 |
+| 官方 official | `role=admin` | 橙 |
+
+> ⚠️ `badges` 挂在 **UserBrief** 上（列表作者、评论区、个人主页的 `user` 字段），
+> 登录返回的完整 `User` 不含；「我的」页请用 `api.profile.detail(userId).user.badges`。
+
 ## 12. 功能板块（10 个工具）
 
 全部返回 `ToolResult`。**未配置 `AI_API_KEY` 时自动降级为本地规则引擎**，`aiPowered:false`，流程与 UI 完全可用。

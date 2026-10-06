@@ -7,3 +7,9 @@
 .source-home__strategy-text {
   flex: 1;
 }
+
+.source-home__hint {
+  display: block;
+  padding: 4px 0 $gap-xs;
+  line-height: 1.5;
+}

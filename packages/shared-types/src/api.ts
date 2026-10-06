@@ -18,7 +18,7 @@ import type {
   User,
   UserBrief,
 } from './models';
-import type { AuditStatus, ContentType, MemberLevel, StyleTag, TargetType, UserRole, Visibility } from './domain';
+import type { AuditStatus, ContentType, MeetupKind, MemberLevel, StyleTag, TargetType, UserRole, Visibility } from './domain';
 
 /* =========================================================================
  * 统一响应信封：所有接口返回 { code, message, data }
@@ -233,6 +233,27 @@ export interface PublishProductDto {
   styleTag: StyleTag;
   shipFrom: string;
   description: string;
+
+  /* -------- 批发交易字段（不填则后端由价格带推导，保证卡片不出现空值） -------- */
+  /** 拿货价（单件起拿） */
+  wholesalePrice?: number;
+  /** 起提量价（阶梯价） */
+  tierPrices?: { minQty: number; price: number; label?: string }[];
+  /** 是否支持拼单拿货 / 拼单做货 */
+  supportsGroupBuy?: boolean;
+  /** 是否支持一件代发 */
+  supportsDropship?: boolean;
+  /** 档口形态 */
+  stallType?: string;
+  /** 档口/工厂具体位置 */
+  stallAddress?: string;
+  /** 实力标签 */
+  capabilities?: string[];
+  /** 拿货地（产业带） */
+  market?: string;
+  fabric?: string;
+  sizes?: string[];
+  colorCount?: number;
 }
 
 export interface ContactLogDto {
@@ -308,6 +329,36 @@ export interface CreateFairDto {
   theme: string;
   signup: string;
   styleTags: StyleTag[];
+  coverUrl?: string;
+}
+
+/* ------------------------------ 组局（参考闪动） ------------------------------ */
+
+export interface CreateMeetupDto {
+  kind: MeetupKind;
+  title: string;
+  description: string;
+  city: string;
+  /** 活动地点（市场/园区/门店） */
+  venue: string;
+  /** 集合点，细化到具体位置，例如「十三行 6 楼 B12 档口门口」 */
+  gatheringPoint: string;
+  startAt: string;
+  endAt: string;
+  /** 报名方式（留微信号 / 扫码 / 站内报名） */
+  signupMethod: string;
+  /** 报名条件，例如「认证店主，有实体店」 */
+  signupRequirement: string;
+  /** 人数上限，0 = 不限 */
+  capacity: number;
+  fee?: string;
+  productId?: number;
+  market?: string;
+  styleTags?: StyleTag[];
+  /** 期望同行的人（参与者画像） */
+  targetAudience?: string;
+  /** 是否同时发一条资讯流内容（默认 true，让组局也能被推荐到首页） */
+  publishToFeed?: boolean;
   coverUrl?: string;
 }
 
